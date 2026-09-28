@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Jobs - Job & Skills Matching System</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <span>Job Seeker</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav" id="sidebarNav">
+                <!-- Injected by layout.js -->
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user" onclick="window.location.href='profile.html'">
+                    <div class="sidebar-user-avatar">MS</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name">Maria Santos</div>
+                        <div class="sidebar-user-role">Job Seeker</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="top-header-content">
+                    <div class="top-header-left">
+                        <button class="mobile-menu-btn" id="mobileMenuBtn">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h1 class="top-header-title">Search Jobs</h1>
+                    </div>
+                    <div class="top-header-right">
+                        <button class="header-btn" id="notificationBtn">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge">3</span>
+                        </button>
+                        <button class="header-btn" id="userMenuBtn">
+                            <i class="fas fa-user-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main class="page-content">
+                <!-- Page Nav -->
+                <nav class="page-nav">
+                    <a href="dashboard.html"><i class="fas fa-home"></i> Home</a>
+                    <span style="color: var(--gray-300);">/</span>
+                    <span class="current">Search Jobs</span>
+                </nav>
+
+                <div class="row" style="display: flex; gap: 1.5rem;">
+                    <!-- Filter Sidebar -->
+                    <aside class="filter-panel" style="width: 300px; flex-shrink: 0; position: sticky; top: 90px; height: fit-content;" id="filterSidebar">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3><i class="fas fa-filter" style="margin-right: 0.5rem;"></i> Filters</h3>
+                            <button class="btn btn-sm btn-outline filter-toggle" id="mobileFilterToggle" style="display: none;">
+                                <i class="fas fa-times"></i> Close
+                            </button>
+                        </div>
+
+                        <form id="jobFilterForm">
+                            <div class="filter-group">
+                                <label>Municipality</label>
+                                <div class="filter-options">
+                                    <label class="filter-option"><input type="checkbox" value=""> All Municipalities</label>
+                                    <label class="filter-option"><input type="checkbox" value="Basud"> Basud</label>
+                                    <label class="filter-option"><input type="checkbox" value="Daet"> Daet</label>
+                                    <label class="filter-option"><input type="checkbox" value="Vinzons"> Vinzons</label>
+                                    <label class="filter-option"><input type="checkbox" value="Labo"> Labo</label>
+                                </div>
+                            </div>
+
+                            <div class="filter-group">
+                                <label>Barangay</label>
+                                <input type="text" class="form-control" placeholder="Enter barangay" style="margin-bottom: 0.5rem;">
+                                <small style="color: var(--gray-500); font-size: 0.75rem;">Optional</small>
+                            </div>
+
+                            <div class="filter-group">
+                                <label>Distance / Near Me</label>
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="useLocation">
+                                    <label class="form-check-label" for="useLocation">Use my location</label>
+                                </div>
+                            </div>
+
+                            <div class="filter-group">
+                                <label>Job Category</label>
+                                <div class="filter-options">
+                                    <label class="filter-option"><input type="checkbox" value=""> All Categories</label>
+                                    <label class="filter-option"><input type="checkbox" value="Retail / Store"> Retail / Store</label>
+                                    <label class="filter-option"><input type="checkbox" value="Sales"> Sales</label>
+                                    <label class="filter-option"><input type="checkbox" value="Food Service / Restaurant"> Food Service / Restaurant</label>
+                                    <label class="filter-option"><input type="checkbox" value="Hospitality / Tourism"> Hospitality / Tourism</label>
+                                    <label class="filter-option"><input type="checkbox" value="Office / Administration"> Office / Administration</label>
+                                    <label class="filter-option"><input type="checkbox" value="Accounting / Finance"> Accounting / Finance</label>
+                                    <label class="filter-option"><input type="checkbox" value="Healthcare"> Healthcare</label>
+                                    <label class="filter-option"><input type="checkbox" value="Education / Tutoring"> Education / Tutoring</label>
+                                    <label class="filter-option"><input type="checkbox" value="Construction / Skilled Trades"> Construction / Skilled Trades</label>
+                                    <label class="filter-option"><input type="checkbox" value="Agriculture"> Agriculture</label>
+                                    <label class="filter-option"><input type="checkbox" value="Fisheries"> Fisheries</label>
+                                    <label class="filter-option"><input type="checkbox" value="Manufacturing"> Manufacturing</label>
+                                    <label class="filter-option"><input type="checkbox" value="Logistics / Delivery"> Logistics / Delivery</label>
+                                    <label class="filter-option"><input type="checkbox" value="Transportation"> Transportation</label>
+                                    <label class="filter-option"><input type="checkbox" value="Automotive / Mechanical"> Automotive / Mechanical</label>
+                                    <label class="filter-option"><input type="checkbox" value="Customer Service"> Customer Service</label>
+                                    <label class="filter-option"><input type="checkbox" value="Security"> Security</label>
+                                    <label class="filter-option"><input type="checkbox" value="General Labor"> General Labor</label>
+                                    <label class="filter-option"><input type="checkbox" value="IT / Technology"> IT / Technology</label>
+                                    <label class="filter-option"><input type="checkbox" value="Other"> Other</label>
+                                </div>
+                            </div>
+
+                            <div class="filter-group">
+                                <label>Employment Type</label>
+                                <div class="filter-options">
+                                    <label class="filter-option"><input type="checkbox" value=""> All Types</label>
+                                    <label class="filter-option"><input type="checkbox" value="Full-time"> Full-time</label>
+                                    <label class="filter-option"><input type="checkbox" value="Part-time"> Part-time</label>
+                                    <label class="filter-option"><input type="checkbox" value="Contract"> Contract</label>
+                                    <label class="filter-option"><input type="checkbox" value="Temporary"> Temporary</label>
+                                </div>
+                            </div>
+
+                            <div class="filter-group">
+                                <label>Work Schedule</label>
+                                <div class="filter-options">
+                                    <label class="filter-option"><input type="checkbox" value=""> All Schedules</label>
+                                    <label class="filter-option"><input type="checkbox" value="On-site"> On-site</label>
+                                    <label class="filter-option"><input type="checkbox" value="Remote"> Remote</label>
+                                    <label class="filter-option"><input type="checkbox" value="Hybrid"> Hybrid</label>
+                                    <label class="filter-option"><input type="checkbox" value="Shift"> Shift</label>
+                                </div>
+                            </div>
+
+                            <div class="filter-group">
+                                <label>Salary Range</label>
+                                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <input type="number" class="form-control form-control-sm" placeholder="Min" style="width: 50%;">
+                                    <input type="number" class="form-control form-control-sm" placeholder="Max" style="width: 50%;">
+                                </div>
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="salaryNegotiable">
+                                    <label class="form-check-label" for="salaryNegotiable">Include negotiable</label>
+                                </div>
+                            </div>
+
+                            <div class="filter-group">
+                                <label>Skills</label>
+                                <input type="text" class="form-control" placeholder="e.g., Customer Service, Cashier" style="margin-bottom: 0.5rem;">
+                                <small style="color: var(--gray-500); font-size: 0.75rem;">Comma-separated</small>
+                            </div>
+
+                            <div class="filter-group">
+                                <label>Experience</label>
+                                <div class="filter-options">
+                                    <label class="filter-option"><input type="checkbox" value=""> Any</label>
+                                    <label class="filter-option"><input type="checkbox" value="No Experience"> No Experience</label>
+                                    <label class="filter-option"><input type="checkbox" value="1-2 Years"> 1-2 Years</label>
+                                    <label class="filter-option"><input type="checkbox" value="3-5 Years"> 3-5 Years</label>
+                                    <label class="filter-option"><input type="checkbox" value="5+ Years"> 5+ Years</label>
+                                </div>
+                            </div>
+
+                            <div class="filter-group">
+                                <label>Education</label>
+                                <div class="filter-options">
+                                    <label class="filter-option"><input type="checkbox" value=""> Any</label>
+                                    <label class="filter-option"><input type="checkbox" value="Elementary"> Elementary</label>
+                                    <label class="filter-option"><input type="checkbox" value="High School"> High School</label>
+                                    <label class="filter-option"><input type="checkbox" value="Vocational"> Vocational</label>
+                                    <label class="filter-option"><input type="checkbox" value="College"> College</label>
+                                    <label class="filter-option"><input type="checkbox" value="Post Graduate"> Post Graduate</label>
+                                </div>
+                            </div>
+
+                            <div class="filter-actions">
+                                <button type="submit" class="btn btn-primary btn-block">Apply Filters</button>
+                                <button type="button" class="btn btn-outline btn-block" id="resetFilters">Reset</button>
+                            </div>
+                        </form>
+                    </aside>
+
+                    <!-- Job Listings -->
+                    <div style="flex: 1; min-width: 0;">
+                        <!-- Search Bar -->
+                        <div class="search-bar mb-4" role="search">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" id="jobSearchInput" placeholder="Search jobs, skills, or companies..." autocomplete="off">
+                        </div>
+
+                        <!-- Info Bar -->
+                        <div style="background: white; border-radius: var(--border-radius); box-shadow: var(--box-shadow); border: 1px solid var(--gray-200); padding: 1rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+                            <div>
+                                <strong>Showing jobs in Basud, Daet, Vinzons, Labo</strong>
+                                <span style="color: var(--gray-500); font-size: 0.85rem; margin-left: 0.5rem;">|</span>
+                                <span style="color: var(--primary-color); font-size: 0.85rem; font-weight: 600;">Filters help you find highly matched jobs</span>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <select class="form-control form-control-select form-control-sm" style="width: auto; min-width: 150px;" id="sortSelect">
+                                    <option value="match">Best Match</option>
+                                    <option value="newest">Newest First</option>
+                                    <option value="salary-high">Salary: High to Low</option>
+                                    <option value="salary-low">Salary: Low to High</option>
+                                    <option value="distance">Nearest First</option>
+                                </select>
+                                <button class="btn btn-outline btn-sm" id="toggleView">
+                                    <i class="fas fa-th-large"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Job Count -->
+                        <div id="jobResultsCount" style="margin-bottom: 1rem; color: var(--gray-600); font-size: 0.9rem;">
+                            <span id="jobCount">45</span> jobs found
+                        </div>
+
+                        <!-- Job List -->
+                        <div class="job-list" id="jobList">
+                            <!-- Injected by JS -->
+                        </div>
+
+                        <!-- Pagination -->
+                        <nav aria-label="Page navigation" style="display: flex; justify-content: center; margin-top: 2rem;">
+                            <ul class="pagination" style="display: flex; gap: 0.5rem;">
+                                <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--border-radius-sm); border: 1px solid var(--gray-300); color: var(--gray-400);"><i class="fas fa-chevron-left"></i></a></li>
+                                <li class="page-item active"><a class="page-link" href="#" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--border-radius-sm); background: var(--primary-color); color: white; border: none;">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--border-radius-sm); border: 1px solid var(--gray-300); color: var(--gray-600);">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--border-radius-sm); border: 1px solid var(--gray-300); color: var(--gray-600);">3</a></li>
+                                <li class="page-item"><a class="page-link" href="#" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--border-radius-sm); border: 1px solid var(--gray-300); color: var(--gray-600);"><i class="fas fa-chevron-right"></i></a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav" id="bottomNav">
+        <!-- Injected by layout.js -->
+    </nav>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/layout.js"></script>
+    <script>
+        // Job Search Page Data & Logic
+        const allJobs = [
+            {
+                id: 1,
+                title: 'Restaurant Crew',
+                company: "Juan's Eatery",
+                municipality: 'Daet',
+                barangay: 'Bagasbas',
+                salary: '₱12,000 - ₱14,000',
+                employmentType: 'Full-time',
+                workSchedule: 'On-site',
+                match: 88,
+                tags: ['Food Service', 'Customer Service', 'Entry Level'],
+                category: 'Food Service / Restaurant',
+                icon: 'fa-utensils',
+                iconClass: 'alt',
+                posted: '2 days ago'
+            },
+            {
+                id: 2,
+                title: 'Pharmacy Assistant',
+                company: 'Daet Health Pharmacy',
+                municipality: 'Daet',
+                barangay: 'Centro',
+                salary: '₱10,000 - ₱12,000',
+                employmentType: 'Full-time',
+                workSchedule: 'On-site',
+                match: 82,
+                tags: ['Healthcare', 'Customer Service', 'Entry Level'],
+                category: 'Healthcare',
+                icon: 'fa-pills',
+                iconClass: 'third',
+                posted: '1 day ago'
+            },
+            {
+                id: 3,
+                title: 'Sales Associate',
+                company: 'Basud Retail Store',
+                municipality: 'Basud',
+                barangay: 'Poblacion',
+                salary: '₱8,500 - ₱10,000',
+                employmentType: 'Full-time',
+                workSchedule: 'On-site',
+                match: 78,
+                tags: ['Retail', 'Sales', 'Customer Service'],
+                category: 'Retail / Store',
+                icon: 'fa-shopping-cart',
+                iconClass: 'fourth',
+                posted: '3 days ago'
+            },
+            {
+                id: 4,
+                title: 'Driver / Delivery',
+                company: 'Daet Logistics',
+                municipality: 'Daet',
+                barangay: 'Centro',
+                salary: '₱9,000 - ₱11,000',
+                employmentType: 'Full-time',
+                workSchedule: 'On-site',
+                match: 75,
+                tags: ['Transportation', 'Logistics'],
+                category: 'Logistics / Delivery',
+                icon: 'fa-truck',
+                iconClass: '',
+                posted: '5 hours ago'
+            },
+            {
+                id: 5,
+                title: 'Construction Worker',
+                company: 'Labo Builders Inc.',
+                municipality: 'Labo',
+                barangay: 'Poblacion',
+                salary: '₱350/day',
+                employmentType: 'Temporary',
+                workSchedule: 'On-site',
+                match: 72,
+                tags: ['Construction', 'Manual Labor', 'Immediate Hire'],
+                category: 'Construction / Skilled Trades',
+                icon: 'fa-hard-hat',
+                iconClass: 'alt',
+                posted: '1 week ago'
+            },
+            {
+                id: 6,
+                title: 'Admin Staff',
+                company: 'Vinzons Municipal Office',
+                municipality: 'Vinzons',
+                barangay: 'Poblacion',
+                salary: '₱11,000 - ₱13,000',
+                employmentType: 'Full-time',
+                workSchedule: 'On-site',
+                match: 70,
+                tags: ['Office', 'Administration', 'Clerical'],
+                category: 'Office / Administration',
+                icon: 'fa-file-alt',
+                iconClass: 'third',
+                posted: '2 days ago'
+            },
+            {
+                id: 7,
+                title: 'Farm Worker',
+                company: 'Basud Agri-Farm',
+                municipality: 'Basud',
+                barangay: 'San Felipe',
+                salary: '₱300/day',
+                employmentType: 'Temporary',
+                workSchedule: 'On-site',
+                match: 68,
+                tags: ['Agriculture', 'Manual Labor'],
+                category: 'Agriculture',
+                icon: 'fa-tractor',
+                iconClass: 'fourth',
+                posted: '4 days ago'
+            },
+            {
+                id: 8,
+                title: 'Cashier',
+                company: '7-Eleven Daet',
+                municipality: 'Daet',
+                barangay: 'Bagasbas',
+                salary: '₱8,500 - ₱9,500',
+                employmentType: 'Part-time',
+                workSchedule: 'On-site',
+                match: 65,
+                tags: ['Retail', 'Customer Service'],
+                category: 'Retail / Store',
+                icon: 'fa-cash-register',
+                iconClass: '',
+                posted: '1 day ago'
+            },
+            {
+                id: 9,
+                title: 'Kitchen Helper',
+                company: 'Vinzons Restaurant',
+                municipality: 'Vinzons',
+                barangay: 'Centro',
+                salary: '₱8,000 - ₱9,500',
+                employmentType: 'Part-time',
+                workSchedule: 'On-site',
+                match: 62,
+                tags: ['Food Service', 'Kitchen'],
+                category: 'Food Service / Restaurant',
+                icon: 'fa-utensils',
+                iconClass: 'alt',
+                posted: '3 days ago'
+            },
+            {
+                id: 10,
+                title: 'Security Guard',
+                company: 'Daet Security Services',
+                municipality: 'Daet',
+                barangay: 'Centro',
+                salary: '₱10,000 - ₱12,000',
+                employmentType: 'Full-time',
+                workSchedule: 'Shift',
+                match: 60,
+                tags: ['Security', 'Night Shift'],
+                category: 'Security',
+                icon: 'fa-shield-alt',
+                iconClass: 'third',
+                posted: '1 week ago'
+            },
+            {
+                id: 11,
+                title: 'Teacher / Tutor',
+                company: 'Vinzons Learning Center',
+                municipality: 'Vinzons',
+                barangay: 'Poblacion',
+                salary: '₱200/hour',
+                employmentType: 'Part-time',
+                workSchedule: 'Flexible',
+                match: 58,
+                tags: ['Education', 'Tutoring', 'Flexible'],
+                category: 'Education / Tutoring',
+                icon: 'fa-chalkboard-teacher',
+                iconClass: 'fourth',
+                posted: '5 days ago'
+            },
+            {
+                id: 12,
+                title: 'Warehouse Assistant',
+                company: 'Basud Agricultural Supply',
+                municipality: 'Basud',
+                barangay: 'Poblacion',
+                salary: '₱9,500 - ₱11,500',
+                employmentType: 'Full-time',
+                workSchedule: 'On-site',
+                match: 55,
+                tags: ['Warehouse', 'Logistics', 'Inventory'],
+                category: 'Logistics / Delivery',
+                icon: 'fa-boxes',
+                iconClass: '',
+                posted: '2 weeks ago'
+            }
+        ];
+
+        let filteredJobs = [...allJobs];
+        let currentView = 'list';
+
+        function renderJobs() {
+            const container = document.getElementById('jobList');
+            const countEl = document.getElementById('jobCount');
+            if (!container) return;
+
+            if (countEl) countEl.textContent = filteredJobs.length;
+
+            if (filteredJobs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-search"></i></div>
+                        <h4>No jobs found</h4>
+                        <p>Try adjusting your filters or search terms</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredJobs.map(job => `
+                <div class="card job-card fade-in ${currentView === 'grid' ? 'grid-view' : ''}" onclick="window.location.href='job-details.html?id=${job.id}'">
+                    <div class="job-card-icon ${job.iconClass || ''}">
+                        <i class="fas ${job.icon}"></i>
+                    </div>
+                    <div class="job-card-info">
+                        <div class="job-card-title">${job.title}</div>
+                        <div class="job-card-company">${job.company}</div>
+                        <div class="job-card-meta">
+                            <span><i class="fas fa-map-marker-alt"></i> ${job.municipality}, Camarines Norte</span>
+                            <span><i class="fas fa-clock"></i> ${job.employmentType}</span>
+                            <span><i class="fas fa-tag"></i> ${job.salary}</span>
+                            <span><i class="fas fa-clock"></i> ${job.posted}</span>
+                        </div>
+                        <div class="job-card-tags">
+                            ${job.tags.map(tag => `<span class="job-tag">${tag}</span>`).join('')}
+                        </div>
+                        <div class="match-percentage">
+                            <div class="match-circle ${job.match >= 80 ? 'high' : job.match >= 60 ? 'medium' : 'low'}">${job.match}%</div>
+                            <div class="match-info">
+                                <h4>${job.match >= 80 ? 'Excellent Match' : job.match >= 60 ? 'Good Match' : 'Fair Match'}</h4>
+                                <div class="match-bar">
+                                    <div class="match-bar-fill ${job.match >= 80 ? 'high' : job.match >= 60 ? 'medium' : 'low'}" style="width: ${job.match}%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="job-card-actions">
+                        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); saveJob(${job.id})"><i class="fas fa-bookmark"></i></button>
+                        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); applyJob(${job.id})"><i class="fas fa-paper-plane"></i> Apply</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function applyFilters() {
+            const form = document.getElementById('jobFilterForm');
+            if (!form) return;
+
+            const formData = new FormData(form);
+            const selectedMunicipalities = formData.getAll('municipality').filter(v => v);
+            const selectedCategories = formData.getAll('category').filter(v => v);
+            const selectedEmploymentTypes = formData.getAll('employmentType').filter(v => v);
+            const selectedWorkSchedules = formData.getAll('workSchedule').filter(v => v);
+            const selectedExperience = formData.getAll('experience').filter(v => v);
+            const selectedEducation = formData.getAll('education').filter(v => v);
+
+            filteredJobs = allJobs.filter(job => {
+                if (selectedMunicipalities.length > 0 && !selectedMunicipalities.includes(job.municipality)) return false;
+                if (selectedCategories.length > 0 && !selectedCategories.includes(job.category)) return false;
+                if (selectedEmploymentTypes.length > 0 && !selectedEmploymentTypes.includes(job.employmentType)) return false;
+                if (selectedWorkSchedules.length > 0 && !selectedWorkSchedules.includes(job.workSchedule)) return false;
+                if (selectedExperience.length > 0) {
+                    // Would need to parse job experience
+                }
+                if (selectedEducation.length > 0) {
+                    // Would need to parse job education
+                }
+                return true;
+            });
+
+            renderJobs();
+        }
+
+        function resetFilters() {
+            document.getElementById('jobFilterForm').reset();
+            filteredJobs = [...allJobs];
+            renderJobs();
+        }
+
+        function saveJob(jobId) {
+            showToast('Job saved!', 'success');
+        }
+
+        function applyJob(jobId) {
+            showToast('Application submitted!', 'success');
+        }
+
+        // Search functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            renderJobs();
+
+            // Filter form
+            document.getElementById('jobFilterForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                applyFilters();
+                // Close mobile filter sidebar
+                const sidebar = document.getElementById('filterSidebar');
+                if (sidebar && window.innerWidth <= 1024) {
+                    sidebar.classList.remove('active');
+                }
+            });
+
+            document.getElementById('resetFilters').addEventListener('click', resetFilters);
+
+            // Search input
+            document.getElementById('jobSearchInput').addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase();
+                if (query.trim() === '') {
+                    filteredJobs = [...allJobs];
+                } else {
+                    filteredJobs = allJobs.filter(job =>
+                        job.title.toLowerCase().includes(query) ||
+                        job.company.toLowerCase().includes(query) ||
+                        job.tags.some(tag => tag.toLowerCase().includes(query))
+                    );
+                }
+                renderJobs();
+            });
+
+            // Sort select
+            document.getElementById('sortSelect').addEventListener('change', function(e) {
+                const sort = e.target.value;
+                switch (sort) {
+                    case 'match':
+                        filteredJobs.sort((a, b) => b.match - a.match);
+                        break;
+                    case 'newest':
+                        // Would need actual dates
+                        break;
+                    case 'salary-high':
+                        filteredJobs.sort((a, b) => parseSalary(b.salary) - parseSalary(a.salary));
+                        break;
+                    case 'salary-low':
+                        filteredJobs.sort((a, b) => parseSalary(a.salary) - parseSalary(b.salary));
+                        break;
+                }
+                renderJobs();
+            });
+
+            // Toggle view
+            document.getElementById('toggleView').addEventListener('click', function() {
+                currentView = currentView === 'list' ? 'grid' : 'list';
+                this.innerHTML = currentView === 'list' ? '<i class="fas fa-th-large"></i>' : '<i class="fas fa-th-list"></i>';
+                renderJobs();
+            });
+
+            // Mobile filter toggle
+            document.getElementById('mobileFilterToggle').addEventListener('click', function() {
+                document.getElementById('filterSidebar').classList.toggle('active');
+            });
+        });
+
+        function parseSalary(salaryStr) {
+            const nums = salaryStr.match(/[\d,]+/g);
+            if (!nums) return 0;
+            return Math.max(...nums.map(n => parseInt(n.replace(/,/g, ''))));
+        }
+    </script>
+</body>
+</html>

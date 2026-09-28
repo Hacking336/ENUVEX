@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Seeker Registration - Job & Skills Matching System</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="login-page">
+    <div class="login-card" style="max-width: 600px;">
+        <div class="login-logo">
+            <div class="login-logo-icon">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <h2>Job Seeker Registration</h2>
+            <p>Create your profile to find matching job opportunities</p>
+        </div>
+
+        <form class="validate" id="jobSeekerRegisterForm" enctype="multipart/form-data">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="fullName" class="form-label">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="fullName" placeholder="Enter your full name" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password" placeholder="Create a password" required>
+                            <button type="button" class="btn btn-outline-secondary password-toggle">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="confirmPassword" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your password" required>
+                            <button type="button" class="btn btn-outline-secondary password-toggle">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="contactNumber" class="form-label">Contact Number <span class="text-danger">*</span></label>
+                        <input type="tel" class="form-control" id="contactNumber" placeholder="+63 9XX XXX XXXX" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="municipality" class="form-label">Municipality <span class="text-danger">*</span></label>
+                        <select class="form-control form-control-select" id="municipality" required>
+                            <option value="">Select Municipality</option>
+                            <option value="Basud">Basud</option>
+                            <option value="Daet">Daet</option>
+                            <option value="Vinzons">Vinzons</option>
+                            <option value="Labo">Labo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="barangay" class="form-label">Barangay <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="barangay" placeholder="Enter your barangay" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="educationLevel" class="form-label">Education Level <span class="text-danger">*</span></label>
+                        <select class="form-control form-control-select" id="educationLevel" required>
+                            <option value="">Select Education Level</option>
+                            <option value="No Formal Education">No Formal Education</option>
+                            <option value="Elementary">Elementary</option>
+                            <option value="High School">High School</option>
+                            <option value="Vocational">Vocational</option>
+                            <option value="College">College</option>
+                            <option value="Post Graduate">Post Graduate</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="courseField" class="form-label">Course / Field of Study</label>
+                        <input type="text" class="form-control" id="courseField" placeholder="e.g., Computer Science, Business Administration">
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="form-group">
+                        <label for="skills" class="form-label">Skills (comma-separated) <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="skills" placeholder="e.g., Customer Service, Cash Handling, Communication, Problem Solving" required>
+                        <small class="text-muted">Enter your skills separated by commas</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="workExperience" class="form-label">Work Experience <span class="text-danger">*</span></label>
+                        <select class="form-control form-control-select" id="workExperience" required>
+                            <option value="">Select Experience</option>
+                            <option value="0">No Experience</option>
+                            <option value="1">1 year</option>
+                            <option value="2">2 years</option>
+                            <option value="3">3 years</option>
+                            <option value="4">4 years</option>
+                            <option value="5">5 years</option>
+                            <option value="5+">5+ years</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="certifications" class="form-label">Certifications (comma-separated)</label>
+                        <input type="text" class="form-control" id="certifications" placeholder="e.g., TESDA NC II, Food Safety, First Aid">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="employmentType" class="form-label">Preferred Employment Type <span class="text-danger">*</span></label>
+                        <select class="form-control form-control-select" id="employmentType" required>
+                            <option value="">Select Employment Type</option>
+                            <option value="Full-time">Full-time</option>
+                            <option value="Part-time">Part-time</option>
+                            <option value="Contract">Contract</option>
+                            <option value="Temporary">Temporary</option>
+                            <option value="Any">Any</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="workSchedule" class="form-label">Preferred Work Schedule <span class="text-danger">*</span></label>
+                        <select class="form-control form-control-select" id="workSchedule" required>
+                            <option value="">Select Schedule</option>
+                            <option value="Morning">Morning</option>
+                            <option value="Afternoon">Afternoon</option>
+                            <option value="Evening">Evening</option>
+                            <option value="Night">Night</option>
+                            <option value="Weekend">Weekend</option>
+                            <option value="Flexible">Flexible</option>
+                            <option value="Any">Any</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="availability" class="form-label">Availability <span class="text-danger">*</span></label>
+                        <select class="form-control form-control-select" id="availability" required>
+                            <option value="">Select Availability</option>
+                            <option value="Immediately">Immediately</option>
+                            <option value="Within 1 week">Within 1 week</option>
+                            <option value="Within 2 weeks">Within 2 weeks</option>
+                            <option value="Within 1 month">Within 1 month</option>
+                            <option value="Within 3 months">Within 3 months</option>
+                            <option value="More than 3 months">More than 3 months</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="expectedSalary" class="form-label">Expected Monthly Salary (PHP) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="expectedSalary" placeholder="Enter expected salary" min="0" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="profilePhoto" class="form-label">Profile Photo</label>
+                        <input type="file" class="form-control" id="profilePhoto" accept="image/*">
+                        <small class="text-muted">Optional: Upload a profile photo (max 5MB)</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">Create Account</button>
+            </div>
+        </form>
+
+        <div class="mt-4 text-center">
+            <a href="../register.html" class="text-decoration-none small">
+                <i class="fas fa-arrow-left me-1"></i> Back to Account Type Selection
+            </a>
+        </div>
+
+        <div class="mt-4 text-center">
+            <p class="text-muted">© 2026 Job & Skills Matching System. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script src="../assets/js/main.js"></script>
+    <script>
+        // Password confirmation validation
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = this.value;
+            if (password !== confirmPassword) {
+                this.setCustomValidity('Passwords do not match');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('jobSeekerRegisterForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData();
+            formData.append('fullName', document.getElementById('fullName').value);
+            formData.append('email', document.getElementById('email').value);
+            formData.append('password', document.getElementById('password').value);
+            formData.append('contactNumber', document.getElementById('contactNumber').value);
+            formData.append('municipality', document.getElementById('municipality').value);
+            formData.append('barangay', document.getElementById('barangay').value);
+            formData.append('educationLevel', document.getElementById('educationLevel').value);
+            formData.append('courseField', document.getElementById('courseField').value);
+            formData.append('skills', document.getElementById('skills').value);
+            formData.append('workExperience', document.getElementById('workExperience').value);
+            formData.append('certifications', document.getElementById('certifications').value);
+            formData.append('employmentType', document.getElementById('employmentType').value);
+            formData.append('workSchedule', document.getElementById('workSchedule').value);
+            formData.append('availability', document.getElementById('availability').value);
+            formData.append('expectedSalary', document.getElementById('expectedSalary').value);
+
+            const profilePhoto = document.getElementById('profilePhoto').files[0];
+            if (profilePhoto) {
+                formData.append('profilePhoto', profilePhoto);
+            }
+
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Registration failed');
+                }
+
+                showToast('Account created successfully! Please check your email for verification.', 'success');
+
+                setTimeout(() => {
+                    window.location.href = '../index.html';
+                }, 2000);
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        });
+    </script>
+</body>
+</html>

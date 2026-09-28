@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post a Job - Job & Skills Matching System</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <span>Employer</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav" id="sidebarNav">
+                <!-- Injected by layout.js -->
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user" onclick="window.location.href='profile.html'">
+                    <div class="sidebar-user-avatar">JE</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name">Juan's Eatery</div>
+                        <div class="sidebar-user-role">Employer</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="top-header-content">
+                    <div class="top-header-left">
+                        <button class="mobile-menu-btn" id="mobileMenuBtn">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h1 class="top-header-title">Post a Job</h1>
+                    </div>
+                    <div class="top-header-right">
+                        <button class="header-btn" id="notificationBtn">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge">5</span>
+                        </button>
+                        <button class="header-btn" id="userMenuBtn">
+                            <i class="fas fa-user-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main class="page-content">
+                <!-- Page Nav -->
+                <nav class="page-nav">
+                    <a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+                    <span style="color: var(--gray-300);">/</span>
+                    <span class="current">Post a Job</span>
+                </nav>
+
+                <form class="validate" id="postJobForm">
+                    <!-- Basic Information -->
+                    <div class="card fade-in mb-4">
+                        <div class="card-header">
+                            <h3><i class="fas fa-info-circle" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Basic Information</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                                <div class="form-group">
+                                    <label for="positionTitle">Position Title <span style="color: var(--danger-color);">*</span></label>
+                                    <input type="text" class="form-control" id="positionTitle" placeholder="e.g., Restaurant Crew, Sales Associate" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="jobCategory">Job Category <span style="color: var(--danger-color);">*</span></label>
+                                    <select class="form-control form-control-select" id="jobCategory" required>
+                                        <option value="">Select Category</option>
+                                        <option value="Retail / Store">Retail / Store</option>
+                                        <option value="Sales">Sales</option>
+                                        <option value="Food Service / Restaurant">Food Service / Restaurant</option>
+                                        <option value="Hospitality / Tourism">Hospitality / Tourism</option>
+                                        <option value="Office / Administration">Office / Administration</option>
+                                        <option value="Accounting / Finance">Accounting / Finance</option>
+                                        <option value="Healthcare">Healthcare</option>
+                                        <option value="Education / Tutoring">Education / Tutoring</option>
+                                        <option value="Construction / Skilled Trades">Construction / Skilled Trades</option>
+                                        <option value="Agriculture">Agriculture</option>
+                                        <option value="Fisheries">Fisheries</option>
+                                        <option value="Manufacturing">Manufacturing</option>
+                                        <option value="Logistics / Delivery">Logistics / Delivery</option>
+                                        <option value="Transportation">Transportation</option>
+                                        <option value="Automotive / Mechanical">Automotive / Mechanical</option>
+                                        <option value="Customer Service">Customer Service</option>
+                                        <option value="Security">Security</option>
+                                        <option value="General Labor">General Labor</option>
+                                        <option value="IT / Technology">IT / Technology</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Job Description -->
+                    <div class="card fade-in mb-4">
+                        <div class="card-header">
+                            <h3><i class="fas fa-file-alt" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Job Description</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="jobDescription">Job Description <span style="color: var(--danger-color);">*</span></label>
+                                <textarea class="form-control" id="jobDescription" rows="4" placeholder="Describe the role, company culture, and what makes this position unique..." required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="responsibilities">Key Responsibilities <span style="color: var(--danger-color);">*</span></label>
+                                <textarea class="form-control" id="responsibilities" rows="4" placeholder="List the main duties and responsibilities (one per line)..." required></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="card fade-in mb-4">
+                        <div class="card-header">
+                            <h3><i class="fas fa-map-marker-alt" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Workplace Location</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                                <div class="form-group">
+                                    <label for="municipality">Municipality <span style="color: var(--danger-color);">*</span></label>
+                                    <select class="form-control form-control-select" id="municipality" required>
+                                        <option value="">Select Municipality</option>
+                                        <option value="Basud">Basud</option>
+                                        <option value="Daet">Daet</option>
+                                        <option value="Vinzons">Vinzons</option>
+                                        <option value="Labo">Labo</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="barangay">Barangay <span style="color: var(--danger-color);">*</span></label>
+                                    <input type="text" class="form-control" id="barangay" placeholder="e.g., Bagasbas, Centro, Poblacion" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="exactLocation">Exact Address <span style="color: var(--danger-color);">*</span></label>
+                                <input type="text" class="form-control" id="exactLocation" placeholder="e.g., 123 Main Street, Near Public Market" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Compensation & Employment Details -->
+                    <div class="card fade-in mb-4">
+                        <div class="card-header">
+                            <h3><i class="fas fa-won-sign" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Compensation & Employment Details</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                                <div class="form-group">
+                                    <label for="salaryMin">Minimum Salary <span style="color: var(--danger-color);">*</span></label>
+                                    <input type="number" class="form-control" id="salaryMin" placeholder="e.g., 12000" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="salaryMax">Maximum Salary</label>
+                                    <input type="number" class="form-control" id="salaryMax" placeholder="e.g., 15000" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="salaryPeriod">Salary Period</label>
+                                    <select class="form-control form-control-select" id="salaryPeriod">
+                                        <option value="monthly">Per Month</option>
+                                        <option value="daily">Per Day</option>
+                                        <option value="hourly">Per Hour</option>
+                                        <option value="project">Per Project</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="salaryNegotiable" class="form-check-label">
+                                        <input type="checkbox" class="form-check-input" id="salaryNegotiable"> Salary is negotiable
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                                <div class="form-group">
+                                    <label for="employmentType">Employment Type <span style="color: var(--danger-color);">*</span></label>
+                                    <select class="form-control form-control-select" id="employmentType" required>
+                                        <option value="">Select Type</option>
+                                        <option value="Full-time">Full-time</option>
+                                        <option value="Part-time">Part-time</option>
+                                        <option value="Contract">Contract</option>
+                                        <option value="Temporary">Temporary</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="workSchedule">Work Schedule <span style="color: var(--danger-color);">*</span></label>
+                                    <select class="form-control form-control-select" id="workSchedule" required>
+                                        <option value="">Select Schedule</option>
+                                        <option value="On-site">On-site</option>
+                                        <option value="Remote">Remote</option>
+                                        <option value="Hybrid">Hybrid</option>
+                                        <option value="Shift">Shift Work</option>
+                                        <option value="Flexible">Flexible</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="availablePositions">Available Positions <span style="color: var(--danger-color);">*</span></label>
+                                <input type="number" class="form-control" id="availablePositions" placeholder="Number of openings" min="1" value="1" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Requirements -->
+                    <div class="card fade-in mb-4">
+                        <div class="card-header">
+                            <h3><i class="fas fa-clipboard-check" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Requirements</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                                <div class="form-group">
+                                    <label for="requiredSkills">Required Skills <span style="color: var(--danger-color);">*</span></label>
+                                    <input type="text" class="form-control" id="requiredSkills" placeholder="e.g., Customer Service, Cashier, Food Safety" required>
+                                    <small style="color: var(--gray-500); font-size: 0.75rem;">Comma-separated</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="educationRequirement">Education Requirement</label>
+                                    <select class="form-control form-control-select" id="educationRequirement">
+                                        <option value="">Any</option>
+                                        <option value="Elementary">Elementary</option>
+                                        <option value="High School">High School</option>
+                                        <option value="Vocational">Vocational</option>
+                                        <option value="College">College</option>
+                                        <option value="Post Graduate">Post Graduate</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="experienceRequirement">Experience Requirement</label>
+                                    <select class="form-control form-control-select" id="experienceRequirement">
+                                        <option value="">Any</option>
+                                        <option value="No Experience">No Experience</option>
+                                        <option value="1-2 Years">1-2 Years</option>
+                                        <option value="3-5 Years">3-5 Years</option>
+                                        <option value="5+ Years">5+ Years</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="certifications">Required Certifications</label>
+                                <input type="text" class="form-control" id="certifications" placeholder="e.g., Food Handler's Certificate, NC II">
+                                <small style="color: var(--gray-500); font-size: 0.75rem;">Comma-separated (optional)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Benefits (Optional) -->
+                    <div class="card fade-in mb-4">
+                        <div class="card-header">
+                            <h3><i class="fas fa-gift" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Benefits (Optional)</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>Benefits Offered</label>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem;">
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="benefits" value="13th Month Pay">
+                                        <span class="form-check-label">13th Month Pay</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="benefits" value="SSS/PhilHealth/Pag-IBIG">
+                                        <span class="form-check-label">SSS/PhilHealth/Pag-IBIG</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="benefits" value="Meal Allowance">
+                                        <span class="form-check-label">Meal Allowance</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="benefits" value="Transport Allowance">
+                                        <span class="form-check-label">Transport Allowance</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="benefits" value="Training">
+                                        <span class="form-check-label">Training & Development</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="benefits" value="Uniform">
+                                        <span class="form-check-label">Uniform Provided</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="card fade-in">
+                        <div class="card-body" style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-outline" onclick="saveDraft()"><i class="fas fa-save" style="margin-right: 0.5rem;"></i> Save as Draft</button>
+                            <button type="button" class="btn btn-outline" onclick="previewJob()"><i class="fas fa-eye" style="margin-right: 0.5rem;"></i> Preview</button>
+                            <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #7e57c2, #b39ddb);">
+                                <i class="fas fa-paper-plane" style="margin-right: 0.5rem;"></i> Publish Job
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav" id="bottomNav">
+        <!-- Injected by layout.js -->
+    </nav>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/layout.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form submission
+            document.getElementById('postJobForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                // In a real app, this would submit to the backend
+                showToast('Job posted successfully!', 'success');
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+            });
+        });
+
+        function saveDraft() {
+            showToast('Draft saved!', 'info');
+        }
+
+        function previewJob() {
+            showToast('Preview feature coming soon!', 'info');
+        }
+    </script>
+</body>
+</html>

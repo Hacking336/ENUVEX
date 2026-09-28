@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applicant Profile - Job & Skills Matching System</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <span>Employer</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav" id="sidebarNav">
+                <!-- Injected by layout.js -->
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user" onclick="window.location.href='profile.html'">
+                    <div class="sidebar-user-avatar">JE</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name">Juan's Eatery</div>
+                        <div class="sidebar-user-role">Employer</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="top-header-content">
+                    <div class="top-header-left">
+                        <button class="mobile-menu-btn" id="mobileMenuBtn">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h1 class="top-header-title">Applicant Profile</h1>
+                    </div>
+                    <div class="top-header-right">
+                        <button class="header-btn" id="notificationBtn">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge">5</span>
+                        </button>
+                        <button class="header-btn" id="userMenuBtn">
+                            <i class="fas fa-user-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main class="page-content">
+                <!-- Page Nav -->
+                <nav class="page-nav">
+                    <a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+                    <span style="color: var(--gray-300);">/</span>
+                    <a href="applicants.html"><i class="fas fa-users"></i> Applicants</a>
+                    <span style="color: var(--gray-300);">/</span>
+                    <span class="current">Maria Santos</span>
+                </nav>
+
+                <div class="row" style="display: flex; gap: 1.5rem;">
+                    <!-- Main Content Area -->
+                    <div style="flex: 1; min-width: 0;">
+                        <!-- Profile Header -->
+                        <div class="card fade-in mb-4">
+                            <div class="card-body" style="display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center; padding: 2rem;">
+                                <div class="applicant-avatar" style="width: 100px; height: 100px; font-size: 2.5rem; background: linear-gradient(135deg, #2a9d8f, #264653);">
+                                    MS
+                                </div>
+                                <div style="flex: 1; min-width: 200px;">
+                                    <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem;">Maria Santos</h2>
+                                    <p class="text-muted" style="margin-bottom: 0.5rem;">Applied for: <strong>Restaurant Crew</strong> at <strong>Juan's Eatery</strong></p>
+                                    <p style="margin: 0; font-size: 0.9rem; color: var(--gray-500);"><i class="fas fa-map-marker-alt" style="margin-right: 0.25rem;"></i> Daet, Camarines Norte • 1.8 km away</p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div class="match-circle high" style="width: 80px; height: 80px; font-size: 1.5rem; margin: 0 auto 0.5rem;">88%</div>
+                                    <span class="status-badge status-under-review" style="font-size: 0.85rem; padding: 0.5rem 1rem;">Under Review</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="card fade-in mb-4">
+                            <div class="card-body" style="display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: flex-end;">
+                                <button class="btn btn-outline"><i class="fas fa-download" style="margin-right: 0.5rem;"></i> Download Resume</button>
+                                <button class="btn btn-outline"><i class="fas fa-phone" style="margin-right: 0.5rem;"></i> Contact</button>
+                                <button class="btn btn-warning" onclick="shortlistApplicant()"><i class="fas fa-star" style="margin-right: 0.5rem;"></i> Shortlist</button>
+                                <button class="btn btn-primary" style="background: linear-gradient(135deg, #7e57c2, #b39ddb);" onclick="scheduleInterview()"><i class="fas fa-calendar-plus" style="margin-right: 0.5rem;"></i> Schedule Interview</button>
+                                <button class="btn btn-danger" onclick="rejectApplicant()"><i class="fas fa-times" style="margin-right: 0.5rem;"></i> Reject</button>
+                            </div>
+                        </div>
+
+                        <!-- Match Breakdown -->
+                        <div class="card fade-in mb-4">
+                            <div class="card-header">
+                                <h3><i class="fas fa-puzzle-piece" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Why this applicant matches</h3>
+                            </div>
+                            <div class="card-body">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+                                    <div class="match-detail">
+                                        <div class="match-detail-header">
+                                            <span class="match-detail-title"><i class="fas fa-user-tag" style="margin-right: 0.35rem;"></i> Skills Match</span>
+                                            <span class="match-detail-score">85%</span>
+                                        </div>
+                                        <p class="match-detail-desc">Strong alignment with required skills: Customer Service, Food Preparation, Teamwork, POS Systems</p>
+                                        <div class="progress-bar"><div class="progress-fill high" style="width: 85%;"></div></div>
+                                    </div>
+
+                                    <div class="match-detail">
+                                        <div class="match-detail-header">
+                                            <span class="match-detail-title"><i class="fas fa-graduation-cap" style="margin-right: 0.35rem;"></i> Education Match</span>
+                                            <span class="match-detail-score">100%</span>
+                                        </div>
+                                        <p class="match-detail-desc">High School Graduate meets the minimum requirement</p>
+                                        <div class="progress-bar"><div class="progress-fill high" style="width: 100%;"></div></div>
+                                    </div>
+
+                                    <div class="match-detail">
+                                        <div class="match-detail-header">
+                                            <span class="match-detail-title"><i class="fas fa-briefcase" style="margin-right: 0.35rem;"></i> Experience Match</span>
+                                            <span class="match-detail-score">70%</span>
+                                        </div>
+                                        <p class="match-detail-desc">1 year of relevant food service experience (Cashier at Juan's Eatery)</p>
+                                        <div class="progress-bar"><div class="progress-fill medium" style="width: 70%;"></div></div>
+                                    </div>
+
+                                    <div class="match-detail">
+                                        <div class="match-detail-header">
+                                            <span class="match-detail-title"><i class="fas fa-certificate" style="margin-right: 0.35rem;"></i> Certifications Match</span>
+                                            <span class="match-detail-score">60%</span>
+                                        </div>
+                                        <p class="match-detail-desc">Food Safety Training certification (preferred but not required)</p>
+                                        <div class="progress-bar"><div class="progress-fill medium" style="width: 60%;"></div></div>
+                                    </div>
+
+                                    <div class="match-detail">
+                                        <div class="match-detail-header">
+                                            <span class="match-detail-title"><i class="fas fa-map-marker-alt" style="margin-right: 0.35rem;"></i> Location Match</span>
+                                            <span class="match-detail-score">100%</span>
+                                        </div>
+                                        <p class="match-detail-desc">Located in Daet, Barangay Bagasbas - same municipality as job</p>
+                                        <div class="progress-bar"><div class="progress-fill high" style="width: 100%;"></div></div>
+                                    </div>
+
+                                    <div class="match-detail">
+                                        <div class="match-detail-header">
+                                            <span class="match-detail-title"><i class="fas fa-calendar-alt" style="margin-right: 0.35rem;"></i> Availability Match</span>
+                                            <span class="match-detail-score">90%</span>
+                                        </div>
+                                        <p class="match-detail-desc">Available immediately, flexible with morning/afternoon/evening shifts</p>
+                                        <div class="progress-bar"><div class="progress-fill high" style="width: 90%;"></div></div>
+                                    </div>
+
+                                    <div class="match-detail">
+                                        <div class="match-detail-header">
+                                            <span class="match-detail-title"><i class="fas fa-clock" style="margin-right: 0.35rem;"></i> Employment Type Match</span>
+                                            <span class="match-detail-score">100%</span>
+                                        </div>
+                                        <p class="match-detail-desc">Seeking full-time work, matches the position exactly</p>
+                                        <div class="progress-bar"><div class="progress-fill high" style="width: 100%;"></div></div>
+                                    </div>
+
+                                    <div class="match-detail">
+                                        <div class="match-detail-header">
+                                            <span class="match-detail-title"><i class="fas fa-won-sign" style="margin-right: 0.35rem;"></i> Salary Preference Match</span>
+                                            <span class="match-detail-score">80%</span>
+                                        </div>
+                                        <p class="match-detail-desc">Expected ₱12,000-15,000 aligns with offered ₱12,000-14,000</p>
+                                        <div class="progress-bar"><div class="progress-fill high" style="width: 80%;"></div></div>
+                                    </div>
+                                </div>
+
+                                <!-- Overall Match -->
+                                <div class="overall-match text-center mt-4" style="padding-top: 1.5rem; border-top: 1px solid var(--gray-200);">
+                                    <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem;">Overall Match: <span class="text-primary" style="font-size: 1.5rem;">88%</span></h3>
+                                    <div class="match-circle high" style="width: 100px; height: 100px; font-size: 2rem; margin: 0 auto 0.75rem;">88%</div>
+                                    <p class="text-muted" style="font-size: 0.9rem;">Excellent match - Strong candidate for this position</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Personal Information -->
+                        <div class="card fade-in mb-4">
+                            <div class="card-header">
+                                <h3><i class="fas fa-user" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Personal Information</h3>
+                            </div>
+                            <div class="card-body">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                                    <div class="profile-detail-row">
+                                        <span class="profile-detail-label">Full Name</span>
+                                        <span class="profile-detail-value">Maria Santos</span>
+                                    </div>
+                                    <div class="profile-detail-row">
+                                        <span class="profile-detail-label">Email</span>
+                                        <span class="profile-detail-value">maria.santos@email.com</span>
+                                    </div>
+                                    <div class="profile-detail-row">
+                                        <span class="profile-detail-label">Phone</span>
+                                        <span class="profile-detail-value">+63 912 345 6789</span>
+                                    </div>
+                                    <div class="profile-detail-row">
+                                        <span class="profile-detail-label">Location</span>
+                                        <span class="profile-detail-value">Barangay Bagasbas, Daet, Camarines Norte</span>
+                                    </div>
+                                    <div class="profile-detail-row">
+                                        <span class="profile-detail-label">Date of Birth</span>
+                                        <span class="profile-detail-value">January 15, 1998 (Age 26)</span>
+                                    </div>
+                                    <div class="profile-detail-row">
+                                        <span class="profile-detail-label">Civil Status</span>
+                                        <span class="profile-detail-value">Single</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Education -->
+                        <div class="card fade-in mb-4">
+                            <div class="card-header">
+                                <h3><i class="fas fa-graduation-cap" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Education</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="profile-detail-row">
+                                    <span class="profile-detail-label">Highest Level</span>
+                                    <span class="profile-detail-value">High School Graduate</span>
+                                </div>
+                                <div class="profile-detail-row">
+                                    <span class="profile-detail-label">School</span>
+                                    <span class="profile-detail-value">Daet National High School</span>
+                                </div>
+                                <div class="profile-detail-row">
+                                    <span class="profile-detail-label">Year Graduated</span>
+                                    <span class="profile-detail-value">2016</span>
+                                </div>
+                                <div class="profile-detail-row">
+                                    <span class="profile-detail-label">Course / Strand</span>
+                                    <span class="profile-detail-value">General Academic Strand (GAS)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Skills -->
+                        <div class="card fade-in mb-4">
+                            <div class="card-header">
+                                <h3><i class="fas fa-code" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Skills</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="profile-skills">
+                                    <span class="skill-tag">Customer Service</span>
+                                    <span class="skill-tag">Food Preparation</span>
+                                    <span class="skill-tag">Teamwork</span>
+                                    <span class="skill-tag">Communication</span>
+                                    <span class="skill-tag">POS Systems</span>
+                                    <span class="skill-tag">Food Safety</span>
+                                    <span class="skill-tag">Time Management</span>
+                                    <span class="skill-tag">Cash Handling</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Experience -->
+                        <div class="card fade-in mb-4">
+                            <div class="card-header">
+                                <h3><i class="fas fa-briefcase" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Work Experience</h3>
+                            </div>
+                            <div class="card-body">
+                                <div style="margin-bottom: 1.5rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                                        <div>
+                                            <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem;">Cashier</h4>
+                                            <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Juan's Eatery • Daet, Camarines Norte</p>
+                                        </div>
+                                        <span class="text-muted" style="font-size: 0.85rem;">Jan 2022 - Dec 2023</span>
+                                    </div>
+                                    <ul style="color: var(--gray-600); font-size: 0.9rem; padding-left: 1.25rem; line-height: 1.8;">
+                                        <li>Handled cash transactions and POS operations daily</li>
+                                        <li>Provided excellent customer service to 100+ customers/day</li>
+                                        <li>Maintained cleanliness and organization of dining area</li>
+                                        <li>Assisted in food preparation during peak hours</li>
+                                        <li>Trained 2 new cashiers on POS system and procedures</li>
+                                    </ul>
+                                </div>
+                                <div style="margin-bottom: 1.5rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                                        <div>
+                                            <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem;">Sales Associate</h4>
+                                            <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Basud Retail Store • Basud, Camarines Norte</p>
+                                        </div>
+                                        <span class="text-muted" style="font-size: 0.85rem;">Jun 2019 - Dec 2021</span>
+                                    </div>
+                                    <ul style="color: var(--gray-600); font-size: 0.9rem; padding-left: 1.25rem; line-height: 1.8;">
+                                        <li>Assisted customers with product inquiries and recommendations</li>
+                                        <li>Managed inventory and performed stock replenishment</li>
+                                        <li>Processed payments, returns, and exchanges accurately</li>
+                                        <li>Maintained visual merchandising standards</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Certifications -->
+                        <div class="card fade-in mb-4">
+                            <div class="card-header">
+                                <h3><i class="fas fa-certificate" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Certifications</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="profile-skills">
+                                    <span class="skill-tag">Food Safety Training (2022)</span>
+                                    <span class="skill-tag">Customer Service Excellence (2021)</span>
+                                    <span class="skill-tag">Basic First Aid (2020)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Preferences -->
+                        <div class="card fade-in mb-4">
+                            <div class="card-header">
+                                <h3><i class="fas fa-heart" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Preferences & Availability</h3>
+                            </div>
+                            <div class="card-body">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                                    <div class="profile-detail-row">
+                                        <span class="profile-detail-label">Employment Type Preference</span>
+                                        <span class="profile-detail-value">Full-time</span>
+                                    </div>
+                                    <div class="profile-detail-row">
+                                        <span class="profile-detail-label">Preferred Work Schedule</span>
+                                        <span class="profile-detail-value">On-site (Morning, Afternoon, Evening)</span>
+                                    </div>
+                                    <div class="profile-detail-row">
+                                        <span class="profile-detail-label">Availability</span>
+                                        <span class="profile-detail-value">Immediately</span>
+                                    </div>
+                                    <div class="profile-detail-row">
+                                        <span class="profile-detail-label">Expected Salary</span>
+                                        <span class="profile-detail-value">₱12,000 - ₱15,000/month</span>
+                                    </div>
+                                    <div class="profile-detail-row">
+                                        <span class="profile-detail-label">Willing to Relocate</span>
+                                        <span class="profile-detail-value">No</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <aside style="width: 320px; flex-shrink: 0;">
+                        <!-- Quick Actions Card -->
+                        <div class="card fade-in" style="position: sticky; top: 90px;">
+                            <div class="card-header">
+                                <h3 style="font-size: 1rem; font-weight: 600; margin: 0;"><i class="fas fa-bolt" style="margin-right: 0.5rem; color: var(--warning-color);"></i> Quick Actions</h3>
+                            </div>
+                            <div class="card-body">
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <button class="btn btn-primary" style="justify-content: flex-start; background: linear-gradient(135deg, #2a9d8f, #264653);" onclick="shortlistApplicant()">
+                                        <i class="fas fa-star" style="margin-right: 0.5rem;"></i> Shortlist Candidate
+                                    </button>
+                                    <button class="btn btn-primary" style="justify-content: flex-start; background: linear-gradient(135deg, #7e57c2, #b39ddb);" onclick="scheduleInterview()">
+                                        <i class="fas fa-calendar-plus" style="margin-right: 0.5rem;"></i> Schedule Interview
+                                    </button>
+                                    <button class="btn btn-outline" style="justify-content: flex-start;" onclick="contactApplicant()">
+                                        <i class="fas fa-phone" style="margin-right: 0.5rem;"></i> Contact Applicant
+                                    </button>
+                                    <button class="btn btn-outline" style="justify-content: flex-start;" onclick="downloadResume()">
+                                        <i class="fas fa-download" style="margin-right: 0.5rem;"></i> Download Resume
+                                    </button>
+                                    <button class="btn btn-danger" style="justify-content: flex-start;" onclick="rejectApplicant()">
+                                        <i class="fas fa-times" style="margin-right: 0.5rem;"></i> Reject Candidate
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Applicant Info Card -->
+                        <div class="card fade-in mt-3" style="position: sticky; top: 90px;">
+                            <div class="card-header">
+                                <h3 style="font-size: 1rem; font-weight: 600; margin: 0;"><i class="fas fa-info-circle" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Application Info</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="profile-detail-row">
+                                    <span class="profile-detail-label">Position Applied</span>
+                                    <span class="profile-detail-value">Restaurant Crew</span>
+                                </div>
+                                <div class="profile-detail-row">
+                                    <span class="profile-detail-label">Company</span>
+                                    <span class="profile-detail-value">Juan's Eatery</span>
+                                </div>
+                                <div class="profile-detail-row">
+                                    <span class="profile-detail-label">Date Applied</span>
+                                    <span class="profile-detail-value">May 15, 2026</span>
+                                </div>
+                                <div class="profile-detail-row">
+                                    <span class="profile-detail-label">Current Status</span>
+                                    <span class="profile-detail-value">
+                                        <span class="status-badge status-under-review">Under Review</span>
+                                    </span>
+                                </div>
+                                <div class="profile-detail-row">
+                                    <span class="profile-detail-label">Match Percentage</span>
+                                    <span class="profile-detail-value">
+                                        <span class="match-circle high" style="width: 36px; height: 36px; font-size: 0.8rem; margin-left: 0.5rem;">88%</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Card -->
+                        <div class="card fade-in mt-3" style="position: sticky; top: 90px;">
+                            <div class="card-header">
+                                <h3 style="font-size: 1rem; font-weight: 600; margin: 0;"><i class="fas fa-phone" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Contact Information</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="profile-detail-row">
+                                    <span class="profile-detail-label">Email</span>
+                                    <span class="profile-detail-value">maria.santos@email.com</span>
+                                </div>
+                                <div class="profile-detail-row">
+                                    <span class="profile-detail-label">Phone</span>
+                                    <span class="profile-detail-value">+63 912 345 6789</span>
+                                </div>
+                                <div class="profile-detail-row">
+                                    <span class="profile-detail-label">Location</span>
+                                    <span class="profile-detail-value">Barangay Bagasbas, Daet</span>
+                                </div>
+                                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                                    <button class="btn btn-outline btn-sm btn-block" onclick="contactApplicant()"><i class="fas fa-envelope" style="margin-right: 0.35rem;"></i> Send Email</button>
+                                    <button class="btn btn-primary btn-sm btn-block" onclick="contactApplicant()"><i class="fas fa-phone" style="margin-right: 0.35rem;"></i> Call Now</button>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav" id="bottomNav">
+        <!-- Injected by layout.js -->
+    </nav>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/layout.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize any profile-specific JS here
+        });
+
+        function shortlistApplicant() {
+            showToast('Candidate shortlisted!', 'success');
+        }
+
+        function scheduleInterview() {
+            showToast('Interview scheduling feature coming soon!', 'info');
+        }
+
+        function contactApplicant() {
+            showToast('Contact feature coming soon!', 'info');
+        }
+
+        function downloadResume() {
+            showToast('Downloading resume...', 'info');
+        }
+
+        function rejectApplicant() {
+            if (confirm('Are you sure you want to reject this candidate?')) {
+                showToast('Candidate rejected', 'warning');
+            }
+        }
+    </script>
+</body>
+</html>
