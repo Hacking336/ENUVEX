@@ -461,6 +461,10 @@
             renderJobCards(nearbyJobs, 'nearbyJobs');
             renderApplications(recentApplications, 'recentApplications');
         });
+
+        // Ensure user type is stored for proper sidebar detection
+        localStorage.setItem('userType', 'JOB_SEEKER');
+        localStorage.setItem('userName', 'Maria Santos');
     </script>
 </body>
 </html>

@@ -88,6 +88,12 @@ function initSidebar() {
             link.classList.add('active');
         }
     });
+
+    // Ensure sidebar is visible (in case CSS didn't apply)
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        sidebar.style.display = 'flex';
+    }
 }
 
 function initBottomNav() {
@@ -105,6 +111,12 @@ function initBottomNav() {
         </a>
     `).join('');
 }
+
+// Re-initialize sidebar on hash change (for SPA-like navigation)
+window.addEventListener('hashchange', function() {
+    initSidebar();
+    initBottomNav();
+});
 
 /* ===== MOBILE MENU ===== */
 
@@ -166,6 +178,14 @@ function initUserMenu() {
 
 function showUserDropdown(btn) {
     closeAllDropdowns();
+
+    // Get user info from localStorage or use defaults based on user type
+    const userType = detectUserType();
+    const userName = localStorage.getItem('userName') || getDefaultUserName(userType);
+    const userRole = getDefaultUserRole(userType);
+    const profileHref = getProfileHref(userType);
+    const logoutHref = getLogoutHref(userType);
+
     const dropdown = document.createElement('div');
     dropdown.className = 'user-dropdown';
     dropdown.style.cssText = `
@@ -183,17 +203,17 @@ function showUserDropdown(btn) {
     `;
     dropdown.innerHTML = `
         <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--gray-200);">
-            <div style="font-weight: 600;">Maria Santos</div>
-            <div style="font-size: 0.8rem; color: var(--gray-500);">Job Seeker</div>
+            <div style="font-weight: 600;">${userName}</div>
+            <div style="font-size: 0.8rem; color: var(--gray-500);">${userRole}</div>
         </div>
-        <a href="profile.html" class="dropdown-item" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; color: var(--dark-color);">
+        <a href="${profileHref}" class="dropdown-item" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; color: var(--dark-color);">
             <i class="fas fa-user" style="width: 20px;"></i> Profile
         </a>
         <a href="settings.html" class="dropdown-item" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; color: var(--dark-color);">
             <i class="fas fa-cog" style="width: 20px;"></i> Settings
         </a>
         <div style="border-top: 1px solid var(--gray-200); padding: 0.5rem 0;">
-            <a href="../../index.html" class="dropdown-item" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; color: var(--danger-color);">
+            <a href="${logoutHref}" class="dropdown-item" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; color: var(--danger-color);" onclick="localStorage.clear()">
                 <i class="fas fa-sign-out-alt" style="width: 20px;"></i> Logout
             </a>
         </div>
@@ -210,6 +230,42 @@ function showUserDropdown(btn) {
         .dropdown-item:hover { background: var(--gray-100); color: var(--primary-color) !important; }
     `;
     document.head.appendChild(style);
+}
+
+function getDefaultUserName(userType) {
+    switch (userType) {
+        case 'admin': return 'System Admin';
+        case 'employer': return 'Employer';
+        case 'job_seeker': return 'Job Seeker';
+        default: return 'User';
+    }
+}
+
+function getDefaultUserRole(userType) {
+    switch (userType) {
+        case 'admin': return 'Administrator';
+        case 'employer': return 'Employer';
+        case 'job_seeker': return 'Job Seeker';
+        default: return 'User';
+    }
+}
+
+function getProfileHref(userType) {
+    switch (userType) {
+        case 'admin': return 'dashboard.html'; // Admin doesn't have a separate profile page
+        case 'employer': return 'profile.html';
+        case 'job_seeker': return 'profile.html';
+        default: return 'profile.html';
+    }
+}
+
+function getLogoutHref(userType) {
+    // Go back to login page - adjust based on current directory
+    const path = window.location.pathname;
+    if (path.includes('/admin/')) return '../../index.html';
+    if (path.includes('/employer/')) return '../../index.html';
+    if (path.includes('/job-seeker/')) return '../../index.html';
+    return 'index.html';
 }
 
 function showNotificationsDropdown(btn) {
@@ -358,6 +414,17 @@ function detectUserType() {
     const path = window.location.pathname;
     if (path.includes('/employer/')) return 'employer';
     if (path.includes('/admin/')) return 'admin';
+
+    // Fallback: check for admin dashboard filename
+    if (path.includes('admin') || path.endsWith('dashboard.html') && path.includes('admin')) return 'admin';
+    if (path.includes('employer') || path.endsWith('dashboard.html') && path.includes('employer')) return 'employer';
+
+    // Try to get from localStorage (set after login)
+    const storedUserType = localStorage.getItem('userType');
+    if (storedUserType && ['job_seeker', 'employer', 'admin'].includes(storedUserType)) {
+        return storedUserType.toLowerCase().replace('_', '_');
+    }
+
     return 'job_seeker';
 }
 

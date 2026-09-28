@@ -390,6 +390,10 @@
             renderRecentApplications();
             renderActiveJobs();
         });
+
+        // Ensure user type is stored for proper sidebar detection
+        localStorage.setItem('userType', 'EMPLOYER');
+        localStorage.setItem('userName', "Juan's Eatery");
     </script>
 </body>
 </html>
