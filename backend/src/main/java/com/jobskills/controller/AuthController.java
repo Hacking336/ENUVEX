@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -22,9 +23,12 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        AuthResponse response = userService.register(request);
+    @PostMapping(value = "/register", consumes = {"multipart/form-data"})
+    public ResponseEntity<AuthResponse> register(
+            @Valid @RequestPart("profile") RegisterRequest request,
+            @RequestPart(value = "profilePhoto", required = false) MultipartFile profilePhoto,
+            @RequestPart(value = "logo", required = false) MultipartFile logo) {
+        AuthResponse response = userService.register(request, profilePhoto, logo);
         return ResponseEntity.status(201).body(response);
     }
 }

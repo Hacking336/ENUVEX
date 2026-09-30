@@ -227,9 +227,16 @@
             formData.append('skills', document.getElementById('skills').value);
             formData.append('workExperience', document.getElementById('workExperience').value);
             formData.append('certifications', document.getElementById('certifications').value);
-            formData.append('employmentType', document.getElementById('employmentType').value);
-            formData.append('workSchedule', document.getElementById('workSchedule').value);
-            formData.append('availability', document.getElementById('availability').value);
+
+            // Convert frontend values to backend enum format
+            const employmentTypeSelect = document.getElementById('employmentType');
+            const workScheduleSelect = document.getElementById('workSchedule');
+            const availabilitySelect = document.getElementById('availability');
+
+            formData.append('userType', 'JOB_SEEKER');
+            formData.append('employmentTypePreference', employmentTypeSelect.value.toUpperCase().replace('-', '_'));
+            formData.append('preferredWorkSchedule', workScheduleSelect.value.toUpperCase());
+            formData.append('availability', availabilitySelect.value.toUpperCase().replace(' ', '_').replace('-', '_'));
             formData.append('expectedSalary', document.getElementById('expectedSalary').value);
 
             const profilePhoto = document.getElementById('profilePhoto').files[0];

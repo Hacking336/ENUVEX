@@ -1,6 +1,5 @@
 package com.jobskills.dto;
 
-import com.jobskills.model.enums.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -21,16 +20,16 @@ public class RegisterRequest {
     // Job Seeker fields
     private String fullName;
     private String contactNumber;
-    private Municipality municipality;
+    private String municipality;
     private String barangay;
-    private EducationLevel educationLevel;
+    private String educationLevel;
     private String courseField;
     private String skills;
     private String workExperience;
     private String certifications;
-    private EmploymentType employmentTypePreference;
+    private String employmentTypePreference;
     private String preferredWorkSchedule;
-    private Availability availability;
+    private String availability;
     private Double expectedSalary;
 
     // Employer fields

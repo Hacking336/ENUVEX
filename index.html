@@ -64,6 +64,7 @@
     </div>
 
     <script src="assets/js/main.js"></script>
+    <script src="assets/js/api.js"></script>
     <script>
         // Handle register choice button
         document.getElementById('showRegisterChoice').addEventListener('click', function() {
@@ -71,49 +72,37 @@
         });
 
         // Handle login form submission
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Call backend API
-            fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(err => { throw new Error(err.message || 'Login failed'); });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.accessToken) {
-                    localStorage.setItem('accessToken', data.accessToken);
+            try {
+                const data = await ApiClient.login(email, password);
+
+                if (data.token) {
+                    localStorage.setItem('accessToken', data.token);
                     localStorage.setItem('refreshToken', data.refreshToken);
-                    localStorage.setItem('userType', data.userType);
-                    localStorage.setItem('userId', data.userId);
+                    localStorage.setItem('userType', data.userType.toUpperCase());
+                    localStorage.setItem('userId', data.userId.toString());
                     showToast('Login successful! Redirecting...', 'success');
 
                     // Redirect based on user type
                     setTimeout(() => {
-                        if (data.userType === 'JOB_SEEKER') {
+                        const userType = data.userType.toUpperCase();
+                        if (userType === 'JOB_SEEKER') {
                             window.location.href = 'job-seeker/dashboard.html';
-                        } else if (data.userType === 'EMPLOYER') {
+                        } else if (userType === 'EMPLOYER') {
                             window.location.href = 'employer/dashboard.html';
-                        } else if (data.userType === 'ADMIN') {
+                        } else if (userType === 'ADMIN') {
                             window.location.href = 'admin/dashboard.html';
                         }
                     }, 1000);
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 showToast(error.message, 'error');
-            });
+            }
         });
     </script>
 </body>

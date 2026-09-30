@@ -167,8 +167,14 @@
             formData.append('email', document.getElementById('email').value);
             formData.append('password', document.getElementById('password').value);
             formData.append('contactNumber', document.getElementById('contactNumber').value);
-            formData.append('businessType', document.getElementById('businessType').value);
-            formData.append('municipality', document.getElementById('municipality').value);
+
+            // Convert frontend values to backend enum format
+            const businessTypeSelect = document.getElementById('businessType');
+            const municipalitySelect = document.getElementById('municipality');
+
+            formData.append('userType', 'EMPLOYER');
+            formData.append('businessType', businessTypeSelect.value.toUpperCase().replace(' ', '_').replace('/', '_'));
+            formData.append('municipality', municipalitySelect.value.toUpperCase());
             formData.append('barangay', document.getElementById('barangay').value);
             formData.append('businessAddress', document.getElementById('businessAddress').value);
             formData.append('businessDescription', document.getElementById('businessDescription').value);
