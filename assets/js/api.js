@@ -74,10 +74,18 @@ const ApiClient = {
     },
 
     async register(payload) {
-        const data = await this.request('/auth/register', {
+        const formData = new FormData();
+        formData.append('profile', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+        if (payload.profilePhoto) formData.append('profilePhoto', payload.profilePhoto);
+        if (payload.logo) formData.append('logo', payload.logo);
+
+        const response = await fetch(`${API_BASE_URL}/auth/register`, {
             method: 'POST',
-            body: JSON.stringify(payload)
+            body: formData
         });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Registration failed');
         this.setAuth(data.token, data.refreshToken, data.userType);
         return data;
     },

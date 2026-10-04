@@ -161,23 +161,27 @@
         document.getElementById('employerRegisterForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const formData = new FormData();
-            formData.append('businessName', document.getElementById('businessName').value);
-            formData.append('employerName', document.getElementById('employerName').value);
-            formData.append('email', document.getElementById('email').value);
-            formData.append('password', document.getElementById('password').value);
-            formData.append('contactNumber', document.getElementById('contactNumber').value);
-
             // Convert frontend values to backend enum format
             const businessTypeSelect = document.getElementById('businessType');
             const municipalitySelect = document.getElementById('municipality');
 
-            formData.append('userType', 'EMPLOYER');
-            formData.append('businessType', businessTypeSelect.value.toUpperCase().replace(' ', '_').replace('/', '_'));
-            formData.append('municipality', municipalitySelect.value.toUpperCase());
-            formData.append('barangay', document.getElementById('barangay').value);
-            formData.append('businessAddress', document.getElementById('businessAddress').value);
-            formData.append('businessDescription', document.getElementById('businessDescription').value);
+            const profile = {
+                businessName: document.getElementById('businessName').value,
+                employerName: document.getElementById('employerName').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                contactNumber: document.getElementById('contactNumber').value,
+                userType: 'EMPLOYER',
+                businessType: businessTypeSelect.value,
+                municipality: municipalitySelect.value.toUpperCase(),
+                barangay: document.getElementById('barangay').value,
+                businessAddress: document.getElementById('businessAddress').value,
+                businessDescription: document.getElementById('businessDescription').value
+            };
+
+            const formData = new FormData();
+            // Send profile as JSON in a single "profile" part (matches backend @RequestPart("profile"))
+            formData.append('profile', new Blob([JSON.stringify(profile)], { type: 'application/json' }));
 
             const logo = document.getElementById('logo').files[0];
             if (logo) {

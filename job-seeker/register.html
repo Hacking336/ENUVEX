@@ -215,29 +215,33 @@
         document.getElementById('jobSeekerRegisterForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const formData = new FormData();
-            formData.append('fullName', document.getElementById('fullName').value);
-            formData.append('email', document.getElementById('email').value);
-            formData.append('password', document.getElementById('password').value);
-            formData.append('contactNumber', document.getElementById('contactNumber').value);
-            formData.append('municipality', document.getElementById('municipality').value);
-            formData.append('barangay', document.getElementById('barangay').value);
-            formData.append('educationLevel', document.getElementById('educationLevel').value);
-            formData.append('courseField', document.getElementById('courseField').value);
-            formData.append('skills', document.getElementById('skills').value);
-            formData.append('workExperience', document.getElementById('workExperience').value);
-            formData.append('certifications', document.getElementById('certifications').value);
-
             // Convert frontend values to backend enum format
             const employmentTypeSelect = document.getElementById('employmentType');
             const workScheduleSelect = document.getElementById('workSchedule');
             const availabilitySelect = document.getElementById('availability');
 
-            formData.append('userType', 'JOB_SEEKER');
-            formData.append('employmentTypePreference', employmentTypeSelect.value.toUpperCase().replace('-', '_'));
-            formData.append('preferredWorkSchedule', workScheduleSelect.value.toUpperCase());
-            formData.append('availability', availabilitySelect.value.toUpperCase().replace(' ', '_').replace('-', '_'));
-            formData.append('expectedSalary', document.getElementById('expectedSalary').value);
+            const profile = {
+                fullName: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                contactNumber: document.getElementById('contactNumber').value,
+                municipality: document.getElementById('municipality').value,
+                barangay: document.getElementById('barangay').value,
+                educationLevel: document.getElementById('educationLevel').value,
+                courseField: document.getElementById('courseField').value,
+                skills: document.getElementById('skills').value,
+                workExperience: document.getElementById('workExperience').value,
+                certifications: document.getElementById('certifications').value,
+                employmentTypePreference: employmentTypeSelect.value.toUpperCase().replace('-', '_'),
+                preferredWorkSchedule: workScheduleSelect.value.toUpperCase(),
+                availability: availabilitySelect.value.toUpperCase().replace(' ', '_').replace('-', '_'),
+                expectedSalary: parseFloat(document.getElementById('expectedSalary').value),
+                userType: 'JOB_SEEKER'
+            };
+
+            const formData = new FormData();
+            // Send profile as JSON in a single "profile" part (matches backend @RequestPart("profile"))
+            formData.append('profile', new Blob([JSON.stringify(profile)], { type: 'application/json' }));
 
             const profilePhoto = document.getElementById('profilePhoto').files[0];
             if (profilePhoto) {
