@@ -412,17 +412,22 @@ function initPageSpecific() {
 function detectUserType() {
     // Try to get from URL path
     const path = window.location.pathname;
-    if (path.includes('/employer/')) return 'employer';
     if (path.includes('/admin/')) return 'admin';
+    if (path.includes('/employer/')) return 'employer';
+    if (path.includes('/job-seeker/')) return 'job_seeker';
 
-    // Fallback: check for admin dashboard filename
-    if (path.includes('admin') || path.endsWith('dashboard.html') && path.includes('admin')) return 'admin';
-    if (path.includes('employer') || path.endsWith('dashboard.html') && path.includes('employer')) return 'employer';
+    // Fallback: check for admin/employer dashboard filename
+    if (path.includes('admin') || (path.endsWith('dashboard.html') && path.includes('admin'))) return 'admin';
+    if (path.includes('employer') || (path.endsWith('dashboard.html') && path.includes('employer'))) return 'employer';
+    if (path.includes('job-seeker') || (path.endsWith('dashboard.html') && path.includes('job-seeker'))) return 'job_seeker';
 
-    // Try to get from localStorage (set after login)
+    // Try to get from localStorage (set after login) - handles JOB_SEEKER, EMPLOYER, ADMIN
     const storedUserType = localStorage.getItem('userType');
-    if (storedUserType && ['job_seeker', 'employer', 'admin'].includes(storedUserType)) {
-        return storedUserType.toLowerCase().replace('_', '_');
+    if (storedUserType) {
+        const normalized = storedUserType.toLowerCase().replace(/-/g, '_');
+        if (['job_seeker', 'employer', 'admin'].includes(normalized)) {
+            return normalized;
+        }
     }
 
     return 'job_seeker';

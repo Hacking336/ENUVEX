@@ -82,6 +82,8 @@
                 const data = await ApiClient.login(email, password);
 
                 if (data.token) {
+                    // ApiClient.setAuth already stores these with 'jsm_' prefix
+                    // Keeping 'accessToken' etc for any legacy code that might use them
                     localStorage.setItem('accessToken', data.token);
                     localStorage.setItem('refreshToken', data.refreshToken);
                     localStorage.setItem('userType', data.userType.toUpperCase());
