@@ -1,5 +1,6 @@
 package com.jobskills.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jobskills.model.enums.BusinessType;
 import com.jobskills.model.enums.Municipality;
 import jakarta.persistence.*;
