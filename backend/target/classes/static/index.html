@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job & Skills Matching System - Login</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="login-page">
+    <div class="login-card">
+        <div class="login-logo">
+            <div class="login-logo-icon">
+                <i class="fas fa-handshake"></i>
+            </div>
+            <h2>Job & Skills Matching System</h2>
+            <p>Connecting Local Talent with Local Opportunities</p>
+        </div>
+
+        <form class="validate" id="loginForm">
+            <div class="form-group">
+                <label for="email" class="form-label">Email / Username</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                    <input type="email" class="form-control" id="email" placeholder="Enter your email or username" required>
+                </div>
+            </div>
+
+            <div class="form-group position-password-toggle">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                    <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
+                    <button type="button" class="btn btn-outline-secondary password-toggle" id="togglePassword">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-check mb-3">
+                <input type="checkbox" class="form-check-input" id="rememberMe">
+                <label class="form-check-label" for="rememberMe">Remember Me</label>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg btn-block">Login</button>
+            </div>
+
+            <div class="mt-3 text-center">
+                <p class="mb-2">
+                    <a href="#" class="text-decoration-none small">Forgot Password?</a>
+                </p>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline btn-lg" id="showRegisterChoice">
+                        Create Account
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <div class="mt-4 text-center">
+            <p class="text-muted">© 2026 Job & Skills Matching System. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script>
+        // Handle register choice button
+        document.getElementById('showRegisterChoice').addEventListener('click', function() {
+            window.location.href = 'register.html';
+        });
+
+        // Handle login form submission
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const data = await ApiClient.login(email, password);
+
+                if (data.token) {
+                    // ApiClient.setAuth already stores these with 'jsm_' prefix
+                    // Keeping 'accessToken' etc for any legacy code that might use them
+                    localStorage.setItem('accessToken', data.token);
+                    localStorage.setItem('refreshToken', data.refreshToken);
+                    localStorage.setItem('userType', data.userType.toUpperCase());
+                    localStorage.setItem('userId', data.userId.toString());
+                    showToast('Login successful! Redirecting...', 'success');
+
+                    // Redirect based on user type
+                    setTimeout(() => {
+                        const userType = data.userType.toUpperCase();
+                        if (userType === 'JOB_SEEKER') {
+                            window.location.href = 'job-seeker/dashboard.html';
+                        } else if (userType === 'EMPLOYER') {
+                            window.location.href = 'employer/dashboard.html';
+                        } else if (userType === 'ADMIN') {
+                            window.location.href = 'admin/dashboard.html';
+                        }
+                    }, 1000);
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        });
+    </script>
+</body>
+</html>

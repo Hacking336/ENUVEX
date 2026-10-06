@@ -82,8 +82,8 @@ public class UserService {
                 .employmentTypePreference(employmentType)
                 .preferredWorkSchedule(workSchedule)
                 .availability(availability)
-                .expectedSalaryMin(request.getExpectedSalary() != null ? BigDecimal.valueOf(request.getExpectedSalary()) : null)
-                .expectedSalaryMax(request.getExpectedSalary() != null ? BigDecimal.valueOf(request.getExpectedSalary()) : null)
+                .expectedSalaryMin(request.getExpectedSalaryMin() != null ? BigDecimal.valueOf(request.getExpectedSalaryMin()) : null)
+                .expectedSalaryMax(request.getExpectedSalaryMax() != null ? BigDecimal.valueOf(request.getExpectedSalaryMax()) : null)
                 .build();
 
             if (profilePhoto != null && !profilePhoto.isEmpty()) {

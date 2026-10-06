@@ -1,5 +1,6 @@
 package com.jobskills.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jobskills.model.enums.Availability;
 import com.jobskills.model.enums.EducationLevel;
 import com.jobskills.model.enums.EmploymentType;

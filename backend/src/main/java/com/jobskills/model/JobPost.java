@@ -1,5 +1,6 @@
 package com.jobskills.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jobskills.model.enums.*;
 import jakarta.persistence.*;
 import lombok.*;

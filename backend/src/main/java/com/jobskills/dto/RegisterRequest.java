@@ -30,7 +30,9 @@ public class RegisterRequest {
     private String employmentTypePreference;
     private String preferredWorkSchedule;
     private String availability;
-    private Double expectedSalary;
+    private Double expectedSalaryMin;
+    private Double expectedSalaryMax;
+    private String profilePhoto;
 
     // Employer fields
     private String businessName;
