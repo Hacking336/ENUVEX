@@ -3,6 +3,7 @@ package com.jobskills.controller;
 import com.jobskills.config.CustomUserDetails;
 import com.jobskills.dto.*;
 import com.jobskills.model.*;
+import com.jobskills.model.enums.ApplicationStatus;
 import com.jobskills.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

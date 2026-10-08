@@ -2,6 +2,9 @@ package com.jobskills.controller;
 
 import com.jobskills.dto.*;
 import com.jobskills.model.*;
+import com.jobskills.model.enums.BusinessType;
+import com.jobskills.model.enums.JobCategory;
+import com.jobskills.model.enums.Municipality;
 import com.jobskills.repository.*;
 import com.jobskills.service.*;
 import lombok.RequiredArgsConstructor;

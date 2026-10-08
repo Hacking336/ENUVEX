@@ -62,8 +62,7 @@ public class UserService {
             EmploymentType employmentType = null;
             try { employmentType = mapEmploymentType(request.getEmploymentTypePreference()); } catch (Exception e) {}
 
-            WorkSchedule workSchedule = null;
-            try { workSchedule = mapWorkSchedule(request.getPreferredWorkSchedule()); } catch (Exception e) {}
+            String workSchedule = request.getPreferredWorkSchedule();
 
             Availability availability = null;
             try { availability = mapAvailability(request.getAvailability()); } catch (Exception e) {}
@@ -187,12 +186,13 @@ public class UserService {
         if (request.getWorkExperience() != null) profile.setWorkExperience(request.getWorkExperience());
         if (request.getCertifications() != null) profile.setCertifications(request.getCertifications());
         if (request.getEmploymentTypePreference() != null) profile.setEmploymentTypePreference(mapEmploymentType(request.getEmploymentTypePreference()));
-        if (request.getPreferredWorkSchedule() != null) profile.setPreferredWorkSchedule(mapWorkSchedule(request.getPreferredWorkSchedule()));
+        if (request.getPreferredWorkSchedule() != null) profile.setPreferredWorkSchedule(request.getPreferredWorkSchedule());
         if (request.getAvailability() != null) profile.setAvailability(mapAvailability(request.getAvailability()));
-        if (request.getExpectedSalary() != null) {
-            BigDecimal salary = BigDecimal.valueOf(request.getExpectedSalary());
-            profile.setExpectedSalaryMin(salary);
-            profile.setExpectedSalaryMax(salary);
+        if (request.getExpectedSalaryMin() != null) {
+            profile.setExpectedSalaryMin(BigDecimal.valueOf(request.getExpectedSalaryMin()));
+        }
+        if (request.getExpectedSalaryMax() != null) {
+            profile.setExpectedSalaryMax(BigDecimal.valueOf(request.getExpectedSalaryMax()));
         }
 
         if (photo != null && !photo.isEmpty()) {

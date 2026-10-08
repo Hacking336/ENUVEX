@@ -17,7 +17,7 @@ public final class SecurityUtils {
 
         Object principal = authentication.getPrincipal();
         if (principal instanceof User user) {
-            return Long.valueOf(user.getName());
+            return Long.valueOf(user.getUsername());
         }
 
         return null;
@@ -31,7 +31,7 @@ public final class SecurityUtils {
 
         Object principal = authentication.getPrincipal();
         if (principal instanceof User user) {
-            return user.getName();
+            return user.getUsername();
         }
 
         return null;

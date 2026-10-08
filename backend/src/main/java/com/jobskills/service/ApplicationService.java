@@ -52,7 +52,7 @@ public class ApplicationService {
         Comparator<JobApplication> comparator;
         switch (sortBy) {
             case "match":
-                comparator = Comparator.comparingDouble(a -> a.getMatchPercentage().doubleValue()).reversed();
+                comparator = Comparator.comparingDouble((JobApplication a) -> a.getMatchPercentage() != null ? a.getMatchPercentage().doubleValue() : 0.0).reversed();
                 break;
             case "skills":
                 comparator = Comparator.comparing(a -> a.getJobSeeker().getSkills());
@@ -83,7 +83,7 @@ public class ApplicationService {
         response.setCompanyName(application.getJobPost().getEmployer().getBusinessName());
         response.setAppliedAt(application.getAppliedAt());
         response.setMatchPercentage(application.getMatchPercentage().doubleValue());
-        response.setApplicationStatus(application.getApplicationStatus());
+        response.setStatus(application.getApplicationStatus());
         return response;
     }
 
@@ -99,7 +99,7 @@ public class ApplicationService {
         dto.setCertifications(seeker.getCertifications());
         dto.setLocation(seeker.getMunicipality());
         dto.setBarangay(seeker.getBarangay());
-        dto.setAvailability(seeker.getAvailability());
+        dto.setAvailability(seeker.getAvailability() != null ? seeker.getAvailability().name() : null);
         dto.setEmploymentPreference(seeker.getEmploymentTypePreference());
         dto.setExpectedSalary(seeker.getExpectedSalaryMin());
         dto.setMatchPercentage(application.getMatchPercentage().doubleValue());

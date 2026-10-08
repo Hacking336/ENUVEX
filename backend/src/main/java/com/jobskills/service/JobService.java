@@ -5,11 +5,14 @@ import com.jobskills.model.*;
 import com.jobskills.model.enums.*;
 import com.jobskills.repository.*;
 import com.jobskills.service.MatchingEngine;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -60,7 +63,7 @@ public class JobService {
         job.setMunicipality(jobDetails.getMunicipality());
         job.setBarangay(jobDetails.getBarangay());
         job.setJobLocation(jobDetails.getJobLocation());
-        job.setIsActive(jobDetails.getIsActive());
+        job.setActive(jobDetails.isActive());
 
         return jobPostRepository.save(job);
     }
@@ -80,7 +83,7 @@ public class JobService {
 
     public Page<JobResponse> searchJobs(JobSearchRequest search, Long seekerId) {
         Specification<JobPost> spec = (root, query, cb) -> {
-            List<javax.persistence.Predicate> predicates = new ArrayList<>();
+            List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("isActive"), true));
 
             if (search.getMunicipality() != null) {
@@ -114,7 +117,7 @@ public class JobService {
                 predicates.add(cb.like(cb.lower(root.get("educationRequirement")), "%" + search.getEducation().toLowerCase() + "%"));
             }
 
-            return cb.and(predicates.toArray(new javax.persistence.Predicate[0]));
+            return cb.and(predicates.toArray(new Predicate[0]));
         };
 
         Pageable pageable = PageRequest.of(
@@ -143,7 +146,7 @@ public class JobService {
 
     public JobResponse getJobDetails(Long jobId, Long seekerId) {
         JobPost job = getJobById(jobId);
-        if (!job.getIsActive()) {
+        if (!job.isActive()) {
             throw new IllegalArgumentException("Job is not active");
         }
         JobResponse response = mapToResponse(job);
@@ -187,7 +190,7 @@ public class JobService {
         JobPost job = jobPostRepository.findById(jobId)
             .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
-        if (!job.getIsActive()) {
+        if (!job.isActive()) {
             throw new IllegalArgumentException("Job is not active");
         }
 
@@ -222,7 +225,7 @@ public class JobService {
         response.setMunicipality(job.getMunicipality());
         response.setBarangay(job.getBarangay());
         response.setJobLocation(job.getJobLocation());
-        response.setIsActive(job.getIsActive());
+        response.setActive(job.isActive());
         response.setCreatedAt(job.getCreatedAt());
         response.setRequiredSkills(job.getRequiredSkills());
         return response;

@@ -2,6 +2,7 @@ package com.jobskills.controller;
 
 import com.jobskills.config.CustomUserDetails;
 import com.jobskills.dto.*;
+import com.jobskills.model.enums.ApplicationStatus;
 import com.jobskills.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
