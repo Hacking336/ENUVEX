@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.jobskills.model.enums.WorkSchedule;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,7 +50,7 @@ public class JobSeekerProfile {
     private EmploymentType employmentTypePreference;
 
     @Enumerated(EnumType.STRING)
-    private String preferredWorkSchedule;
+    private WorkSchedule preferredWorkSchedule;
 
     @Enumerated(EnumType.STRING)
     private Availability availability;
