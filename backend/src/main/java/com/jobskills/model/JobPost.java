@@ -44,7 +44,6 @@ public class JobPost {
     @Enumerated(EnumType.STRING)
     private EducationLevel educationRequirement;
 
-    @Enumerated(EnumType.STRING)
     private String experienceRequirement;
 
     @Column(columnDefinition = "TEXT")

@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Job & Skills Matching System</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <span>Job Seeker</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav" id="sidebarNav">
+                <!-- Injected by layout.js -->
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user" onclick="window.location.href='profile.html'">
+                    <div class="sidebar-user-avatar">MS</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name">Maria Santos</div>
+                        <div class="sidebar-user-role">Job Seeker</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="top-header-content">
+                    <div class="top-header-left">
+                        <button class="mobile-menu-btn" id="mobileMenuBtn">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h1 class="top-header-title">Dashboard</h1>
+                    </div>
+                    <div class="top-header-right">
+                        <button class="header-btn" id="notificationBtn">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge">3</span>
+                        </button>
+                        <button class="header-btn" id="userMenuBtn">
+                            <i class="fas fa-user-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main class="page-content">
+                <!-- Welcome Section -->
+                <section class="mb-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <div>
+                            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--dark-color); margin-bottom: 0.25rem;">
+                                Hello, <span class="text-primary">Maria</span>!
+                            </h2>
+                            <p style="color: var(--gray-500); font-size: 0.95rem;">Let's find the right job for you.</p>
+                        </div>
+                        <!-- Profile Completion Card -->
+                        <div style="background: white; border-radius: var(--border-radius); box-shadow: var(--box-shadow); border: 1px solid var(--gray-200); padding: 1.25rem; min-width: 200px;">
+                            <div class="progress-container mb-2">
+                                <div class="progress-label">
+                                    <span>Profile Completion</span>
+                                    <span class="value">70%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill blue" style="width: 70%;"></div>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-outline btn-block" onclick="window.location.href='profile.html'">Complete Profile</button>
+                            <p style="font-size: 0.75rem; color: var(--gray-500); text-align: center; margin-top: 0.5rem;">Get better job matches</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Stats Cards -->
+                <div class="dashboard-stats mb-4">
+                    <div class="stat-card fade-in">
+                        <div class="stat-icon blue">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value">12</div>
+                            <div class="stat-label">Recommended Jobs</div>
+                        </div>
+                    </div>
+                    <div class="stat-card fade-in" style="animation-delay: 0.1s;">
+                        <div class="stat-icon green">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value">8</div>
+                            <div class="stat-label">Nearby Jobs</div>
+                        </div>
+                    </div>
+                    <div class="stat-card fade-in" style="animation-delay: 0.2s;">
+                        <div class="stat-icon orange">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value">24</div>
+                            <div class="stat-label">New This Week</div>
+                        </div>
+                    </div>
+                    <div class="stat-card fade-in" style="animation-delay: 0.3s;">
+                        <div class="stat-icon purple">
+                            <i class="fas fa-bookmark"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value">3</div>
+                            <div class="stat-label">Saved Jobs</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommended Jobs -->
+                <section class="mb-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <h3 style="font-size: 1.15rem; font-weight: 600;">Recommended Jobs</h3>
+                        <a href="jobs.html" class="btn btn-sm btn-outline">View All</a>
+                    </div>
+                    <div class="job-list" id="recommendedJobs">
+                        <!-- Injected by JS -->
+                    </div>
+                </section>
+
+                <!-- Nearby Jobs -->
+                <section class="mb-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <h3 style="font-size: 1.15rem; font-weight: 600;">Nearby Jobs</h3>
+                        <a href="jobs.html" class="btn btn-sm btn-outline">View All</a>
+                    </div>
+                    <div class="job-list" id="nearbyJobs">
+                        <!-- Injected by JS -->
+                    </div>
+                </section>
+
+                <!-- System Scope -->
+                <section class="mb-4 system-scope">
+                    <h3><i class="fas fa-map-marked-alt" style="margin-right: 0.5rem; color: var(--primary-color);"></i> System Scope</h3>
+                    <p style="color: var(--gray-600); margin-bottom: 1rem;">The Job & Skills Matching System covers the whole municipalities of Camarines Norte.</p>
+                    <div class="municipality-grid">
+                        <div class="municipality-card">
+                            <h4><i class="fas fa-seedling" style="margin-right: 0.35rem; color: var(--warning-color);"></i> Basud</h4>
+                            <p>Agriculture, trading, small businesses, services</p>
+                        </div>
+                        <div class="municipality-card">
+                            <h4><i class="fas fa-store" style="margin-right: 0.35rem; color: var(--primary-color);"></i> Daet</h4>
+                            <p>Commercial center, retail, offices, services, tourism</p>
+                        </div>
+                        <div class="municipality-card">
+                            <h4><i class="fas fa-fish" style="margin-right: 0.35rem; color: var(--accent-color);"></i> Vinzons</h4>
+                            <p>Fisheries, trading, transportation, services</p>
+                        </div>
+                        <div class="municipality-card">
+                            <h4><i class="fas fa-industry" style="margin-right: 0.35rem; color: #7e57c2;"></i> Labo</h4>
+                            <p>Agriculture, manufacturing, education, public services</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Benefits Section -->
+                <section class="mb-4">
+                    <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 1rem;">System Benefits</h3>
+                    <div class="benefits-section">
+                        <div class="benefit-card">
+                            <div class="benefit-icon"><i class="fas fa-handshake"></i></div>
+                            <h4>Connect local talent with local opportunities</h4>
+                        </div>
+                        <div class="benefit-card">
+                            <div class="benefit-icon"><i class="fas fa-store"></i></div>
+                            <h4>Support local businesses and communities</h4>
+                        </div>
+                        <div class="benefit-card">
+                            <div class="benefit-icon"><i class="fas fa-users"></i></div>
+                            <h4>Reduce unemployment and underemployment</h4>
+                        </div>
+                        <div class="benefit-card">
+                            <div class="benefit-icon"><i class="fas fa-chart-line"></i></div>
+                            <h4>Build a stronger workforce in Camarines Norte</h4>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Recent Applications -->
+                <section class="mb-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <h3 style="font-size: 1.15rem; font-weight: 600;">Recent Applications</h3>
+                        <a href="applications.html" class="btn btn-sm btn-outline">View All</a>
+                    </div>
+                    <div class="application-list" id="recentApplications">
+                        <!-- Injected by JS -->
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav" id="bottomNav">
+        <!-- Injected by layout.js -->
+    </nav>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/layout.js"></script>
+    <script>
+        // Job Seeker Dashboard Data & Rendering
+        const recommendedJobs = [
+            {
+                id: 1,
+                title: 'Restaurant Crew',
+                company: "Juan's Eatery",
+                municipality: 'Daet',
+                barangay: 'Bagasbas',
+                salary: '₱12,000 - ₱14,000',
+                employmentType: 'Full-time',
+                workSchedule: 'On-site',
+                match: 88,
+                tags: ['Food Service', 'Customer Service', 'Entry Level'],
+                icon: 'fa-utensils',
+                iconClass: 'alt'
+            },
+            {
+                id: 2,
+                title: 'Pharmacy Assistant',
+                company: 'Daet Health Pharmacy',
+                municipality: 'Daet',
+                barangay: 'Centro',
+                salary: '₱10,000 - ₱12,000',
+                employmentType: 'Full-time',
+                workSchedule: 'On-site',
+                match: 82,
+                tags: ['Healthcare', 'Customer Service', 'Entry Level'],
+                icon: 'fa-pills',
+                iconClass: 'third'
+            },
+            {
+                id: 3,
+                title: 'Sales Associate',
+                company: 'Basud Retail Store',
+                municipality: 'Basud',
+                barangay: 'Poblacion',
+                salary: '₱8,500 - ₱10,000',
+                employmentType: 'Full-time',
+                workSchedule: 'On-site',
+                match: 78,
+                tags: ['Retail', 'Sales', 'Customer Service'],
+                icon: 'fa-shopping-cart',
+                iconClass: 'fourth'
+            }
+        ];
+
+        const nearbyJobs = [
+            {
+                id: 4,
+                title: 'Driver / Delivery',
+                company: 'Daet Logistics',
+                municipality: 'Daet',
+                barangay: 'Centro',
+                salary: '₱9,000 - ₱11,000',
+                employmentType: 'Full-time',
+                workSchedule: 'On-site',
+                match: 75,
+                tags: ['Transportation', 'Logistics'],
+                icon: 'fa-truck',
+                iconClass: ''
+            },
+            {
+                id: 5,
+                title: 'Construction Worker',
+                company: 'Labo Builders Inc.',
+                municipality: 'Labo',
+                barangay: 'Poblacion',
+                salary: '₱350/day',
+                employmentType: 'Temporary',
+                workSchedule: 'On-site',
+                match: 72,
+                tags: ['Construction', 'Manual Labor', 'Immediate Hire'],
+                icon: 'fa-hard-hat',
+                iconClass: 'alt'
+            },
+            {
+                id: 6,
+                title: 'Admin Staff',
+                company: 'Vinzons Municipal Office',
+                municipality: 'Vinzons',
+                barangay: 'Poblacion',
+                salary: '₱11,000 - ₱13,000',
+                employmentType: 'Full-time',
+                workSchedule: 'On-site',
+                match: 70,
+                tags: ['Office', 'Administration', 'Clerical'],
+                icon: 'fa-file-alt',
+                iconClass: 'third'
+            },
+            {
+                id: 7,
+                title: 'Farm Worker',
+                company: 'Basud Agri-Farm',
+                municipality: 'Basud',
+                barangay: 'San Felipe',
+                salary: '₱300/day',
+                employmentType: 'Temporary',
+                workSchedule: 'On-site',
+                match: 68,
+                tags: ['Agriculture', 'Manual Labor'],
+                icon: 'fa-tractor',
+                iconClass: 'fourth'
+            },
+            {
+                id: 8,
+                title: 'Cashier',
+                company: '7-Eleven Daet',
+                municipality: 'Daet',
+                barangay: 'Bagasbas',
+                salary: '₱8,500 - ₱9,500',
+                employmentType: 'Part-time',
+                workSchedule: 'On-site',
+                match: 65,
+                tags: ['Retail', 'Customer Service'],
+                icon: 'fa-cash-register',
+                iconClass: ''
+            }
+        ];
+
+        const recentApplications = [
+            {
+                id: 1,
+                title: 'Restaurant Crew',
+                company: "Juan's Eatery",
+                salary: '₱12,000 - ₱14,000',
+                appliedDate: 'May 15, 2026',
+                status: 'under-review',
+                match: 88
+            },
+            {
+                id: 2,
+                title: 'Pharmacy Assistant',
+                company: 'Daet Health Pharmacy',
+                salary: '₱10,000 - ₱12,000',
+                appliedDate: 'May 12, 2026',
+                status: 'shortlisted',
+                match: 82
+            },
+            {
+                id: 3,
+                title: 'Driver / Delivery',
+                company: 'Daet Logistics',
+                salary: '₱9,000 - ₱11,000',
+                appliedDate: 'May 10, 2026',
+                status: 'interview',
+                match: 75
+            },
+            {
+                id: 4,
+                title: 'Construction Worker',
+                company: 'Labo Builders Inc.',
+                salary: '₱350/day',
+                appliedDate: 'May 8, 2026',
+                status: 'under-review',
+                match: 72
+            },
+            {
+                id: 5,
+                title: 'Admin Staff',
+                company: 'Vinzons Municipal Office',
+                salary: '₱11,000 - ₱13,000',
+                appliedDate: 'May 5, 2026',
+                status: 'rejected',
+                match: 70
+            }
+        ];
+
+        function renderJobCards(jobs, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            container.innerHTML = jobs.map(job => `
+                <div class="card job-card fade-in" onclick="window.location.href='job-details.html?id=${job.id}'">
+                    <div class="job-card-icon ${job.iconClass || ''}">
+                        <i class="fas ${job.icon}"></i>
+                    </div>
+                    <div class="job-card-info">
+                        <div class="job-card-title">${job.title}</div>
+                        <div class="job-card-company">${job.company}</div>
+                        <div class="job-card-meta">
+                            <span><i class="fas fa-map-marker-alt"></i> ${job.municipality}, Camarines Norte</span>
+                            <span><i class="fas fa-clock"></i> ${job.employmentType}</span>
+                            <span><i class="fas fa-tag"></i> ${job.salary}</span>
+                        </div>
+                        <div class="job-card-tags">
+                            ${job.tags.map(tag => `<span class="job-tag">${tag}</span>`).join('')}
+                        </div>
+                        <div class="match-percentage">
+                            <div class="match-circle ${job.match >= 80 ? 'high' : job.match >= 60 ? 'medium' : 'low'}">${job.match}%</div>
+                            <div class="match-info">
+                                <h4>${job.match >= 80 ? 'Excellent Match' : job.match >= 60 ? 'Good Match' : 'Fair Match'}</h4>
+                                <div class="match-bar">
+                                    <div class="match-bar-fill ${job.match >= 80 ? 'high' : job.match >= 60 ? 'medium' : 'low'}" style="width: ${job.match}%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="job-card-actions">
+                        <button class="btn btn-outline btn-sm">Save</button>
+                        <button class="btn btn-primary btn-sm">Apply Now</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderApplications(apps, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            container.innerHTML = apps.map(app => `
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                            <div>
+                                <h4 style="font-size: 1rem; font-weight: 600;">${app.title} at ${app.company}</h4>
+                                <p style="font-size: 0.8rem; color: var(--gray-500);">Applied: ${app.appliedDate}</p>
+                            </div>
+                            <div class="text-end">
+                                <span class="status-badge status-${app.status}">${app.status.replace('-', ' ')}</span>
+                            </div>
+                        </div>
+                        <div class="match-percentage mt-2">
+                            <div class="match-circle ${app.match >= 80 ? 'high' : app.match >= 60 ? 'medium' : 'low'}">${app.match}%</div>
+                            <div class="match-info">
+                                <h4>Match Percentage</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render on load
+        document.addEventListener('DOMContentLoaded', function() {
+            renderJobCards(recommendedJobs, 'recommendedJobs');
+            renderJobCards(nearbyJobs, 'nearbyJobs');
+            renderApplications(recentApplications, 'recentApplications');
+        });
+
+        // Ensure user type is stored for proper sidebar detection
+        localStorage.setItem('userType', 'JOB_SEEKER');
+        localStorage.setItem('userName', 'Maria Santos');
+    </script>
+</body>
+</html>

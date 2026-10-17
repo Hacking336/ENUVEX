@@ -1640,18 +1640,15 @@ img {
 }
 
 .login-logo-icon {
-    width: 64px;
-    height: 64px;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    border-radius: var(--border-radius);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.8rem;
+    width: 90px;
+    height: auto;
+    background: transparent;
+    border: none;
+    display: block;
     margin: 0 auto 1rem;
-}
+    text-align: center;
 
+}
 .login-logo h2 {
     font-size: 1.3rem;
     font-weight: 700;

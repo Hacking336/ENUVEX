@@ -11,7 +11,7 @@
     <div class="login-card">
         <div class="login-logo">
             <div class="login-logo-icon">
-                <i class="fas fa-handshake"></i>
+                <img src="assets/logo.png" alt="Logo" style="width:90px;height:auto;border-radius:8px;box-shadow:none;background:none;">
             </div>
             <h2>Job & Skills Matching System</h2>
             <p>Connecting Local Talent with Local Opportunities</p>
@@ -43,7 +43,7 @@
             </div>
 
             <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary btn-lg btn-block">Login</button>
+                <button type="submit" id="loginBtn" class="btn btn-primary btn-lg btn-block">Login</button>
             </div>
 
             <div class="mt-3 text-center">
@@ -96,6 +96,13 @@
                     localStorage.setItem('refreshToken', data.refreshToken);
                     localStorage.setItem('userType', data.userType.toUpperCase());
                     localStorage.setItem('userId', data.userId.toString());
+        // Button click handler
+        document.getElementById('loginBtn').addEventListener('click', function() {
+            if (!document.getElementById('email').value || !document.getElementById('password').value) {
+                showToast('Please enter email and password', 'error');
+            }
+        });
+
                     showToast('Login successful! Redirecting...', 'success');
 
                     // Redirect based on user type
