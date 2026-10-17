@@ -72,6 +72,14 @@
         });
 
         // Handle login form submission
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            var p = document.getElementById('password');
+            p.type = p.type === 'password' ? 'text' : 'password';
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -103,7 +111,9 @@
                     }, 1000);
                 }
             } catch (error) {
-                showToast(error.message, 'error');
+                showToast(error.message || 'Login failed: wrong password or user not found', 'error');
+                document.getElementById('email').classList.add('is-invalid');
+                document.getElementById('password').classList.add('is-invalid');
             }
         });
     </script>
