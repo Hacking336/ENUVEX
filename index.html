@@ -43,7 +43,7 @@
             </div>
 
             <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary btn-lg btn-block">Login</button>
+                <button type="submit" id="loginBtn" class="btn btn-primary btn-lg btn-block">Login</button>
             </div>
 
             <div class="mt-3 text-center">
@@ -96,6 +96,13 @@
                     localStorage.setItem('refreshToken', data.refreshToken);
                     localStorage.setItem('userType', data.userType.toUpperCase());
                     localStorage.setItem('userId', data.userId.toString());
+        // Button click handler
+        document.getElementById('loginBtn').addEventListener('click', function() {
+            if (!document.getElementById('email').value || !document.getElementById('password').value) {
+                showToast('Please enter email and password', 'error');
+            }
+        });
+
                     showToast('Login successful! Redirecting...', 'success');
 
                     // Redirect based on user type
