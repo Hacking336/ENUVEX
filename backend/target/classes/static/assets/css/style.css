@@ -443,7 +443,7 @@ img {
 }
 
 .job-card-icon.third {
-    background: linear-gradient(135deg, #2a9d8f, #264653);
+    background: linear-gradient(135deg, #40A800, #264653);
 }
 
 .job-card-icon.fourth {
@@ -533,7 +533,7 @@ img {
 }
 
 .match-circle.high {
-    background: linear-gradient(135deg, var(--success-color), #2a9d8f);
+    background: linear-gradient(135deg, var(--success-color), #40A800);
 }
 
 .match-circle.medium {
@@ -565,7 +565,7 @@ img {
 }
 
 .match-bar-fill.high {
-    background: linear-gradient(90deg, var(--success-color), #2a9d8f);
+    background: linear-gradient(90deg, var(--success-color), #40A800);
 }
 
 .match-bar-fill.medium {
@@ -619,7 +619,7 @@ img {
 
 .stat-icon.green {
     background: rgba(42, 157, 143, 0.1);
-    color: #2a9d8f;
+    color: #40A800;
 }
 
 .stat-icon.purple {
@@ -699,7 +699,7 @@ img {
 }
 
 .btn-success {
-    background: linear-gradient(135deg, #2a9d8f, #264653);
+    background: linear-gradient(135deg, #40A800, #264653);
     color: white;
 }
 
@@ -774,7 +774,7 @@ img {
 
 .status-accepted {
     background: rgba(42, 157, 143, 0.1);
-    color: #2a9d8f;
+    color: #40A800;
 }
 
 .status-rejected {
@@ -818,7 +818,7 @@ img {
 }
 
 .progress-fill.green {
-    background: linear-gradient(90deg, #2a9d8f, #264653);
+    background: linear-gradient(90deg, #40A800, #264653);
 }
 
 .progress-fill.orange {
@@ -1270,7 +1270,7 @@ img {
 }
 
 .toast-success {
-    background: linear-gradient(135deg, #2a9d8f, #264653);
+    background: linear-gradient(135deg, #40A800, #264653);
 }
 
 .toast-error {
@@ -1564,7 +1564,7 @@ img {
 }
 
 .text-success {
-    color: #2a9d8f !important;
+    color: #40A800 !important;
 }
 
 .text-warning {
