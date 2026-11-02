@@ -1,0 +1,17 @@
+.git
+.gitignore
+.idea
+.vscode
+
+# Never bake credentials into an image.
+backend/.env
+backend/.env.*
+
+# Build output and local artifacts.
+**/target
+**/*.class
+*.log
+
+# Not needed at build time.
+scripts
+**/*.md

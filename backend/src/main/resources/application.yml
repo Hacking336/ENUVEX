@@ -63,7 +63,8 @@ springdoc:
     path: /swagger-ui.html
 
 server:
-  port: 8080
+  # Hosting platforms inject the port they want the app to listen on.
+  port: ${PORT:8080}
   servlet:
     context-path: /
   compression:

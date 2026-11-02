@@ -68,6 +68,15 @@ mvn spring-boot:run
 Then open http://localhost:8080. Flyway creates the schema and tables on the first
 start. See `RUN_INSTRUCTIONS.md` for details.
 
+## Deployment
+
+Production runs as a container plus Supabase Postgres. See
+[DEPLOYMENT.md](DEPLOYMENT.md) for the required environment variables, the
+Docker build and the custom-domain steps.
+
+GitHub Pages cannot host this application: the pages and the `/api` endpoints
+are served by the same JVM process.
+
 ## Usage
 
 1. Start at the login page (`index.html`)
