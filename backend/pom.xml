@@ -56,13 +56,13 @@
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-mysql</artifactId>
+            <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
 
-        <!-- MySQL Driver -->
+        <!-- PostgreSQL Driver (Supabase) -->
         <dependency>
-            <groupId>com.mysql</groupId>
-            <artifactId>mysql-connector-j</artifactId>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
 
@@ -155,26 +155,43 @@
             <resource>
                 <directory>src/main/resources</directory>
             </resource>
+            <!-- Frontend files live next to backend/, one level up. Each
+                 directory is listed explicitly so the build can never copy its
+                 own output back into itself. -->
             <resource>
-                <directory>../../assets</directory>
-                <targetPath>static</targetPath>
+                <directory>../assets</directory>
+                <targetPath>static/assets</targetPath>
                 <includes>
                     <include>**/*</include>
                 </includes>
             </resource>
             <resource>
-                <directory>../../job-skills-matching-system</directory>
+                <directory>..</directory>
                 <targetPath>static</targetPath>
                 <includes>
-                    <include>**/*.html</include>
-                    <include>**/*.css</include>
-                    <include>**/*.js</include>
-                    <include>**/*.png</include>
-                    <include>**/*.jpg</include>
-                    <include>**/*.svg</include>
-                    <include>**/*.ico</include>
+                    <include>*.html</include>
                 </includes>
-                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>../job-seeker</directory>
+                <targetPath>static/job-seeker</targetPath>
+                <includes>
+                    <include>**/*.html</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>../employer</directory>
+                <targetPath>static/employer</targetPath>
+                <includes>
+                    <include>**/*.html</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>../admin</directory>
+                <targetPath>static/admin</targetPath>
+                <includes>
+                    <include>**/*.html</include>
+                </includes>
             </resource>
         </resources>
     </build>

@@ -16,7 +16,9 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    @Value("${jwt.secret:mySecretKey12345678901234567890123456789012}")
+    // No default value: a built-in fallback would let anyone who reads this
+    // repo sign their own admin token.
+    @Value("${jwt.secret}")
     private String secret;
 
     @Value("${jwt.expiration:3600000}") // 1 hour

@@ -54,7 +54,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8080"));
+        configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://127.0.0.1:8080"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -69,17 +69,28 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // Missing or invalid token answers 401, not 403, so the frontend can
+            // tell "log in again" apart from "not allowed".
+            .exceptionHandling(ex -> ex.authenticationEntryPoint(
+                new org.springframework.security.web.authentication.HttpStatusEntryPoint(
+                    org.springframework.http.HttpStatus.UNAUTHORIZED)))
             .authorizeHttpRequests(auth -> auth
+                // Static pages are only the shell. The API calls inside them are
+                // still protected, so the pages must be loadable by the browser.
+                .requestMatchers("/", "/index.html", "/*.html").permitAll()
+                .requestMatchers("/assets/**", "/uploads/**").permitAll()
+                .requestMatchers("/job-seeker/**", "/employer/**", "/admin/**").permitAll()
+                // Public lookups used by the registration forms.
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/swagger-ui.html").permitAll()
-                .requestMatchers("/v3/api-docs/**").permitAll()
-                .requestMatchers("/uploads/**").permitAll()
-                .requestMatchers("/").permitAll()
-                .requestMatchers("/assets/**").permitAll()
+                .requestMatchers("/api/health").permitAll()
+                .requestMatchers("/api/municipalities", "/api/categories", "/api/business-types").permitAll()
+                .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**").permitAll()
+                .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
             );
 
-        http.addFilterBefore(new JwtAuthenticationFilter(jwtService, userDetailsService), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new JwtAuthenticationFilter(jwtService, userDetailsService),
+            UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

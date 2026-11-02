@@ -57,6 +57,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /* ===== SHARED UTILITY FUNCTIONS ===== */
 
+// Match percentages are calculated by the backend (MatchingEngine) and sent with
+// each job. There is deliberately no second copy of that rule here: two
+// implementations of the same weights always drift apart.
+
 // Helper function to calculate distance (simplified)
 function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371; // Radius of the earth in km
@@ -75,110 +79,5 @@ function deg2rad(deg) {
     return deg * (Math.PI / 180);
 }
 
-// Match percentage calculator (client-side reference implementation)
-function calculateMatchPercentage(jobSeekerProfile, jobRequirements) {
-    const weights = {
-        skills: 0.25,
-        education: 0.15,
-        experience: 0.20,
-        certifications: 0.10,
-        location: 0.10,
-        availability: 0.10,
-        employmentType: 0.05,
-        salary: 0.05
-    };
-
-    let totalScore = 0;
-    let totalWeight = 0;
-
-    // Skills match (Jaccard similarity)
-    if (jobSeekerProfile.skills && jobRequirements.skills) {
-        const seekerSkills = new Set(jobSeekerProfile.skills.map(s => s.toLowerCase()));
-        const requiredSkills = new Set(jobRequirements.skills.map(s => s.toLowerCase()));
-        let matched = 0;
-        requiredSkills.forEach(skill => {
-            if (seekerSkills.has(skill)) matched++;
-        });
-        const skillsMatch = requiredSkills.size > 0 ? matched / requiredSkills.size : 1;
-        totalScore += skillsMatch * weights.skills;
-        totalWeight += weights.skills;
-    }
-
-    // Education match
-    if (jobSeekerProfile.education && jobRequirements.education) {
-        const educationMatch = jobSeekerProfile.education.toLowerCase() === jobRequirements.education.toLowerCase() ? 1 : 0.5;
-        totalScore += educationMatch * weights.education;
-        totalWeight += weights.education;
-    }
-
-    // Experience match
-    if (jobSeekerProfile.experienceYears !== undefined && jobRequirements.experienceYears !== undefined) {
-        const expMatch = Math.min(jobSeekerProfile.experienceYears / jobRequirements.experienceYears, 1);
-        totalScore += expMatch * weights.experience;
-        totalWeight += weights.experience;
-    }
-
-    // Certifications match (Jaccard similarity)
-    if (jobSeekerProfile.certifications && jobRequirements.certifications) {
-        const seekerCerts = new Set(jobSeekerProfile.certifications.map(c => c.toLowerCase()));
-        const requiredCerts = new Set(jobRequirements.certifications.map(c => c.toLowerCase()));
-        let matched = 0;
-        requiredCerts.forEach(cert => {
-            if (seekerCerts.has(cert)) matched++;
-        });
-        const certMatch = requiredCerts.size > 0 ? matched / requiredCerts.size : 1;
-        totalScore += certMatch * weights.certifications;
-        totalWeight += weights.certifications;
-    }
-
-    // Location match (simplified)
-    if (jobSeekerProfile.municipality && jobRequirements.municipality) {
-        const locationMatch = jobSeekerProfile.municipality.toLowerCase() === jobRequirements.municipality.toLowerCase() ? 1 :
-                             jobSeekerProfile.municipality.toLowerCase() === 'daet' && jobRequirements.municipality.toLowerCase() === 'labo' ? 0.7 : 0.3;
-        totalScore += locationMatch * weights.location;
-        totalWeight += weights.location;
-    }
-
-    // Availability match
-    if (jobSeekerProfile.availability && jobRequirements.workSchedule) {
-        const availabilityMatch = jobSeekerProfile.availability.includes(jobRequirements.workSchedule) ||
-                                 jobSeekerProfile.availability.includes('Flexible') ||
-                                 jobRequirements.workSchedule.includes('Flexible') ? 1 : 0.5;
-        totalScore += availabilityMatch * weights.availability;
-        totalWeight += weights.availability;
-    }
-
-    // Employment type match
-    if (jobSeekerProfile.employmentType && jobRequirements.employmentType) {
-        const employmentMatch = jobSeekerProfile.employmentType.toLowerCase() === jobRequirements.employmentType.toLowerCase() ||
-                               jobSeekerProfile.employmentType.toLowerCase() === 'any' ||
-                               jobRequirements.employmentType.toLowerCase() === 'any' ? 1 : 0.5;
-        totalScore += employmentMatch * weights.employmentType;
-        totalWeight += weights.employmentType;
-    }
-
-    // Salary match
-    if (jobSeekerProfile.expectedSalaryMin !== undefined && jobRequirements.salaryRangeMin !== undefined &&
-        jobSeekerProfile.expectedSalaryMax !== undefined && jobRequirements.salaryRangeMax !== undefined) {
-        const seekerMin = jobSeekerProfile.expectedSalaryMin;
-        const seekerMax = jobSeekerProfile.expectedSalaryMax;
-        const jobMin = jobRequirements.salaryRangeMin;
-        const jobMax = jobRequirements.salaryRangeMax;
-
-        // Check for overlap
-        const overlap = Math.max(0, Math.min(seekerMax, jobMax) - Math.max(seekerMin, jobMin));
-        const seekerRange = seekerMax - seekerMin;
-        const jobRange = jobMax - jobMin;
-
-        const salaryMatch = overlap > 0 ? overlap / Math.max(seekerRange, jobRange) : 0;
-        totalScore += salaryMatch * weights.salary;
-        totalWeight += weights.salary;
-    }
-
-    // Calculate final percentage
-    return totalWeight > 0 ? Math.round((totalScore / totalWeight) * 100) : 0;
-}
-
 // Export functions for use in other files
-window.calculateMatchPercentage = calculateMatchPercentage;
 window.calculateDistance = calculateDistance;

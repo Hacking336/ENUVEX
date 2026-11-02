@@ -32,8 +32,8 @@ public class AdminController {
     @GetMapping("/dashboard")
     public ResponseEntity<DashboardStatsDto> getDashboard() {
         DashboardStatsDto stats = new DashboardStatsDto();
-        stats.setTotalJobSeekers(userRepository.countByType(UserType.JOB_SEEKER));
-        stats.setTotalEmployers(userRepository.countByType(UserType.EMPLOYER));
+        stats.setTotalJobSeekers(userRepository.countByUserType(UserType.JOB_SEEKER));
+        stats.setTotalEmployers(userRepository.countByUserType(UserType.EMPLOYER));
         stats.setActiveJobPosts(jobPostRepository.countByIsActiveTrue());
         stats.setTotalApplications(applicationRepository.count());
         stats.setHiredApplicants((long) applicationRepository.findByApplicationStatus(ApplicationStatus.ACCEPTED).size());
@@ -89,8 +89,8 @@ public class AdminController {
     public ResponseEntity<Map<String, Object>> getReports() {
         Map<String, Object> report = new HashMap<>();
         report.put("totalUsers", userRepository.count());
-        report.put("totalJobSeekers", userRepository.countByType(UserType.JOB_SEEKER));
-        report.put("totalEmployers", userRepository.countByType(UserType.EMPLOYER));
+        report.put("totalJobSeekers", userRepository.countByUserType(UserType.JOB_SEEKER));
+        report.put("totalEmployers", userRepository.countByUserType(UserType.EMPLOYER));
         report.put("activeJobPosts", jobPostRepository.countByIsActiveTrue());
         report.put("totalApplications", applicationRepository.count());
         report.put("hiredApplicants", applicationRepository.countByApplicationStatus(ApplicationStatus.ACCEPTED));

@@ -1,0 +1,27 @@
+# Build output (never commit compiled classes or packaged jars)
+backend/target/
+target/
+*.class
+*.jar
+*.war
+backend/mvn-status/
+
+# Local secrets and environment (see backend/.env.example)
+.env
+backend/.env
+.env.local
+
+# Files uploaded by users at runtime
+uploads/
+
+# Scratch / backup files
+*.bak
+*.orig
+cp.txt
+
+# Editors and OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db

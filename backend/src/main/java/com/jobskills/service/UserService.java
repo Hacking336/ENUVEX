@@ -12,10 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.math.BigDecimal;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -28,67 +29,65 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    private static final String UPLOAD_DIR = "uploads/";
+    private static final String UPLOAD_DIR = "uploads";
+
+    /** Labels the registration forms send, mapped to the business type enum. */
+    private static final Map<String, BusinessType> BUSINESS_TYPE_LABELS = Map.ofEntries(
+        Map.entry("retail/store", BusinessType.RETAIL_STORE),
+        Map.entry("restaurant/food service", BusinessType.RESTAURANT_FOOD_SERVICE),
+        Map.entry("hospitality/tourism", BusinessType.HOSPITALITY),
+        Map.entry("office/administrative", BusinessType.OFFICE_ADMINISTRATION),
+        Map.entry("healthcare/medical", BusinessType.HEALTHCARE),
+        Map.entry("education/training", BusinessType.EDUCATION),
+        Map.entry("construction/engineering", BusinessType.CONSTRUCTION),
+        Map.entry("agriculture/farming", BusinessType.AGRICULTURE),
+        Map.entry("fisheries/aquaculture", BusinessType.FISHERIES),
+        Map.entry("manufacturing/production", BusinessType.MANUFACTURING),
+        Map.entry("logistics/transportation", BusinessType.LOGISTICS_DELIVERY),
+        Map.entry("automotive/repair", BusinessType.AUTOMOTIVE),
+        Map.entry("security/services", BusinessType.SECURITY),
+        Map.entry("it/technology", BusinessType.IT_TECHNOLOGY),
+        Map.entry("sales/marketing", BusinessType.OTHER),
+        Map.entry("other", BusinessType.OTHER)
+    );
 
     @Transactional
     public AuthResponse register(RegisterRequest request, MultipartFile profilePhoto, MultipartFile logo) {
-        if (userRepository.existsByEmail(request.getEmail())) {
+        String email = normalizeEmail(request.getEmail());
+        if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("Email already registered");
         }
 
-        // Convert string values to appropriate enum types
-        UserType userType;
-        try {
-            userType = UserType.valueOf(request.getUserType().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid user type: " + request.getUserType());
-        }
+        UserType userType = parseUserType(request.getUserType());
 
         User user = User.builder()
-            .email(request.getEmail())
+            .email(email)
             .passwordHash(passwordEncoder.encode(request.getPassword()))
             .userType(userType)
             .build();
         user = userRepository.save(user);
 
-        if (request.getUserType().equalsIgnoreCase("job_seeker")) {
-            // Convert string values to enum types
-            Municipality municipality = null;
-            try { municipality = Municipality.valueOf(request.getMunicipality().toUpperCase()); } catch (Exception e) {}
-
-            EducationLevel educationLevel = null;
-            try { educationLevel = mapEducationLevel(request.getEducationLevel()); } catch (Exception e) {}
-
-            EmploymentType employmentType = null;
-            try { employmentType = mapEmploymentType(request.getEmploymentTypePreference()); } catch (Exception e) {}
-
-            WorkSchedule workSchedule = null;
-            try { workSchedule = mapWorkSchedule(request.getPreferredWorkSchedule()); } catch (Exception e) {}
-
-            Availability availability = null;
-            try { availability = mapAvailability(request.getAvailability()); } catch (Exception e) {}
-
+        if (userType == UserType.JOB_SEEKER) {
             JobSeekerProfile profile = JobSeekerProfile.builder()
                 .user(user)
-                .fullName(request.getFullName())
+                .fullName(requireText(request.getFullName(), "fullName"))
                 .contactNumber(request.getContactNumber())
-                .municipality(municipality)
+                .municipality(parseMunicipality(request.getMunicipality(), true))
                 .barangay(request.getBarangay())
-                .educationLevel(educationLevel)
+                .educationLevel(parseEducationLevel(request.getEducationLevel()))
                 .courseField(request.getCourseField())
                 .skills(request.getSkills())
                 .workExperience(request.getWorkExperience())
                 .certifications(request.getCertifications())
-                .employmentTypePreference(employmentType)
-                .preferredWorkSchedule(workSchedule)
-                .availability(availability)
-                .expectedSalaryMin(request.getExpectedSalaryMin() != null ? BigDecimal.valueOf(request.getExpectedSalaryMin()) : null)
-                .expectedSalaryMax(request.getExpectedSalaryMax() != null ? BigDecimal.valueOf(request.getExpectedSalaryMax()) : null)
+                .employmentTypePreference(parseEmploymentType(request.getEmploymentTypePreference()))
+                .preferredWorkSchedule(parseWorkSchedule(request.getPreferredWorkSchedule()))
+                .availability(parseAvailability(request.getAvailability()))
+                .expectedSalaryMin(toAmount(request.getExpectedSalaryMin()))
+                .expectedSalaryMax(toAmount(request.getExpectedSalaryMax()))
                 .build();
 
             if (profilePhoto != null && !profilePhoto.isEmpty()) {
-                String filename = saveFile(profilePhoto);
-                profile.setProfilePhoto(filename);
+                profile.setProfilePhoto(saveFile(profilePhoto));
             }
 
             seekerRepository.save(profile);
@@ -96,62 +95,55 @@ public class UserService {
                 jwtService.generateToken(user),
                 jwtService.generateRefreshToken(user),
                 "JOB_SEEKER",
-                request.getFullName(),
-                false,
-                user.getId()
-            );
-        } else {
-            // Convert string values to enum types
-            Municipality municipality = null;
-            try { municipality = Municipality.valueOf(request.getMunicipality().toUpperCase()); } catch (Exception e) {}
-
-            BusinessType businessType = null;
-            try {
-                String businessTypeStr = mapBusinessType(request.getBusinessType());
-                businessType = BusinessType.valueOf(businessTypeStr);
-            } catch (Exception e) {}
-
-            EmployerProfile profile = EmployerProfile.builder()
-                .user(user)
-                .businessName(request.getBusinessName())
-                .employerName(request.getEmployerName())
-                .contactNumber(request.getContactNumber())
-                .businessType(businessType)
-                .municipality(municipality)
-                .barangay(request.getBarangay())
-                .businessAddress(request.getBusinessAddress())
-                .businessDescription(request.getBusinessDescription())
-                .build();
-
-            if (logo != null && !logo.isEmpty()) {
-                String filename = saveFile(logo);
-                profile.setLogo(filename);
-            }
-
-            employerRepository.save(profile);
-            return new AuthResponse(
-                jwtService.generateToken(user),
-                jwtService.generateRefreshToken(user),
-                "EMPLOYER",
-                request.getBusinessName(),
+                profile.getFullName(),
                 false,
                 user.getId()
             );
         }
+
+        EmployerProfile profile = EmployerProfile.builder()
+            .user(user)
+            .businessName(requireText(request.getBusinessName(), "businessName"))
+            .employerName(requireText(request.getEmployerName(), "employerName"))
+            .contactNumber(request.getContactNumber())
+            .businessType(parseBusinessType(request.getBusinessType()))
+            .municipality(parseMunicipality(request.getMunicipality(), true))
+            .barangay(request.getBarangay())
+            .businessAddress(request.getBusinessAddress())
+            .businessDescription(request.getBusinessDescription())
+            .build();
+
+        if (logo != null && !logo.isEmpty()) {
+            profile.setLogo(saveFile(logo));
+        }
+
+        employerRepository.save(profile);
+        return new AuthResponse(
+            jwtService.generateToken(user),
+            jwtService.generateRefreshToken(user),
+            "EMPLOYER",
+            profile.getBusinessName(),
+            false,
+            user.getId()
+        );
     }
 
     @Transactional
     public AuthResponse login(String email, String password) {
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmail(normalizeEmail(email))
             .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
 
         if (!passwordEncoder.matches(password, user.getPasswordHash())) {
             throw new IllegalArgumentException("Invalid credentials");
         }
 
+        if (!user.isActive()) {
+            throw new IllegalArgumentException("This account has been deactivated");
+        }
+
         String name = user.getUserType() == UserType.JOB_SEEKER
-            ? seekerRepository.findByUserId(user.getId()).map(JobSeekerProfile::getFullName).orElse(email)
-            : employerRepository.findByUserId(user.getId()).map(EmployerProfile::getBusinessName).orElse(email);
+            ? seekerRepository.findByUserId(user.getId()).map(JobSeekerProfile::getFullName).orElse(user.getEmail())
+            : employerRepository.findByUserId(user.getId()).map(EmployerProfile::getBusinessName).orElse(user.getEmail());
 
         return new AuthResponse(
             jwtService.generateToken(user),
@@ -179,26 +171,29 @@ public class UserService {
 
         if (request.getFullName() != null) profile.setFullName(request.getFullName());
         if (request.getContactNumber() != null) profile.setContactNumber(request.getContactNumber());
-        if (request.getMunicipality() != null) profile.setMunicipality(Municipality.valueOf(request.getMunicipality().toUpperCase()));
+        if (request.getMunicipality() != null) profile.setMunicipality(parseMunicipality(request.getMunicipality(), true));
         if (request.getBarangay() != null) profile.setBarangay(request.getBarangay());
-        if (request.getEducationLevel() != null) profile.setEducationLevel(mapEducationLevel(request.getEducationLevel()));
+        if (request.getEducationLevel() != null) profile.setEducationLevel(parseEducationLevel(request.getEducationLevel()));
         if (request.getCourseField() != null) profile.setCourseField(request.getCourseField());
         if (request.getSkills() != null) profile.setSkills(request.getSkills());
         if (request.getWorkExperience() != null) profile.setWorkExperience(request.getWorkExperience());
         if (request.getCertifications() != null) profile.setCertifications(request.getCertifications());
-        if (request.getEmploymentTypePreference() != null) profile.setEmploymentTypePreference(mapEmploymentType(request.getEmploymentTypePreference()));
-        if (request.getPreferredWorkSchedule() != null) profile.setPreferredWorkSchedule(mapWorkSchedule(request.getPreferredWorkSchedule()));
-        if (request.getAvailability() != null) profile.setAvailability(mapAvailability(request.getAvailability()));
+        if (request.getEmploymentTypePreference() != null) {
+            profile.setEmploymentTypePreference(parseEmploymentType(request.getEmploymentTypePreference()));
+        }
+        if (request.getPreferredWorkSchedule() != null) {
+            profile.setPreferredWorkSchedule(parseWorkSchedule(request.getPreferredWorkSchedule()));
+        }
+        if (request.getAvailability() != null) profile.setAvailability(parseAvailability(request.getAvailability()));
         if (request.getExpectedSalaryMin() != null) {
-            profile.setExpectedSalaryMin(BigDecimal.valueOf(request.getExpectedSalaryMin()));
+            profile.setExpectedSalaryMin(toAmount(request.getExpectedSalaryMin()));
         }
         if (request.getExpectedSalaryMax() != null) {
-            profile.setExpectedSalaryMax(BigDecimal.valueOf(request.getExpectedSalaryMax()));
+            profile.setExpectedSalaryMax(toAmount(request.getExpectedSalaryMax()));
         }
 
         if (photo != null && !photo.isEmpty()) {
-            String filename = saveFile(photo);
-            profile.setProfilePhoto(filename);
+            profile.setProfilePhoto(saveFile(photo));
         }
 
         return seekerRepository.save(profile);
@@ -211,15 +206,14 @@ public class UserService {
         if (request.getBusinessName() != null) profile.setBusinessName(request.getBusinessName());
         if (request.getEmployerName() != null) profile.setEmployerName(request.getEmployerName());
         if (request.getContactNumber() != null) profile.setContactNumber(request.getContactNumber());
-        if (request.getBusinessType() != null) profile.setBusinessType(BusinessType.valueOf(mapBusinessType(request.getBusinessType())));
-        if (request.getMunicipality() != null) profile.setMunicipality(Municipality.valueOf(request.getMunicipality().toUpperCase()));
+        if (request.getBusinessType() != null) profile.setBusinessType(parseBusinessType(request.getBusinessType()));
+        if (request.getMunicipality() != null) profile.setMunicipality(parseMunicipality(request.getMunicipality(), true));
         if (request.getBarangay() != null) profile.setBarangay(request.getBarangay());
         if (request.getBusinessAddress() != null) profile.setBusinessAddress(request.getBusinessAddress());
         if (request.getBusinessDescription() != null) profile.setBusinessDescription(request.getBusinessDescription());
 
         if (logo != null && !logo.isEmpty()) {
-            String filename = saveFile(logo);
-            profile.setLogo(filename);
+            profile.setLogo(saveFile(logo));
         }
 
         return employerRepository.save(profile);
@@ -245,71 +239,125 @@ public class UserService {
         return (completed * 100) / total;
     }
 
+    // ---- input parsing -----------------------------------------------------
+    // Every value the client sends is checked once, here. Bad input produces a
+    // clear 400 message instead of a null column that breaks another screen later.
+
+    private UserType parseUserType(String raw) {
+        if (raw == null || raw.isBlank()) {
+            throw new IllegalArgumentException("userType is required: JOB_SEEKER or EMPLOYER");
+        }
+        UserType type;
+        try {
+            type = UserType.valueOf(normalizeEnum(raw));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid userType: " + raw + ". Must be JOB_SEEKER or EMPLOYER.");
+        }
+        // Registration may never create an admin. Admins are seeded or created
+        // by an existing admin, never by the public endpoint.
+        if (type != UserType.JOB_SEEKER && type != UserType.EMPLOYER) {
+            throw new IllegalArgumentException("Self-registration is only allowed as JOB_SEEKER or EMPLOYER.");
+        }
+        return type;
+    }
+
+    private Municipality parseMunicipality(String raw, boolean required) {
+        if (raw == null || raw.isBlank()) {
+            if (required) {
+                throw new IllegalArgumentException("municipality is required: Basud, Daet, Vinzons or Labo");
+            }
+            return null;
+        }
+        try {
+            return Municipality.valueOf(normalizeEnum(raw));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Unknown municipality: " + raw + ". Use Basud, Daet, Vinzons or Labo.");
+        }
+    }
+
+    private EducationLevel parseEducationLevel(String raw) {
+        if (raw == null || raw.isBlank()) return null;
+        try {
+            return EducationLevel.valueOf(normalizeEnum(raw));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Unknown educationLevel: " + raw
+                + ". Use No Formal Education, Elementary Graduate, High School Graduate,"
+                + " Vocational/Technical, College Graduate or Post Graduate.");
+        }
+    }
+
+    private EmploymentType parseEmploymentType(String raw) {
+        if (raw == null || raw.isBlank()) return null;
+        try {
+            return EmploymentType.valueOf(normalizeEnum(raw));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Unknown employmentType: " + raw);
+        }
+    }
+
+    private WorkSchedule parseWorkSchedule(String raw) {
+        if (raw == null || raw.isBlank()) return null;
+        try {
+            return WorkSchedule.valueOf(normalizeEnum(raw));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Unknown work schedule: " + raw);
+        }
+    }
+
+    private Availability parseAvailability(String raw) {
+        if (raw == null || raw.isBlank()) return null;
+        try {
+            return Availability.valueOf(normalizeEnum(raw));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Unknown availability: " + raw);
+        }
+    }
+
+    private BusinessType parseBusinessType(String raw) {
+        String value = requireText(raw, "businessType");
+        BusinessType mapped = BUSINESS_TYPE_LABELS.get(value.toLowerCase().replace(" / ", "/"));
+        if (mapped != null) return mapped;
+        try {
+            return BusinessType.valueOf(normalizeEnum(value));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Unknown businessType: " + raw);
+        }
+    }
+
+    private String normalizeEnum(String raw) {
+        return raw.trim().toUpperCase().replace(" ", "_").replace("-", "_").replace("/", "_");
+    }
+
+    private String normalizeEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("email is required");
+        }
+        return email.trim().toLowerCase();
+    }
+
+    private String requireText(String raw, String field) {
+        if (raw == null || raw.isBlank()) {
+            throw new IllegalArgumentException(field + " is required");
+        }
+        return raw.trim();
+    }
+
+    private BigDecimal toAmount(Double amount) {
+        return amount == null ? null : BigDecimal.valueOf(amount);
+    }
+
     private String saveFile(MultipartFile file) {
         try {
-            Files.createDirectories(Paths.get(UPLOAD_DIR));
-            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path path = Paths.get(UPLOAD_DIR + filename);
-            Files.write(path, file.getBytes());
+            Path dir = Paths.get(UPLOAD_DIR).toAbsolutePath().normalize();
+            Files.createDirectories(dir);
+            String original = file.getOriginalFilename() == null ? "upload" : file.getOriginalFilename();
+            // Keep only the file name, never any directory part the client sent.
+            String base = Paths.get(original).getFileName().toString().replaceAll("[^A-Za-z0-9._-]", "_");
+            String filename = UUID.randomUUID() + "_" + base;
+            Files.write(dir.resolve(filename), file.getBytes());
             return filename;
         } catch (IOException e) {
-            throw new RuntimeException("Failed to save file", e);
+            throw new IllegalStateException("Failed to save file", e);
         }
-    }
-
-    private EducationLevel mapEducationLevel(String level) {
-        if (level == null) return null;
-        switch (level.toLowerCase()) {
-            case "no formal education": return EducationLevel.NO_FORMAL_EDUCATION;
-            case "elementary": return EducationLevel.ELEMENTARY_GRADUATE;
-            case "high school": return EducationLevel.HIGH_SCHOOL_GRADUATE;
-            case "vocational": return EducationLevel.VOCATIONAL_TECHNICAL;
-            case "college": return EducationLevel.COLLEGE_GRADUATE;
-            case "post graduate": return EducationLevel.POST_GRADUATE;
-            default: return null;
-        }
-    }
-
-    private String mapBusinessType(String businessType) {
-        if (businessType == null) return null;
-        // Map frontend business type values to backend enum values
-        String lower = businessType.toLowerCase();
-        switch (lower) {
-            case "retail/store": return "RETAIL_STORE";
-            case "restaurant/food service": return "RESTAURANT_FOOD_SERVICE";
-            case "hospitality/tourism": return "HOSPITALITY";
-            case "agriculture/farming": return "AGRICULTURE";
-            case "fisheries/aquaculture": return "FISHERIES";
-            case "construction/engineering": return "CONSTRUCTION";
-            case "healthcare/medical": return "HEALTHCARE";
-            case "education/training": return "EDUCATION";
-            case "office/administrative": return "OFFICE_ADMINISTRATION";
-            case "sales/marketing": return "IT_TECHNOLOGY"; // Closest match - no sales/marketing in enum
-            case "logistics/transportation": return "LOGISTICS_DELIVERY"; // Closest match
-            case "manufacturing/production": return "MANUFACTURING";
-            case "automotive/repair": return "AUTOMOTIVE";
-            case "security/services": return "SECURITY";
-            case "it/technology": return "IT_TECHNOLOGY";
-            case "other": return "OTHER";
-            default: return businessType.toUpperCase().replace(" / ", "_").replace(" ", "_").replace("/", "_");
-        }
-    }
-
-    private EmploymentType mapEmploymentType(String employmentType) {
-        if (employmentType == null) return null;
-        // Convert frontend employment type values to backend enum format
-        return EmploymentType.valueOf(employmentType.toUpperCase().replace("-", "_"));
-    }
-
-    private WorkSchedule mapWorkSchedule(String workSchedule) {
-        if (workSchedule == null) return null;
-        // Convert frontend work schedule values to backend enum format
-        return WorkSchedule.valueOf(workSchedule.toUpperCase());
-    }
-
-    private Availability mapAvailability(String availability) {
-        if (availability == null) return null;
-        // Convert frontend availability values to backend enum format
-        return Availability.valueOf(availability.toUpperCase().replace(" ", "_").replace("-", "_"));
     }
 }

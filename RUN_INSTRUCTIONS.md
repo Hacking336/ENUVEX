@@ -4,7 +4,7 @@
 
 1. **Java 21** - Required for Spring Boot 3.4.2
 2. **Maven 3.9+** - Build tool
-3. **MySQL 8.0+** - Database
+3. **A Supabase project** (PostgreSQL) - no local database server needed
 
 ## Quick Start
 
@@ -12,44 +12,57 @@
 
 **On Windows (using Chocolatey):**
 ```powershell
-choco install openjdk21 maven mysql
+choco install openjdk21 maven
 ```
 
 **On Windows (using Scoop):**
 ```powershell
-scoop install openjdk21 maven mysql
+scoop install openjdk21 maven
 ```
 
 **On Linux/macOS:**
 ```bash
 # Ubuntu/Debian
-sudo apt update && sudo apt install openjdk-21-jdk maven mysql-server
+sudo apt update && sudo apt install openjdk-21-jdk maven
 
 # macOS (Homebrew)
-brew install openjdk@21 maven mysql
+brew install openjdk@21 maven
 ```
 
-### 2. Configure Database
+### 2. Configure the Database (Supabase)
 
-Start MySQL and create the database:
+1. Copy the template and fill in the real values:
 
-```sql
-CREATE DATABASE job_skills_matching CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```bash
+cp backend/.env.example backend/.env
 ```
 
-Update `backend/src/main/resources/application.yml` with your MySQL credentials:
+2. In the Supabase dashboard open **Project Settings -> Database** and copy the
+   database password into `backend/.env`:
 
-```yaml
-spring.datasource.url=jdbc:mysql://localhost:3306/job_skills_matching?createDatabaseIfNotExist=true
-spring.datasource.username=root
-spring.datasource.password=your_password_here
 ```
+DB_URL=jdbc:postgresql://db.<project-ref>.supabase.co:5432/postgres?sslmode=require&currentSchema=enuv
+DB_USERNAME=postgres
+DB_PASSWORD=<your-database-password>
+JWT_SECRET=<a long random string>
+```
+
+`backend/.env` is git-ignored. Spring Boot reads it automatically, so you never
+need to export variables by hand or commit a password.
+
+3. Generate the JWT secret with `openssl rand -base64 48`. The application
+   refuses to start without it - that is deliberate, so nobody can sign tokens
+   with a key taken from this repository.
+
+Nothing else to create: on first start Flyway creates the `enuv` schema and all
+of its tables. They live in their own schema, so they do not touch any other
+application's tables in the same database.
 
 ### 3. Build and Run Backend
 
 ```bash
-cd c:/ENUVEX/job-skills-matching-system/backend
-mvn clean compile spring-boot:run
+cd backend
+mvn spring-boot:run
 ```
 
 The backend will start at `http://localhost:8080`
@@ -64,7 +77,7 @@ The backend will start at `http://localhost:8080`
 
 The system creates a default admin on first run:
 - **Email:** admin@jobskillsmatching.com
-- **Password:** (check the Flyway migration V1__create_tables.sql for the BCrypt hash)
+- **Password:** the seeded hash in `V1__create_tables.sql` is a public example value, so treat this account as a placeholder. Replace the hash with your own BCrypt hash before using the admin area for anything real.
 
 ## Frontend Development
 
@@ -72,8 +85,8 @@ The frontend files are served automatically by the embedded Tomcat from:
 - `backend/src/main/resources/static/` (copied during build)
 
 Source files are in:
-- `c:/ENUVEX/job-skills-matching-system/` (root)
-- `c:/ENUVEX/job-skills-matching-system/assets/`
+- the repository root (`index.html`, `register.html`, the role folders)
+- `assets/` (CSS, shared JavaScript, logo)
 
 ## Project Structure
 
@@ -108,7 +121,7 @@ job-skills-matching-system/
 ├── admin/                     # Admin pages
 ├── index.html                 # Login page
 ├── register.html              # Account type selection
-└── database_schema.sql        # Full MySQL schema
+└── backend/.env.example       # Template for the database and JWT settings
 ```
 
 ## API Endpoints
@@ -158,12 +171,14 @@ job-skills-matching-system/
 Change `server.port` in `application.yml`
 
 ### Database connection failed
-- Ensure MySQL is running: `systemctl status mysql` or `brew services list`
-- Check credentials in `application.yml`
-- Ensure database exists: `CREATE DATABASE job_skills_matching;`
+- Check that `backend/.env` exists and holds the current Supabase password
+- Use `sslmode=require` in `DB_URL`; Supabase rejects unencrypted connections
+- If your network has no IPv6 route, use the session pooler host from
+  Project Settings -> Database instead of `db.<project-ref>.supabase.co`
+- Tables do not exist yet? Check the startup log for the Flyway migration line
 
 ### Flyway migration fails
-- Check MySQL version compatibility
+- Check that the database accepts the migration (the logs name the failing statement)
 - Ensure user has CREATE/DROP privileges
 
 ### Frontend not loading
@@ -172,10 +187,13 @@ Change `server.port` in `application.yml`
 
 ## Testing
 
-Run unit tests:
+Run the matching-engine unit tests (no database needed):
 ```bash
-mvn test
+cd backend && mvn test -Dtest=MatchingEngineTest
 ```
+
+The `JobSkillsMatchingSystemApplicationTests` context test boots the whole
+application, so it needs the variables from `backend/.env` to be set.
 
 ## Production Build
 

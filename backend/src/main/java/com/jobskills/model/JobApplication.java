@@ -32,6 +32,9 @@ public class JobApplication {
     @CreationTimestamp
     private LocalDateTime appliedAt;
 
+    // @Builder.Default is required: without it Lombok's builder ignores the
+    // initializer and every application would be inserted with a null status.
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ApplicationStatus applicationStatus = ApplicationStatus.APPLIED;

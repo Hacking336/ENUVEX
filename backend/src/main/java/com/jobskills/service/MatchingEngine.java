@@ -23,13 +23,14 @@ public class MatchingEngine {
         Map.entry("salary", 0.05)
     );
 
-    private static final List<String> EDUCATION_HIERARCHY = List.of(
-        "No Formal Education",
-        "Elementary Graduate",
-        "High School Graduate",
-        "Vocational/Technical",
-        "College Graduate",
-        "Post Graduate"
+    /** Lowest level first. Education matching walks this list, not the enum names. */
+    private static final List<EducationLevel> EDUCATION_ORDER = List.of(
+        EducationLevel.NO_FORMAL_EDUCATION,
+        EducationLevel.ELEMENTARY_GRADUATE,
+        EducationLevel.HIGH_SCHOOL_GRADUATE,
+        EducationLevel.VOCATIONAL_TECHNICAL,
+        EducationLevel.COLLEGE_GRADUATE,
+        EducationLevel.POST_GRADUATE
     );
 
     private static final Map<String, List<String>> NEARBY_MUNICIPALITIES = Map.of(
@@ -57,10 +58,7 @@ public class MatchingEngine {
 
     public MatchResultDto calculateMatch(JobSeekerProfile seeker, JobPost job) {
         double skillsMatch = calculateSkillsMatch(seeker.getSkills(), job.getRequiredSkills());
-        double educationMatch = calculateEducationMatch(
-            seeker.getEducationLevel() != null ? seeker.getEducationLevel().name().replace("_", " ") : "No Formal Education",
-            job.getEducationRequirement() != null ? job.getEducationRequirement().name().replace("_", " ") : "No Formal Education"
-        );
+        double educationMatch = calculateEducationMatch(seeker.getEducationLevel(), job.getEducationRequirement());
         double experienceMatch = calculateExperienceMatch(
             seeker.getWorkExperience(), job.getExperienceRequirement()
         );
@@ -121,21 +119,19 @@ public class MatchingEngine {
         return result;
     }
 
-    private double calculateEducationMatch(String seekerEdu, String jobEdu) {
-        try {
-            int seekerIdx = EDUCATION_HIERARCHY.indexOf(seekerEdu);
-            int requiredIdx = EDUCATION_HIERARCHY.indexOf(jobEdu);
+    private double calculateEducationMatch(EducationLevel seekerEdu, EducationLevel jobEdu) {
+        if (jobEdu == null) return 100.0;    // no requirement stated
+        int requiredIdx = EDUCATION_ORDER.indexOf(jobEdu);
+        if (requiredIdx < 0) return 100.0;   // "Any" or unrecognised requirement
 
-            if (requiredIdx == -1) return 100.0; // "Any" or unrecognized
-            if (seekerIdx == -1) return 50.0;   // Unknown
+        if (seekerEdu == null) return 50.0;  // seeker did not fill it in
+        int seekerIdx = EDUCATION_ORDER.indexOf(seekerEdu);
+        if (seekerIdx < 0) return 50.0;
 
-            if (seekerIdx >= requiredIdx) return 100.0;
+        if (seekerIdx >= requiredIdx) return 100.0;
 
-            int diff = requiredIdx - seekerIdx;
-            return Math.max(0, 100 - (diff * 25));
-        } catch (Exception e) {
-            return seekerEdu.equalsIgnoreCase(jobEdu) ? 100.0 : 50.0;
-        }
+        int diff = requiredIdx - seekerIdx;
+        return Math.max(0, 100 - (diff * 25));
     }
 
     private double calculateExperienceMatch(String seekerExp, String jobExp) {

@@ -11,22 +11,26 @@ Spring Boot backend for the Job & Skills Matching System.
 - Hibernate
 - Spring Security with JWT
 - Flyway
-- MySQL
+- PostgreSQL 17 (Supabase)
 - Springdoc OpenAPI (Swagger UI)
 
 ## Setup
 
-1. Ensure MySQL is running and create the database:
-```sql
-CREATE DATABASE job_skills_matching;
+1. Copy the environment template and fill it in:
+```bash
+cp .env.example .env
 ```
 
-2. Configure database credentials in `src/main/resources/application.yml`
+2. Set `DB_URL`, `DB_USERNAME` and `DB_PASSWORD` from the Supabase dashboard
+   (Project Settings -> Database), plus a `JWT_SECRET`. `.env` is git-ignored
+   and read automatically at startup.
 
 3. Build and run:
 ```bash
 mvn spring-boot:run
 ```
+
+Flyway creates the `enuv` schema and all tables on the first start.
 
 4. Open Swagger UI:
 ```

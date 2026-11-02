@@ -58,6 +58,7 @@ public class JobPost {
     @Enumerated(EnumType.STRING)
     private WorkSchedule workSchedule;
 
+    @Builder.Default
     private int availablePositions = 1;
 
     @Enumerated(EnumType.STRING)
@@ -68,6 +69,7 @@ public class JobPost {
 
     private String jobLocation;
 
+    @Builder.Default
     private boolean isActive = true;
 
     @CreationTimestamp

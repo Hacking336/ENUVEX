@@ -19,8 +19,8 @@ public class AdminService {
     public Map<String, Object> getSummaryReport() {
         Map<String, Object> report = new HashMap<>();
         report.put("totalUsers", userRepository.count());
-        report.put("totalJobSeekers", userRepository.countByType(UserType.JOB_SEEKER));
-        report.put("totalEmployers", userRepository.countByType(UserType.EMPLOYER));
+        report.put("totalJobSeekers", userRepository.countByUserType(UserType.JOB_SEEKER));
+        report.put("totalEmployers", userRepository.countByUserType(UserType.EMPLOYER));
         report.put("activeJobPosts", jobPostRepository.countByIsActiveTrue());
         report.put("totalApplications", applicationRepository.count());
         report.put("hiredApplicants", applicationRepository.countByApplicationStatus(ApplicationStatus.ACCEPTED));

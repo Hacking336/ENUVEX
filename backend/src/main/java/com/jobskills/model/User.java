@@ -29,6 +29,9 @@ public class User {
     @Column(nullable = false)
     private UserType userType;
 
+    // @Builder.Default is required: without it Lombok's builder ignores the
+    // initializer and new users would be created deactivated.
+    @Builder.Default
     @Column(nullable = false)
     private boolean isActive = true;
 

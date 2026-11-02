@@ -1,13 +1,22 @@
+# Database credentials and the JWT secret come from the environment.
+# For local runs, copy backend/.env.example to backend/.env - it is read
+# automatically and is git-ignored.
 spring:
+  config:
+    import: optional:file:.env[.properties]
+
   datasource:
-    url: jdbc:mysql://localhost:3306/job_skills_matching?createDatabaseIfNotExist=true
-    username: ${MYSQL_USER:root}
-    password: "hirondo_16"
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    # Supabase Postgres. currentSchema keeps this app's tables in their own
+    # schema so they cannot collide with another application's tables in the
+    # same database.
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/postgres?currentSchema=enuv}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 30000
-      maximum-pool-size: 10
-      minimum-idle: 2
+      maximum-pool-size: 5
+      minimum-idle: 1
       pool-name: JobSkillsPool
       max-lifetime: 600000
 
@@ -17,7 +26,8 @@ spring:
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: enuv
         format_sql: true
         use_sql_comments: true
         generate_statistics: false
@@ -25,15 +35,26 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    schemas: enuv
+    default-schema: enuv
+    create-schemas: true
     baseline-on-migrate: true
     baseline-version: 0
-    clean-disabled: false
+    # Never allow "flyway clean" to drop every table.
+    clean-disabled: true
 
   servlet:
     multipart:
       max-file-size: 5MB
       max-request-size: 5MB
       enabled: true
+
+jwt:
+  # No default value on purpose: the app fails to start if JWT_SECRET is missing,
+  # instead of silently signing tokens with a key that is public in this repo.
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION_MS:3600000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION_MS:604800000}
 
 springdoc:
   api-docs:

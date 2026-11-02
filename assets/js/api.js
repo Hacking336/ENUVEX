@@ -3,7 +3,8 @@
  * Connects the frontend UI to the Spring Boot backend
  */
 
-const API_BASE_URL = 'http://localhost:8080/api';
+// Same origin as the page: works on any host or port, and needs no CORS.
+const API_BASE_URL = '/api';
 
 const ApiClient = {
     token: null,
@@ -50,15 +51,27 @@ const ApiClient = {
             headers
         });
 
+        // Read the body as text first: an error response may be empty or HTML,
+        // and response.json() would then fail with a confusing syntax error.
+        const text = await response.text();
+        let data = null;
+        if (text) {
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                data = null;
+            }
+        }
+
         if (response.status === 401) {
             this.clearAuth();
             window.location.href = '/index.html';
+            throw new Error('Your session expired. Please log in again.');
         }
 
-        const data = await response.json();
-
         if (!response.ok) {
-            throw new Error(data.message || data.error || 'Request failed');
+            const message = (data && (data.message || data.error)) || `Request failed (${response.status})`;
+            throw new Error(message);
         }
 
         return data;
@@ -84,8 +97,16 @@ const ApiClient = {
             body: formData
         });
 
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'Registration failed');
+        const raw = await response.text();
+        let data = {};
+        try {
+            data = raw ? JSON.parse(raw) : {};
+        } catch (e) {
+            data = {};
+        }
+        if (!response.ok) {
+            throw new Error(data.message || data.error || `Registration failed (${response.status})`);
+        }
         this.setAuth(data.token, data.refreshToken, data.userType);
         return data;
     },
@@ -104,9 +125,9 @@ const ApiClient = {
     },
 
     async applyForJob(jobId) {
-        return this.request('/job-seekers/apply', {
-            method: 'POST',
-            body: JSON.stringify({ jobId })
+        // The backend reads jobId as a query parameter, not from the body.
+        return this.request(`/job-seekers/apply?jobId=${encodeURIComponent(jobId)}`, {
+            method: 'POST'
         });
     },
 
@@ -119,9 +140,8 @@ const ApiClient = {
     },
 
     async saveJob(jobId) {
-        return this.request('/job-seekers/saved', {
-            method: 'POST',
-            body: JSON.stringify({ jobId })
+        return this.request(`/job-seekers/saved?jobId=${encodeURIComponent(jobId)}`, {
+            method: 'POST'
         });
     },
 

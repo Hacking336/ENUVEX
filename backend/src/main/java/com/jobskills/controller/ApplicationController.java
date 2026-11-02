@@ -2,7 +2,6 @@ package com.jobskills.controller;
 
 import com.jobskills.config.CustomUserDetails;
 import com.jobskills.dto.*;
-import com.jobskills.model.enums.ApplicationStatus;
 import com.jobskills.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +9,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/applications")
@@ -21,17 +19,12 @@ public class ApplicationController {
 
     @GetMapping
     public ResponseEntity<List<ApplicationResponse>> getMyApplications(Authentication authentication) {
-        Long userId = extractUserId(authentication);
-        return ResponseEntity.ok(applicationService.getSeekerApplications(userId));
+        return ResponseEntity.ok(applicationService.getSeekerApplications(extractUserId(authentication)));
     }
 
-    @PutMapping("/{id}/status")
-    public ResponseEntity<Map<String, String>> updateStatus(
-            @PathVariable Long id,
-            @RequestParam ApplicationStatus status) {
-        applicationService.updateApplicationStatus(id, status);
-        return ResponseEntity.ok(Map.of("status", status.name()));
-    }
+    // Status changes live in EmployerController, behind the EMPLOYER role and an
+    // ownership check. A second copy here let any logged-in user rewrite any
+    // application, including accepting their own.
 
     private Long extractUserId(Authentication authentication) {
         if (authentication == null || authentication.getPrincipal() == null) return null;

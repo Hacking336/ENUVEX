@@ -2,9 +2,7 @@ package com.jobskills.service;
 
 import com.jobskills.dto.*;
 import com.jobskills.model.*;
-import com.jobskills.model.enums.*;
 import com.jobskills.repository.*;
-import com.jobskills.service.MatchingEngine;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +17,10 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class JobService {
+
+    /** Columns a client is allowed to sort by. Anything else falls back to createdAt. */
+    private static final Set<String> SORTABLE_COLUMNS =
+        Set.of("createdAt", "jobTitle", "salaryMin", "salaryMax", "availablePositions");
 
     private final JobPostRepository jobPostRepository;
     private final EmployerProfileRepository employerRepository;
@@ -40,29 +42,33 @@ public class JobService {
             .orElseThrow(() -> new IllegalArgumentException("Job not found"));
     }
 
+    /**
+     * Updates a job. Ownership is decided by the logged-in employer, never by
+     * anything in the request body.
+     */
     @Transactional
-    public JobPost updateJob(Long id, JobPost jobDetails) {
+    public JobPost updateJob(Long id, Long employerId, JobPost jobDetails) {
         JobPost job = getJobById(id);
-        if (!job.getEmployer().getId().equals(jobDetails.getEmployer().getId())) {
-            throw new IllegalArgumentException("Unauthorized");
+        if (employerId == null || !job.getEmployer().getId().equals(employerId)) {
+            throw new org.springframework.security.access.AccessDeniedException("This job belongs to another employer");
         }
 
-        job.setJobTitle(jobDetails.getJobTitle());
-        job.setJobCategory(jobDetails.getJobCategory());
-        job.setJobDescription(jobDetails.getJobDescription());
-        job.setResponsibilities(jobDetails.getResponsibilities());
-        job.setRequiredSkills(jobDetails.getRequiredSkills());
-        job.setEducationRequirement(jobDetails.getEducationRequirement());
-        job.setExperienceRequirement(jobDetails.getExperienceRequirement());
-        job.setCertifications(jobDetails.getCertifications());
-        job.setSalaryMin(jobDetails.getSalaryMin());
-        job.setSalaryMax(jobDetails.getSalaryMax());
-        job.setEmploymentType(jobDetails.getEmploymentType());
-        job.setWorkSchedule(jobDetails.getWorkSchedule());
-        job.setAvailablePositions(jobDetails.getAvailablePositions());
-        job.setMunicipality(jobDetails.getMunicipality());
-        job.setBarangay(jobDetails.getBarangay());
-        job.setJobLocation(jobDetails.getJobLocation());
+        if (jobDetails.getJobTitle() != null) job.setJobTitle(jobDetails.getJobTitle());
+        if (jobDetails.getJobCategory() != null) job.setJobCategory(jobDetails.getJobCategory());
+        if (jobDetails.getJobDescription() != null) job.setJobDescription(jobDetails.getJobDescription());
+        if (jobDetails.getResponsibilities() != null) job.setResponsibilities(jobDetails.getResponsibilities());
+        if (jobDetails.getRequiredSkills() != null) job.setRequiredSkills(jobDetails.getRequiredSkills());
+        if (jobDetails.getEducationRequirement() != null) job.setEducationRequirement(jobDetails.getEducationRequirement());
+        if (jobDetails.getExperienceRequirement() != null) job.setExperienceRequirement(jobDetails.getExperienceRequirement());
+        if (jobDetails.getCertifications() != null) job.setCertifications(jobDetails.getCertifications());
+        if (jobDetails.getSalaryMin() != null) job.setSalaryMin(jobDetails.getSalaryMin());
+        if (jobDetails.getSalaryMax() != null) job.setSalaryMax(jobDetails.getSalaryMax());
+        if (jobDetails.getEmploymentType() != null) job.setEmploymentType(jobDetails.getEmploymentType());
+        if (jobDetails.getWorkSchedule() != null) job.setWorkSchedule(jobDetails.getWorkSchedule());
+        if (jobDetails.getAvailablePositions() > 0) job.setAvailablePositions(jobDetails.getAvailablePositions());
+        if (jobDetails.getMunicipality() != null) job.setMunicipality(jobDetails.getMunicipality());
+        if (jobDetails.getBarangay() != null) job.setBarangay(jobDetails.getBarangay());
+        if (jobDetails.getJobLocation() != null) job.setJobLocation(jobDetails.getJobLocation());
         job.setActive(jobDetails.isActive());
 
         return jobPostRepository.save(job);
@@ -71,8 +77,8 @@ public class JobService {
     @Transactional
     public void deleteJob(Long id, Long employerId) {
         JobPost job = getJobById(id);
-        if (!job.getEmployer().getId().equals(employerId)) {
-            throw new IllegalArgumentException("Unauthorized");
+        if (employerId == null || !job.getEmployer().getId().equals(employerId)) {
+            throw new org.springframework.security.access.AccessDeniedException("This job belongs to another employer");
         }
         jobPostRepository.delete(job);
     }
@@ -81,7 +87,10 @@ public class JobService {
         return jobPostRepository.findByEmployerId(employerId);
     }
 
-    public Page<JobResponse> searchJobs(JobSearchRequest search, Long seekerId) {
+    /**
+     * @param seekerUserId the logged-in user's id (not the profile id), or null for anonymous search.
+     */
+    public Page<JobResponse> searchJobs(JobSearchRequest search, Long seekerUserId) {
         Specification<JobPost> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("isActive"), true));
@@ -120,54 +129,61 @@ public class JobService {
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
+        boolean sortByMatch = "matchPercentage".equalsIgnoreCase(search.getSortBy()) && seekerUserId != null;
+        String sortColumn = SORTABLE_COLUMNS.contains(search.getSortBy()) ? search.getSortBy() : "createdAt";
+
         Pageable pageable = PageRequest.of(
-            search.getPage(),
-            search.getSize(),
-            Sort.by(Sort.Direction.fromString(search.getSortDir()), search.getSortBy())
+            Math.max(search.getPage(), 0),
+            Math.max(search.getSize(), 1),
+            Sort.by(Sort.Direction.fromString(search.getSortDir()), sortColumn)
         );
 
         Page<JobPost> jobs = jobPostRepository.findAll(spec, pageable);
 
-        if (seekerId != null) {
-            // Add match percentage for authenticated seeker
-            JobSeekerProfile seeker = seekerRepository.findById(seekerId)
-                .orElseThrow(() -> new IllegalArgumentException("Seeker not found"));
-            return jobs.map(job -> {
+        Page<JobResponse> page;
+        if (seekerUserId != null) {
+            JobSeekerProfile seeker = requireSeeker(seekerUserId);
+            page = jobs.map(job -> {
                 JobResponse response = mapToResponse(job);
-                double match = matchingEngine.calculateMatch(seeker, job).getOverallMatch();
-                response.setMatchPercentage(match);
+                response.setMatchPercentage(matchingEngine.calculateMatch(seeker, job).getOverallMatch());
                 return response;
             });
         } else {
-            // No match percentage for anonymous search
-            return jobs.map(this::mapToResponse);
+            page = jobs.map(this::mapToResponse);
         }
+
+        if (sortByMatch) {
+            List<JobResponse> sorted = page.getContent().stream()
+                .sorted(Comparator.comparingDouble(
+                    (JobResponse response) -> response.getMatchPercentage() == null ? -1.0 : response.getMatchPercentage())
+                    .reversed())
+                .collect(Collectors.toList());
+            return new PageImpl<>(sorted, pageable, page.getTotalElements());
+        }
+        return page;
     }
 
-    public JobResponse getJobDetails(Long jobId, Long seekerId) {
+    public JobResponse getJobDetails(Long jobId, Long seekerUserId) {
         JobPost job = getJobById(jobId);
         if (!job.isActive()) {
             throw new IllegalArgumentException("Job is not active");
         }
         JobResponse response = mapToResponse(job);
-        if (seekerId != null) {
-            JobSeekerProfile seeker = seekerRepository.findById(seekerId)
-                .orElseThrow(() -> new IllegalArgumentException("Seeker not found"));
-            double match = matchingEngine.calculateMatch(seeker, job).getOverallMatch();
-            response.setMatchPercentage(match);
+        if (seekerUserId != null) {
+            JobSeekerProfile seeker = requireSeeker(seekerUserId);
+            response.setMatchPercentage(matchingEngine.calculateMatch(seeker, job).getOverallMatch());
         }
         return response;
     }
 
     @Transactional
-    public SavedJob saveJob(Long jobSeekerId, Long jobId) {
-        JobSeekerProfile seeker = seekerRepository.findById(jobSeekerId)
-            .orElseThrow(() -> new IllegalArgumentException("Seeker not found"));
+    public SavedJob saveJob(Long seekerUserId, Long jobId) {
+        JobSeekerProfile seeker = requireSeeker(seekerUserId);
         JobPost job = jobPostRepository.findById(jobId)
             .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
-        SavedJob saved = savedJobRepository.findByJobSeekerIdAndJobPostId(jobSeekerId, jobId)
-            .orElseGet(() -> new SavedJob());
+        SavedJob saved = savedJobRepository.findByJobSeekerIdAndJobPostId(seeker.getId(), jobId)
+            .orElseGet(SavedJob::new);
 
         saved.setJobSeeker(seeker);
         saved.setJobPost(job);
@@ -175,27 +191,26 @@ public class JobService {
     }
 
     @Transactional
-    public void unsaveJob(Long jobSeekerId, Long jobId) {
-        savedJobRepository.deleteByJobSeekerIdAndJobPostId(jobSeekerId, jobId);
+    public void unsaveJob(Long seekerUserId, Long jobId) {
+        JobSeekerProfile seeker = requireSeeker(seekerUserId);
+        savedJobRepository.deleteByJobSeekerIdAndJobPostId(seeker.getId(), jobId);
     }
 
-    public List<SavedJob> getSavedJobs(Long jobSeekerId) {
-        return savedJobRepository.findByJobSeekerId(jobSeekerId);
+    public List<SavedJob> getSavedJobs(Long seekerUserId) {
+        JobSeekerProfile seeker = requireSeeker(seekerUserId);
+        return savedJobRepository.findByJobSeekerId(seeker.getId());
     }
 
     @Transactional
-    public JobApplication applyForJob(Long jobSeekerId, Long jobId) {
-        JobSeekerProfile seeker = seekerRepository.findById(jobSeekerId)
-            .orElseThrow(() -> new IllegalArgumentException("Seeker not found"));
+    public JobApplication applyForJob(Long seekerUserId, Long jobId) {
+        JobSeekerProfile seeker = requireSeeker(seekerUserId);
         JobPost job = jobPostRepository.findById(jobId)
             .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
         if (!job.isActive()) {
             throw new IllegalArgumentException("Job is not active");
         }
-
-        // Check if already applied
-        if (applicationRepository.existsByJobSeekerIdAndJobPostId(jobSeekerId, jobId)) {
+        if (applicationRepository.existsByJobSeekerIdAndJobPostId(seeker.getId(), jobId)) {
             throw new IllegalArgumentException("Already applied for this job");
         }
 
@@ -208,6 +223,12 @@ public class JobService {
             .build();
 
         return applicationRepository.save(application);
+    }
+
+    /** Resolves the seeker profile from the logged-in user id. */
+    private JobSeekerProfile requireSeeker(Long userId) {
+        return seekerRepository.findByUserId(userId)
+            .orElseThrow(() -> new IllegalArgumentException("No job seeker profile for the current account"));
     }
 
     private JobResponse mapToResponse(JobPost job) {

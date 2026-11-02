@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,4 +20,5 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
     List<JobApplication> findByApplicationStatus(ApplicationStatus status);
     boolean existsByJobSeekerIdAndJobPostId(Long jobSeekerId, Long jobPostId);
     long countByApplicationStatus(ApplicationStatus status);
+    long countByJobPostIdIn(Collection<Long> jobIds);
 }

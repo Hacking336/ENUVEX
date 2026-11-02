@@ -6,6 +6,7 @@ import com.jobskills.model.enums.ApplicationStatus;
 import com.jobskills.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -20,60 +21,76 @@ public class ApplicationService {
     private final EmployerProfileRepository employerRepository;
     private final JobPostRepository jobPostRepository;
 
+    /** Status changes are only allowed for the employer that owns the job. */
     @Transactional
-    public JobApplication updateApplicationStatus(Long applicationId, ApplicationStatus status) {
+    public JobApplication updateApplicationStatus(Long applicationId, Long employerId, ApplicationStatus status) {
         JobApplication application = applicationRepository.findById(applicationId)
             .orElseThrow(() -> new IllegalArgumentException("Application not found"));
+        requireJobOwner(application.getJobPost(), employerId);
         application.setApplicationStatus(status);
         return applicationRepository.save(application);
     }
 
-    public List<JobApplication> getApplicationsBySeeker(Long seekerId) {
-        return applicationRepository.findByJobSeekerId(seekerId);
+    /** Applications of one seeker, addressed by the logged-in user id. */
+    public List<ApplicationResponse> getSeekerApplications(Long seekerUserId) {
+        JobSeekerProfile seeker = seekerRepository.findByUserId(seekerUserId)
+            .orElseThrow(() -> new IllegalArgumentException("No job seeker profile for the current account"));
+        return applicationRepository.findByJobSeekerId(seeker.getId()).stream()
+            .map(this::mapToResponse)
+            .collect(Collectors.toList());
     }
 
-    public List<JobApplication> getApplicationsByJob(Long jobId) {
-        return applicationRepository.findByJobPostId(jobId);
-    }
+    /** Applicants of one job. Only the employer that owns the job may read them. */
+    public List<ApplicantDto> getJobApplicants(Long jobId, Long employerId, String sortBy) {
+        JobPost job = jobPostRepository.findById(jobId)
+            .orElseThrow(() -> new IllegalArgumentException("Job not found"));
+        requireJobOwner(job, employerId);
 
-    public Optional<JobApplication> getApplication(Long applicationId) {
-        return applicationRepository.findById(applicationId);
-    }
-
-    public List<ApplicationResponse> getSeekerApplications(Long seekerId) {
-        List<JobApplication> applications = applicationRepository.findByJobSeekerId(seekerId);
-        return applications.stream().map(this::mapToResponse).collect(Collectors.toList());
-    }
-
-    public List<ApplicantDto> getJobApplicants(Long jobId, String sortBy) {
-        List<JobApplication> applications = applicationRepository.findByJobPostId(jobId);
-
-        // Sort based on parameter
-        Comparator<JobApplication> comparator;
-        switch (sortBy) {
-            case "match":
-                comparator = Comparator.comparingDouble((JobApplication a) -> a.getMatchPercentage() != null ? a.getMatchPercentage().doubleValue() : 0.0).reversed();
-                break;
-            case "skills":
-                comparator = Comparator.comparing(a -> a.getJobSeeker().getSkills());
-                break;
-            case "experience":
-                comparator = Comparator.comparing(a -> a.getJobSeeker().getWorkExperience());
-                break;
-            case "location":
-                comparator = Comparator.comparing(a -> a.getJobSeeker().getMunicipality().name());
-                break;
-            case "availability":
-                comparator = Comparator.comparing(a -> a.getJobSeeker().getAvailability());
-                break;
-            default:
-                comparator = Comparator.comparing(JobApplication::getAppliedAt).reversed();
-        }
-
-        return applications.stream()
-            .sorted(comparator)
+        return applicationRepository.findByJobPostId(jobId).stream()
+            .sorted(comparatorFor(sortBy))
             .map(this::mapToApplicantDto)
             .collect(Collectors.toList());
+    }
+
+    public long countApplicationsForEmployer(Long employerId) {
+        List<Long> jobIds = jobPostRepository.findByEmployerId(employerId).stream()
+            .map(JobPost::getId)
+            .collect(Collectors.toList());
+        if (jobIds.isEmpty()) {
+            return 0L;
+        }
+        return applicationRepository.countByJobPostIdIn(jobIds);
+    }
+
+    private void requireJobOwner(JobPost job, Long employerId) {
+        if (employerId == null || !job.getEmployer().getId().equals(employerId)) {
+            throw new AccessDeniedException("This job belongs to another employer");
+        }
+    }
+
+    private Comparator<JobApplication> comparatorFor(String sortBy) {
+        switch (sortBy == null ? "" : sortBy) {
+            case "match":
+                return Comparator.comparingDouble((JobApplication a) ->
+                    a.getMatchPercentage() != null ? a.getMatchPercentage().doubleValue() : 0.0).reversed();
+            case "skills":
+                return Comparator.comparing((JobApplication a) -> a.getJobSeeker().getSkills(),
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            case "experience":
+                return Comparator.comparing((JobApplication a) -> a.getJobSeeker().getWorkExperience(),
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            case "location":
+                return Comparator.comparing((JobApplication a) ->
+                        a.getJobSeeker().getMunicipality() == null ? null : a.getJobSeeker().getMunicipality().name(),
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            case "availability":
+                return Comparator.comparing((JobApplication a) ->
+                        a.getJobSeeker().getAvailability() == null ? null : a.getJobSeeker().getAvailability().name(),
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            default:
+                return Comparator.comparing(JobApplication::getAppliedAt,
+                    Comparator.nullsLast(Comparator.reverseOrder()));
+        }
     }
 
     private ApplicationResponse mapToResponse(JobApplication application) {
@@ -82,7 +99,8 @@ public class ApplicationService {
         response.setJobTitle(application.getJobPost().getJobTitle());
         response.setCompanyName(application.getJobPost().getEmployer().getBusinessName());
         response.setAppliedAt(application.getAppliedAt());
-        response.setMatchPercentage(application.getMatchPercentage().doubleValue());
+        response.setMatchPercentage(
+            application.getMatchPercentage() != null ? application.getMatchPercentage().doubleValue() : null);
         response.setStatus(application.getApplicationStatus());
         return response;
     }
@@ -102,7 +120,8 @@ public class ApplicationService {
         dto.setAvailability(seeker.getAvailability() != null ? seeker.getAvailability().name() : null);
         dto.setEmploymentPreference(seeker.getEmploymentTypePreference());
         dto.setExpectedSalary(seeker.getExpectedSalaryMin());
-        dto.setMatchPercentage(application.getMatchPercentage().doubleValue());
+        dto.setMatchPercentage(
+            application.getMatchPercentage() != null ? application.getMatchPercentage().doubleValue() : null);
         dto.setContactNumber(seeker.getContactNumber());
         return dto;
     }
