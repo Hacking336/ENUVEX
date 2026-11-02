@@ -91,9 +91,12 @@ site would stop working as soon as someone tried to log in.
 
 ## 6. After the first deploy
 
-- **Admin password.** The seeded admin `admin@jobskillsmatching.com` still has a
-  placeholder password hash that is public in this repository. Change it before
-  the site is reachable by anyone.
+- **Admin password.** The seeded admin `admin@jobskillsmatching.com` was created
+  with a placeholder hash that is public in this repository. It has been replaced
+  with a random password kept in `backend/.env` as `ADMIN_PASSWORD` (git-ignored
+  and never deployed, so move it to a password manager). If it is lost, generate
+  a new hash with `new BCryptPasswordEncoder().encode("...")` and update
+  `enuv.users.password_hash` for that email.
 - **Uploads.** Profile pictures are written to `uploads/` inside the container.
   On hosts with an ephemeral filesystem they are lost on every redeploy; mount a
   persistent volume at `/app/uploads` if that matters.
