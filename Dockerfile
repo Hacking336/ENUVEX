@@ -25,12 +25,11 @@ RUN mvn -B -f backend/pom.xml -DskipTests package
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-# Run as a non-root user. Uploads are written to ./uploads, so that directory
-# has to exist and be writable by the same user. On hosts with an ephemeral
-# filesystem uploaded avatars are lost on redeploy - mount a volume at
-# /app/uploads if you need them to survive (see DEPLOYMENT.md).
+# Run as a non-root user. Uploaded images are stored in PostgreSQL, so no
+# writable upload directory is needed here and nothing depends on the
+# container filesystem surviving a redeploy.
 RUN groupadd --system app && useradd --system --gid app app \
-    && mkdir -p /app/uploads && chown -R app:app /app
+    && chown -R app:app /app
 
 # Only the executable jar is copied; *.jar.original does not match this glob.
 COPY --from=build --chown=app:app /src/backend/target/*.jar app.jar

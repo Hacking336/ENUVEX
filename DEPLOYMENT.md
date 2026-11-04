@@ -97,9 +97,11 @@ site would stop working as soon as someone tried to log in.
   and never deployed, so move it to a password manager). If it is lost, generate
   a new hash with `new BCryptPasswordEncoder().encode("...")` and update
   `enuv.users.password_hash` for that email.
-- **Uploads.** Profile pictures are written to `uploads/` inside the container.
-  On hosts with an ephemeral filesystem they are lost on every redeploy; mount a
-  persistent volume at `/app/uploads` if that matters.
+- **Uploads.** Profile pictures and employer logos are stored in the
+  `enuv.uploaded_files` table (migration `V2`), not on disk, and served from
+  `/uploads/{filename}`. They therefore survive redeploys, restarts and the
+  spin-downs of free host tiers, and no persistent volume is needed. Uploads are
+  capped at 5MB by `spring.servlet.multipart.max-file-size`.
 - **Old credentials.** A MySQL password and an old JWT key were used during
   early development and still appear in the git history. Rotate anything you
   reused from those.

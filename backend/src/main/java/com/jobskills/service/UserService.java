@@ -13,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -28,8 +27,7 @@ public class UserService {
     private final EmployerProfileRepository employerRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-
-    private static final String UPLOAD_DIR = "uploads";
+    private final UploadedFileRepository uploadedFileRepository;
 
     /** Labels the registration forms send, mapped to the business type enum. */
     private static final Map<String, BusinessType> BUSINESS_TYPE_LABELS = Map.ofEntries(
@@ -348,13 +346,18 @@ public class UserService {
 
     private String saveFile(MultipartFile file) {
         try {
-            Path dir = Paths.get(UPLOAD_DIR).toAbsolutePath().normalize();
-            Files.createDirectories(dir);
             String original = file.getOriginalFilename() == null ? "upload" : file.getOriginalFilename();
             // Keep only the file name, never any directory part the client sent.
             String base = Paths.get(original).getFileName().toString().replaceAll("[^A-Za-z0-9._-]", "_");
             String filename = UUID.randomUUID() + "_" + base;
-            Files.write(dir.resolve(filename), file.getBytes());
+            // Stored in PostgreSQL, not on disk: the container filesystem is
+            // wiped on every restart and spin-down on managed hosts.
+            uploadedFileRepository.save(UploadedFile.builder()
+                .filename(filename)
+                .contentType(file.getContentType())
+                .sizeBytes(file.getSize() > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) file.getSize())
+                .data(file.getBytes())
+                .build());
             return filename;
         } catch (IOException e) {
             throw new IllegalStateException("Failed to save file", e);
