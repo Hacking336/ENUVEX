@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Employers - Admin Panel - Job & Skills Matching System</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/admin-employers.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <span>Admin Panel</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav" id="sidebarNav">
+                <!-- Injected by layout.js -->
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user" onclick="window.location.href='profile.html'">
+                    <div class="sidebar-user-avatar">AD</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name">System Admin</div>
+                        <div class="sidebar-user-role">Administrator</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="top-header-content">
+                    <div class="top-header-left">
+                        <button class="mobile-menu-btn" id="mobileMenuBtn">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h1 class="top-header-title">Verify Employers</h1>
+                    </div>
+                    <div class="top-header-right">
+                        <button class="header-btn" id="notificationBtn">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge">0</span>
+                        </button>
+                        <button class="header-btn" id="userMenuBtn">
+                            <i class="fas fa-user-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main class="page-content">
+                <section class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                        <div>
+                            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--dark-color);">
+                                Employers <span class="text-primary">(89)</span>
+                            </h2>
+                            <p style="color: var(--gray-500); font-size: 0.95rem;">
+                                Review and verify employer registrations.
+                            </p>
+                        </div>
+                        <button class="btn btn-primary" style="padding: 0.75rem 1.25rem;">
+                            <i class="fas fa-user-plus me-2"></i> Add Employer
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Employers Table -->
+                <section class="mb-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-dark" style="width: 100%; min-width: 600px;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;">#</th>
+                                    <th>Company Name</th>
+                                    <th>Email</th>
+                                    <th style="width: 140px;">User Type</th>
+                                    <th style="width: 140px;">Status</th>
+                                    <th style="width: 160px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>Example Corp</td>
+                                    <td>contact@example.com</td>
+                                    <td><span class="badge bg-secondary">EMPLOYER</span></td>
+                                    <td><span class="badge bg-warning">Pending</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Verify</button>
+                                        <button class="btn btn-sm btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Reject</button>
+                                    </td>
+                                </tr>
+                                <tr class="text-secondary">
+                                    <td>2</td>
+                                    <td>Test Enterprise</td>
+                                    <td>test@example.com</td>
+                                    <td><span class="badge bg-secondary">EMPLOYER</span></td>
+                                    <td><span class="badge bg-success">Verified</span></td>
+                                    <td><button class="btn btn-sm btn-outline">View</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Pending Verifications -->
+                <section class="mb-4">
+                    <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 1rem;">Pending Verifications <span class="badge bg-warning">5</span></h3>
+                    <div style="display: grid; gap: 1rem;">
+                        <div class="card" style="padding: 1rem; background: var(--card-bg); border-radius: var(--border-radius); border: 1px solid var(--gray-200);">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h4 style="font-size: 1rem; font-weight: 600;">Daet Health Pharmacy</h4>
+                                    <p style="font-size: 0.85rem; color: var(--gray-500);">Pharmacy Assistant position</p>
+                                </div>
+                                <div class="badge bg-warning ms-2" style="font-size: 0.75rem;">Pending</div>
+                            </div>
+                            <small style="color: var(--gray-500); display: block;">Submitted 2 days ago</small>
+                        </div>
+                        <div class="card" style="padding: 1rem; background: var(--card-bg); border-radius: var(--border-radius); border: 1px solid var(--gray-200);">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h4 style="font-size: 1rem; font-weight: 600;">Daet Logistics</h4>
+                                    <p style="font-size: 0.85rem; color: var(--gray-500);">Driver / Delivery position</p>
+                                </div>
+                                <div class="badge bg-warning ms-2" style="font-size: 0.75rem;">Pending</div>
+                            </div>
+                            <small style="color: var(--gray-500); display: block;">Submitted 3 days ago</small>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav" id="bottomNav">
+        <!-- Injected by layout.js -->
+    </nav>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/layout.js"></script>
+    <script>
+        // Ensure user type is stored for proper sidebar detection
+        localStorage.setItem('userType', 'ADMIN');
+        localStorage.setItem('userName', 'System Admin');
+    </script>
+</body>
+</html>

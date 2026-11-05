@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Job & Skills Matching System</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <span>Admin Panel</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav" id="sidebarNav">
+                <!-- Injected by layout.js -->
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user" onclick="window.location.href='profile.html'">
+                    <div class="sidebar-user-avatar">AD</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name">System Admin</div>
+                        <div class="sidebar-user-role">Administrator</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="top-header-content">
+                    <div class="top-header-left">
+                        <button class="mobile-menu-btn" id="mobileMenuBtn">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h1 class="top-header-title">Admin Dashboard</h1>
+                    </div>
+                    <div class="top-header-right">
+                        <button class="header-btn" id="notificationBtn">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge">0</span>
+                        </button>
+                        <button class="header-btn" id="userMenuBtn">
+                            <i class="fas fa-user-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main class="page-content">
+                <!-- Welcome Section -->
+                <section class="mb-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <div>
+                            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--dark-color); margin-bottom: 0.25rem;">
+                                Hello, <span style="color: var(--danger-color);">Admin</span>!
+                            </h2>
+                            <p style="color: var(--gray-500); font-size: 0.95rem;">System overview and management.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Stats Cards -->
+                <div class="dashboard-stats mb-4">
+                    <div class="stat-card fade-in">
+                        <div class="stat-icon blue">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value">1,247</div>
+                            <div class="stat-label">Total Job Seekers</div>
+                        </div>
+                    </div>
+                    <div class="stat-card fade-in" style="animation-delay: 0.1s;">
+                        <div class="stat-icon purple">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value">89</div>
+                            <div class="stat-label">Registered Employers</div>
+                        </div>
+                    </div>
+                    <div class="stat-card fade-in" style="animation-delay: 0.2s;">
+                        <div class="stat-icon green">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value">342</div>
+                            <div class="stat-label">Active Job Posts</div>
+                        </div>
+                    </div>
+                    <div class="stat-card fade-in" style="animation-delay: 0.3s;">
+                        <div class="stat-icon orange">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value">2,156</div>
+                            <div class="stat-label">Total Applications</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <section class="mb-4">
+                    <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 1rem;">Quick Actions</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <a href="users.html" class="btn btn-outline" style="padding: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center;">
+                            <i class="fas fa-users-cog" style="font-size: 1.5rem; color: var(--primary-color);"></i>
+                            <span style="font-weight: 600;">Manage Users</span>
+                            <small style="color: var(--gray-500);">View & manage all users</small>
+                        </a>
+                        <a href="employers.html" class="btn btn-outline" style="padding: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center;">
+                            <i class="fas fa-building" style="font-size: 1.5rem; color: var(--warning-color);"></i>
+                            <span style="font-weight: 600;">Verify Employers</span>
+                            <small style="color: var(--gray-500);">5 pending verifications</small>
+                        </a>
+                        <a href="job-posts.html" class="btn btn-outline" style="padding: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center;">
+                            <i class="fas fa-briefcase" style="font-size: 1.5rem; color: #7e57c2;"></i>
+                            <span style="font-weight: 600;">Manage Job Posts</span>
+                            <small style="color: var(--gray-500);">Review & moderate posts</small>
+                        </a>
+                        <a href="reports.html" class="btn btn-outline" style="padding: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center;">
+                            <i class="fas fa-chart-line" style="font-size: 1.5rem; color: #2a9d8f;"></i>
+                            <span style="font-weight: 600;">System Reports</span>
+                            <small style="color: var(--gray-500);">Analytics & insights</small>
+                        </a>
+                    </div>
+                </section>
+
+                <!-- System Stats by Municipality -->
+                <section class="mb-4">
+                    <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 1rem;">Municipality Distribution</h3>
+                    <div class="municipality-grid">
+                        <div class="municipality-card">
+                            <h4><i class="fas fa-seedling" style="margin-right: 0.35rem; color: var(--warning-color);"></i> Basud</h4>
+                            <p>234 Job Seekers • 12 Employers • 45 Active Jobs</p>
+                        </div>
+                        <div class="municipality-card">
+                            <h4><i class="fas fa-store" style="margin-right: 0.35rem; color: var(--primary-color);"></i> Daet</h4>
+                            <p>567 Job Seekers • 38 Employers • 156 Active Jobs</p>
+                        </div>
+                        <div class="municipality-card">
+                            <h4><i class="fas fa-fish" style="margin-right: 0.35rem; color: var(--accent-color);"></i> Vinzons</h4>
+                            <p>289 Job Seekers • 18 Employers • 78 Active Jobs</p>
+                        </div>
+                        <div class="municipality-card">
+                            <h4><i class="fas fa-industry" style="margin-right: 0.35rem; color: #7e57c2;"></i> Labo</h4>
+                            <p>157 Job Seekers • 21 Employers • 63 Active Jobs</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Top Job Categories -->
+                <section class="mb-4">
+                    <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 1rem;">Top Job Categories</h3>
+                    <div class="municipality-grid">
+                        <div class="municipality-card">
+                            <h4><i class="fas fa-utensils" style="margin-right: 0.35rem; color: var(--warning-color);"></i> Restaurant/Food Service</h4>
+                            <p>89 Active Jobs • 456 Applications</p>
+                        </div>
+                        <div class="municipality-card">
+                            <h4><i class="fas fa-shopping-cart" style="margin-right: 0.35rem; color: var(--primary-color);"></i> Retail/Store</h4>
+                            <p>67 Active Jobs • 324 Applications</p>
+                        </div>
+                        <div class="municipality-card">
+                            <h4><i class="fas fa-hard-hat" style="margin-right: 0.35rem; color: var(--accent-color);"></i> Construction</h4>
+                            <p>45 Active Jobs • 289 Applications</p>
+                        </div>
+                        <div class="municipality-card">
+                            <h4><i class="fas fa-user-md" style="margin-right: 0.35rem; color: #7e57c2;"></i> Healthcare</h4>
+                            <p>38 Active Jobs • 198 Applications</p>
+                        </div>
+                        <div class="municipality-card">
+                            <h4><i class="fas fa-truck" style="margin-right: 0.35rem; color: #2a9d8f;"></i> Logistics/Transportation</h4>
+                            <p>34 Active Jobs • 167 Applications</p>
+                        </div>
+                        <div class="municipality-card">
+                            <h4><i class="fas fa-tractor" style="margin-right: 0.35rem; color: var(--danger-color);"></i> Agriculture</h4>
+                            <p>28 Active Jobs • 134 Applications</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- System Scope -->
+                <section class="system-scope fade-in">
+                    <h3><i class="fas fa-map-marked-alt" style="margin-right: 0.5rem; color: var(--primary-color);"></i> System Scope</h3>
+                    <p style="color: var(--gray-600); margin-bottom: 1rem;">The Job & Skills Matching System covers the whole municipalities of Camarines Norte.</p>
+                    <div class="municipality-grid">
+                        <div class="municipality-card">
+                            <h4><i class="fas fa-seedling" style="margin-right: 0.35rem; color: var(--warning-color);"></i> Basud</h4>
+                            <p>Agriculture, trading, small businesses, services</p>
+                        </div>
+                        <div class="municipality-card">
+                            <h4><i class="fas fa-store" style="margin-right: 0.35rem; color: var(--primary-color);"></i> Daet</h4>
+                            <p>Commercial center, retail, offices, services, tourism</p>
+                        </div>
+                        <div class="municipality-card">
+                            <h4><i class="fas fa-fish" style="margin-right: 0.35rem; color: var(--accent-color);"></i> Vinzons</h4>
+                            <p>Fisheries, trading, transportation, services</p>
+                        </div>
+                        <div class="municipality-card">
+                            <h4><i class="fas fa-industry" style="margin-right: 0.35rem; color: #7e57c2;"></i> Labo</h4>
+                            <p>Agriculture, manufacturing, education, public services</p>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav" id="bottomNav">
+        <!-- Injected by layout.js -->
+    </nav>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/layout.js"></script>
+    <script>
+        // Ensure user type is stored for proper sidebar detection
+        localStorage.setItem('userType', 'ADMIN');
+        localStorage.setItem('userName', 'System Admin');
+    </script>
+</body>
+</html>

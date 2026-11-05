@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — ENUVEX</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/auth.css">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+</head>
+<body class="login-page auth-page">
+
+<div class="auth-shell">
+
+    <aside class="auth-aside">
+        <a class="auth-logo" href="index.html">
+            <svg class="auth-mark" viewBox="0 0 48 48" aria-hidden="true">
+                <defs>
+                    <linearGradient id="authGreen" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#5ad569"/>
+                        <stop offset="100%" stop-color="#2e9e41"/>
+                    </linearGradient>
+                </defs>
+                <path d="M19 12.5v-1.8A4.7 4.7 0 0 1 23.7 6h0.6a4.7 4.7 0 0 1 4.7 4.7v1.8"
+                      fill="none" stroke="url(#authGreen)" stroke-width="3.4" stroke-linecap="round"/>
+                <rect x="3" y="12.5" width="42" height="29" rx="6.5" fill="url(#authGreen)"/>
+                <circle cx="19" cy="25.5" r="3.6" fill="#ffffff"/>
+                <circle cx="29" cy="25.5" r="3.6" fill="#ffffff"/>
+                <path d="M12.4 35.4c0-3.6 3-6.5 6.6-6.5s6.6 2.9 6.6 6.5z" fill="#ffffff"/>
+                <path d="M22.4 35.4c0-3.6 3-6.5 6.6-6.5s6.6 2.9 6.6 6.5z" fill="#ffffff"/>
+            </svg>
+            <span class="auth-logo-text">
+                <strong>ENUVEX</strong>
+                <small>Job &amp; Skills Matching System</small>
+            </span>
+        </a>
+
+        <div class="auth-aside-copy">
+            <h1>Search. Apply. <span>Grow.</span></h1>
+            <p>Sign in to pick up where you left off — your matches, saved jobs and applications are waiting.</p>
+
+            <ul class="auth-points">
+                <li><i class="fas fa-circle-check"></i> Jobs matched to your skills and location</li>
+                <li><i class="fas fa-circle-check"></i> Apply in a few clicks with one profile</li>
+                <li><i class="fas fa-circle-check"></i> Track every application in one place</li>
+            </ul>
+        </div>
+
+        <p class="auth-aside-foot">© 2026 ENUVEX — Job &amp; Skills Matching System</p>
+    </aside>
+
+    <main class="auth-main">
+        <div class="auth-form-wrap">
+            <a class="auth-logo auth-logo-mobile" href="index.html">
+                <svg class="auth-mark" viewBox="0 0 48 48" aria-hidden="true">
+                    <rect x="3" y="12.5" width="42" height="29" rx="6.5" fill="#2e9e41"/>
+                    <path d="M19 12.5v-1.8A4.7 4.7 0 0 1 23.7 6h0.6a4.7 4.7 0 0 1 4.7 4.7v1.8"
+                          fill="none" stroke="#2e9e41" stroke-width="3.4" stroke-linecap="round"/>
+                    <circle cx="19" cy="25.5" r="3.6" fill="#ffffff"/>
+                    <circle cx="29" cy="25.5" r="3.6" fill="#ffffff"/>
+                    <path d="M12.4 35.4c0-3.6 3-6.5 6.6-6.5s6.6 2.9 6.6 6.5z" fill="#ffffff"/>
+                    <path d="M22.4 35.4c0-3.6 3-6.5 6.6-6.5s6.6 2.9 6.6 6.5z" fill="#ffffff"/>
+                </svg>
+                <span class="auth-logo-text">
+                    <strong>ENUVEX</strong>
+                    <small>Job &amp; Skills Matching System</small>
+                </span>
+            </a>
+
+            <a class="auth-back" href="index.html"><i class="fas fa-arrow-left"></i> Back to Home</a>
+
+            <h2 class="auth-title">Welcome back</h2>
+            <p class="auth-sub">Sign in to your ENUVEX account to continue.</p>
+
+            <form class="validate" id="loginForm">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email / Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        <input type="email" class="form-control" id="email" placeholder="Enter your email or username" autocomplete="username" required>
+                    </div>
+                </div>
+
+                <div class="form-group position-password-toggle">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        <input type="password" class="form-control" id="password" placeholder="Enter your password" autocomplete="current-password" required>
+                        <button type="button" class="btn btn-outline-secondary password-toggle" id="togglePassword" aria-label="Show password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="rememberMe">
+                    <label class="form-check-label" for="rememberMe">Remember Me</label>
+                </div>
+
+                <button type="submit" id="loginBtn" class="btn btn-primary btn-lg btn-block">Login</button>
+            </form>
+
+            <p class="auth-alt">
+                New to ENUVEX?
+                <button type="button" class="auth-link-btn" id="showRegisterChoice">Create an account</button>
+            </p>
+            <p class="auth-alt auth-alt-muted"><a href="#">Forgot Password?</a></p>
+        </div>
+    </main>
+
+</div>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/api.js"></script>
+<script>
+    // Handle register choice button
+    document.getElementById('showRegisterChoice').addEventListener('click', function() {
+        window.location.href = 'register.html';
+    });
+
+    // Toggle password visibility
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        var p = document.getElementById('password');
+        p.type = p.type === 'password' ? 'text' : 'password';
+        this.querySelector('i').classList.toggle('fa-eye');
+        this.querySelector('i').classList.toggle('fa-eye-slash');
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const data = await ApiClient.login(email, password);
+
+            if (data.token) {
+                // ApiClient.setAuth already stores these with 'jsm_' prefix
+                // Keeping 'accessToken' etc for any legacy code that might use them
+                localStorage.setItem('accessToken', data.token);
+                localStorage.setItem('refreshToken', data.refreshToken);
+                localStorage.setItem('userType', data.userType.toUpperCase());
+                localStorage.setItem('userId', data.userId.toString());
+
+                const notice = document.querySelector('.auth-sub');
+                if (notice) { notice.textContent = 'Login successful! Redirecting...'; }
+
+                // Redirect based on user type
+                setTimeout(() => {
+                    const userType = data.userType.toUpperCase();
+                    if (userType === 'JOB_SEEKER') {
+                        window.location.href = 'job-seeker/dashboard.html';
+                    } else if (userType === 'EMPLOYER') {
+                        window.location.href = 'employer/dashboard.html';
+                    } else if (userType === 'ADMIN') {
+                        window.location.href = 'admin/dashboard.html';
+                    }
+                }, 1000);
+            }
+        } catch (error) {
+            // The API answers 403 for bad credentials, which surfaces as a bare
+            // "Request failed (403)"; say something the user can act on instead.
+            const raw = (error.message || '').toLowerCase();
+            const rejected = raw.includes('403') || raw.includes('401') || raw.includes('bad credentials');
+            const sub = document.querySelector('.auth-sub');
+            if (sub) {
+                sub.textContent = rejected
+                    ? 'Wrong email or password. Please try again.'
+                    : (error.message || 'Login failed. Please try again.');
+                sub.classList.add('is-error');
+            }
+            document.getElementById('email').classList.add('is-invalid');
+            document.getElementById('password').classList.add('is-invalid');
+        }
+    });
+</script>
+</body>
+</html>

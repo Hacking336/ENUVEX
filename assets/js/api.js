@@ -3,8 +3,10 @@
  * Connects the frontend UI to the Spring Boot backend
  */
 
-// Same origin as the page: works on any host or port, and needs no CORS.
-const API_BASE_URL = '/api';
+// API base URL: change to your Render backend URL for production.
+// When hosted on GitHub Pages, this points to the Render API.
+// Set to '/api' for same-origin (local development only).
+const API_BASE_URL = 'https://enuvex.onrender.com/api';
 
 const ApiClient = {
     token: null,
