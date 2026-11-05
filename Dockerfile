@@ -14,7 +14,9 @@ RUN mvn -B -f backend/pom.xml dependency:go-offline
 # Mirror the on-disk layout the POM expects: ../assets, .., ../job-seeker, ...
 COPY backend/src backend/src
 COPY assets assets
-COPY index.html layout.html register.html ./
+# Every root-level page, so a new one (login.html, for example) cannot be
+# forgotten here and silently 404 in production while working locally.
+COPY *.html ./
 COPY job-seeker job-seeker
 COPY employer employer
 COPY admin admin
