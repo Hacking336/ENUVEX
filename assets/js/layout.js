@@ -262,10 +262,10 @@ function getProfileHref(userType) {
 function getLogoutHref(userType) {
     // Go back to login page - adjust based on current directory
     const path = window.location.pathname;
-    if (path.includes('/admin/')) return '../../index.html';
-    if (path.includes('/employer/')) return '../../index.html';
-    if (path.includes('/job-seeker/')) return '../../index.html';
-    return 'index.html';
+    if (path.includes('/admin/')) return '../../login.html';
+    if (path.includes('/employer/')) return '../../login.html';
+    if (path.includes('/job-seeker/')) return '../../login.html';
+    return 'login.html';
 }
 
 function showNotificationsDropdown(btn) {

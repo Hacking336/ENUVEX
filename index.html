@@ -3,126 +3,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job & Skills Matching System - Login</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <title>ENUVEX — Job &amp; Skills Matching System</title>
+    <meta name="description" content="ENUVEX connects skilled professionals with the right employers. Search local jobs, apply in minutes and grow your career.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/landing.css">
 </head>
-<body class="login-page">
-    <div class="login-card">
-        <div class="login-logo">
-            <div class="login-logo-icon">
-                <img src="assets/logo.png" alt="Logo" style="width:90px;height:auto;border-radius:8px;box-shadow:none;background:none;">
-            </div>
-            <h2>Job & Skills Matching System</h2>
-            <p>Connecting Local Talent with Local Opportunities</p>
-        </div>
+<body class="landing">
 
-        <form class="validate" id="loginForm">
-            <div class="form-group">
-                <label for="email" class="form-label">Email / Username</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-user"></i></span>
-                    <input type="email" class="form-control" id="email" placeholder="Enter your email or username" required>
+<header class="site-header">
+    <div class="container header-inner">
+        <a class="brand" href="index.html" aria-label="ENUVEX home">
+            <svg class="brand-mark" viewBox="0 0 48 48" role="img" aria-hidden="true">
+                <defs>
+                    <linearGradient id="markGreen" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#4cc05a"/>
+                        <stop offset="100%" stop-color="#2e9e41"/>
+                    </linearGradient>
+                </defs>
+                <path d="M19 12.5v-1.8A4.7 4.7 0 0 1 23.7 6h0.6a4.7 4.7 0 0 1 4.7 4.7v1.8"
+                      fill="none" stroke="url(#markGreen)" stroke-width="3.4" stroke-linecap="round"/>
+                <rect x="3" y="12.5" width="42" height="29" rx="6.5" fill="url(#markGreen)"/>
+                <circle cx="19" cy="25.5" r="3.6" fill="#ffffff"/>
+                <circle cx="29" cy="25.5" r="3.6" fill="#ffffff"/>
+                <path d="M12.4 35.4c0-3.6 3-6.5 6.6-6.5s6.6 2.9 6.6 6.5z" fill="#ffffff"/>
+                <path d="M22.4 35.4c0-3.6 3-6.5 6.6-6.5s6.6 2.9 6.6 6.5z" fill="#ffffff"/>
+            </svg>
+            <span class="brand-text">
+                <strong>ENUVEX</strong>
+                <small>Job &amp; Skills Matching System</small>
+            </span>
+        </a>
+
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <nav class="site-nav" id="siteNav">
+            <a href="index.html" class="active"><i class="fas fa-house"></i> Home</a>
+            <a href="login.html" class="js-jobs-link" title="Sign in to browse all job posts"><i class="fas fa-briefcase"></i> Jobs</a>
+            <div class="nav-dropdown" id="careerDropdown">
+                <button type="button" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-chart-line"></i> Career Tools <i class="fas fa-chevron-down chev"></i>
+                </button>
+                <div class="nav-menu">
+                    <a href="login.html">Skills matching</a>
+                    <a href="login.html">Profile &amp; resume builder</a>
+                    <a href="login.html">Application tracker</a>
                 </div>
             </div>
+            <a href="#about"><i class="fas fa-circle-info"></i> About</a>
+            <a href="#help"><i class="fas fa-circle-question"></i> Help</a>
+            <a href="register.html" class="nav-mobile-only"><i class="fas fa-user-plus"></i> Sign Up</a>
+        </nav>
 
-            <div class="form-group position-password-toggle">
-                <label for="password" class="form-label">Password</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                    <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
-                    <button type="button" class="btn btn-outline-secondary password-toggle" id="togglePassword">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="form-check mb-3">
-                <input type="checkbox" class="form-check-input" id="rememberMe">
-                <label class="form-check-label" for="rememberMe">Remember Me</label>
-            </div>
-
-            <div class="d-grid gap-2">
-                <button type="submit" id="loginBtn" class="btn btn-primary btn-lg btn-block">Login</button>
-            </div>
-
-            <div class="mt-3 text-center">
-                <p class="mb-2">
-                    <a href="#" class="text-decoration-none small">Forgot Password?</a>
-                </p>
-                <div class="d-grid gap-2">
-                    <button type="button" class="btn btn-outline btn-lg" id="showRegisterChoice">
-                        Create Account
-                    </button>
-                </div>
-            </div>
-        </form>
-
-        <div class="mt-4 text-center">
-            <p class="text-muted">© 2026 Job & Skills Matching System. All rights reserved.</p>
+        <div class="header-actions">
+            <a class="btn-ghost" href="register.html">Sign Up</a>
+            <a class="btn-solid" href="login.html">Login</a>
         </div>
     </div>
+</header>
 
-    <script src="assets/js/main.js"></script>
-    <script src="assets/js/api.js"></script>
-    <script>
-        // Handle register choice button
-        document.getElementById('showRegisterChoice').addEventListener('click', function() {
-            window.location.href = 'register.html';
-        });
+<section class="hero">
+    <div class="hero-media">
+        <img src="assets/img/hero-professionals.jpg" alt="Two professionals smiling while reviewing notes together at a bright office table">
+    </div>
 
-        // Handle login form submission
-        // Toggle password visibility
-        document.getElementById('togglePassword').addEventListener('click', function() {
-            var p = document.getElementById('password');
-            p.type = p.type === 'password' ? 'text' : 'password';
-            this.querySelector('i').classList.toggle('fa-eye');
-            this.querySelector('i').classList.toggle('fa-eye-slash');
-        });
+    <div class="container hero-inner">
+        <div class="hero-copy">
+            <p class="eyebrow">Find Your Next Opportunity</p>
+            <h1>Search. Apply.<br><span class="accent">Grow.</span></h1>
+            <p class="lead">ENUVEX connects skilled professionals with the right employers.</p>
 
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+            <ul class="hero-features">
+                <li><span class="feature-icon"><i class="fas fa-magnifying-glass"></i></span> Discover Top Jobs</li>
+                <li><span class="feature-icon"><i class="fas fa-bolt"></i></span> Apply in Minutes</li>
+                <li><span class="feature-icon"><i class="fas fa-chart-line"></i></span> Grow Your Career</li>
+                <li><span class="feature-icon"><i class="fas fa-handshake"></i></span> Build a Better Future</li>
+            </ul>
+        </div>
+    </div>
+</section>
 
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+<div class="container search-shell">
+    <form class="search-card" id="heroSearch" role="search">
+        <label class="search-field" for="jobQuery">
+            <i class="fas fa-magnifying-glass"></i>
+            <span class="visually-hidden">Search jobs</span>
+            <input type="search" id="jobQuery" name="q" placeholder="Search for job title, skills, or companies...">
+        </label>
 
-            try {
-                const data = await ApiClient.login(email, password);
+        <div class="search-divider" aria-hidden="true"></div>
 
-                if (data.token) {
-                    // ApiClient.setAuth already stores these with 'jsm_' prefix
-                    // Keeping 'accessToken' etc for any legacy code that might use them
-                    localStorage.setItem('accessToken', data.token);
-                    localStorage.setItem('refreshToken', data.refreshToken);
-                    localStorage.setItem('userType', data.userType.toUpperCase());
-                    localStorage.setItem('userId', data.userId.toString());
-        // Button click handler
-        document.getElementById('loginBtn').addEventListener('click', function() {
-            if (!document.getElementById('email').value || !document.getElementById('password').value) {
-                showToast('Please enter email and password', 'error');
-            }
-        });
+        <div class="location-field">
+            <i class="fas fa-location-dot pin" aria-hidden="true"></i>
+            <label class="visually-hidden" for="jobLocation">Location</label>
+            <select id="jobLocation" name="municipality">
+                <option value="">Any Location</option>
+            </select>
+        </div>
 
-                    showToast('Login successful! Redirecting...', 'success');
+        <button type="submit" class="btn-search">Search Jobs <i class="fas fa-arrow-right"></i></button>
+    </form>
+</div>
 
-                    // Redirect based on user type
-                    setTimeout(() => {
-                        const userType = data.userType.toUpperCase();
-                        if (userType === 'JOB_SEEKER') {
-                            window.location.href = 'job-seeker/dashboard.html';
-                        } else if (userType === 'EMPLOYER') {
-                            window.location.href = 'employer/dashboard.html';
-                        } else if (userType === 'ADMIN') {
-                            window.location.href = 'admin/dashboard.html';
-                        }
-                    }, 1000);
-                }
-            } catch (error) {
-                showToast(error.message || 'Login failed: wrong password or user not found', 'error');
-                document.getElementById('email').classList.add('is-invalid');
-                document.getElementById('password').classList.add('is-invalid');
-            }
-        });
-    </script>
+<section class="featured" id="jobs">
+    <div class="container">
+        <div class="section-head">
+            <h2>Featured Jobs</h2>
+            <a href="login.html" class="link-all js-jobs-link">View All Jobs <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <div class="job-grid" id="featuredGrid" aria-live="polite">
+            <!-- Cards are rendered by assets/js/landing.js -->
+        </div>
+    </div>
+</section>
+
+<section class="about-band" id="about">
+    <div class="container about-inner">
+        <div>
+            <h2>About ENUVEX</h2>
+            <p>ENUVEX is a job and skills matching system that brings local talent and local employers
+                together. Instead of scrolling through unrelated listings, job seekers are matched to
+                posts by their skills, education, work preference and location.</p>
+            <ul class="about-points">
+                <li><i class="fas fa-circle-check"></i> Job seekers keep one profile and apply to matching posts in a few clicks.</li>
+                <li><i class="fas fa-circle-check"></i> Employers post vacancies and see applicants ranked by how well they match.</li>
+                <li><i class="fas fa-circle-check"></i> Every application is tracked, so nothing gets lost in an inbox.</li>
+            </ul>
+        </div>
+
+        <div class="help-card" id="help">
+            <h3>Need a hand?</h3>
+            <p>Create an account to save jobs, apply, and track every application in one place.
+                Already registered? Sign in and pick up where you left off.</p>
+            <div class="help-actions">
+                <a class="btn-solid" href="register.html">Create an account</a>
+                <a class="btn-ghost" href="login.html">Login</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-inner">
+            <a class="brand" href="index.html">
+                <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+                    <rect x="3" y="12.5" width="42" height="29" rx="6.5" fill="#2e9e41"/>
+                    <path d="M19 12.5v-1.8A4.7 4.7 0 0 1 23.7 6h0.6a4.7 4.7 0 0 1 4.7 4.7v1.8"
+                          fill="none" stroke="#2e9e41" stroke-width="3.4" stroke-linecap="round"/>
+                    <circle cx="19" cy="25.5" r="3.6" fill="#ffffff"/>
+                    <circle cx="29" cy="25.5" r="3.6" fill="#ffffff"/>
+                    <path d="M12.4 35.4c0-3.6 3-6.5 6.6-6.5s6.6 2.9 6.6 6.5z" fill="#ffffff"/>
+                    <path d="M22.4 35.4c0-3.6 3-6.5 6.6-6.5s6.6 2.9 6.6 6.5z" fill="#ffffff"/>
+                </svg>
+                <span class="brand-text">
+                    <strong>ENUVEX</strong>
+                    <small>Job &amp; Skills Matching System</small>
+                </span>
+            </a>
+
+            <nav class="footer-links" aria-label="Footer">
+                <a href="#jobs">Jobs</a>
+                <a href="#about">About</a>
+                <a href="#help">Help</a>
+                <a href="register.html">Sign Up</a>
+                <a href="login.html">Login</a>
+            </nav>
+        </div>
+
+        <div class="footer-bottom">© 2026 ENUVEX — Job &amp; Skills Matching System. All rights reserved.</div>
+    </div>
+</footer>
+
+<div class="landing-toast" id="landingToast" role="status" aria-live="polite"></div>
+
+<script src="assets/js/landing.js"></script>
 </body>
 </html>

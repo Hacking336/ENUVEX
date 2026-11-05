@@ -25,3 +25,6 @@ cp.txt
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Local review screenshots (not part of the app)
+artifacts/
