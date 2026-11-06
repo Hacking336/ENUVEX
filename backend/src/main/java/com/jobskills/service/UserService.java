@@ -131,7 +131,8 @@ public class UserService {
         String normalizedEmail = normalizeEmail(email);
 
         // Check if this is an admin login with name only (no password)
-        boolean isAdminNameLogin = normalizedEmail.equalsIgnoreCase("admin") && (password == null || password.trim().isEmpty());
+        // Accept either "admin" or "admin++" as the admin name
+        boolean isAdminNameLogin = (normalizedEmail.equalsIgnoreCase("admin") || normalizedEmail.equalsIgnoreCase("admin++")) && (password == null || password.trim().isEmpty());
 
         User user;
         if (isAdminNameLogin) {
