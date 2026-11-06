@@ -128,15 +128,33 @@ public class UserService {
 
     @Transactional
     public AuthResponse login(String email, String password) {
-        User user = userRepository.findByEmail(normalizeEmail(email))
-            .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
+        String normalizedEmail = normalizeEmail(email);
 
-        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
-            throw new IllegalArgumentException("Invalid credentials");
-        }
+        // Check if this is an admin login with name only (no password)
+        boolean isAdminNameLogin = normalizedEmail.equalsIgnoreCase("admin") && (password == null || password.trim().isEmpty());
 
-        if (!user.isActive()) {
-            throw new IllegalArgumentException("This account has been deactivated");
+        User user;
+        if (isAdminNameLogin) {
+            // Admin login: find user by email (which is the admin name)
+            // and allow access without password check
+            user = userRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid admin credentials"));
+
+            if (!user.isActive()) {
+                throw new IllegalArgumentException("This admin account has been deactivated");
+            }
+        } else {
+            // Normal login: user + password required
+            user = userRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
+
+            if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+                throw new IllegalArgumentException("Invalid credentials");
+            }
+
+            if (!user.isActive()) {
+                throw new IllegalArgumentException("This account has been deactivated");
+            }
         }
 
         String name = user.getUserType() == UserType.JOB_SEEKER

@@ -78,21 +78,20 @@
 
             <form class="validate" id="loginForm">
                 <div class="form-group">
-                    <label for="email" class="form-label">Email / Username</label>
+                    <label for="name" class="form-label">Name</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-user"></i></span>
-                        <input type="email" class="form-control" id="email" placeholder="Enter your email or username" autocomplete="username" required>
+                        <input type="text" class="form-control" id="name" placeholder="Enter your name" autocomplete="name" required>
                     </div>
                 </div>
 
-                <div class="form-group position-password-toggle">
+                <!-- Password is optional for admin; required for job seeker/employer -->
+                <div class="form-group" id="passwordGroup">
                     <label for="password" class="form-label">Password</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                        <input type="password" class="form-control" id="password" placeholder="Enter your password" autocomplete="current-password" required>
-                        <button type="button" class="btn btn-outline-secondary password-toggle" id="togglePassword" aria-label="Show password">
-                            <i class="fas fa-eye"></i>
-                        </button>
+                        <input type="password" class="form-control" id="password" placeholder="Enter your password" autocomplete="current-password">
+                        <small class="form-text text-muted">Leave blank for admin login</small>
                     </div>
                 </div>
 
@@ -133,11 +132,14 @@
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
         e.preventDefault();
 
-        const email = document.getElementById('email').value;
+        const name = document.getElementById('name').value.trim();
         const password = document.getElementById('password').value;
 
+        // Use name as the login identifier; password is optional (required for non-admin)
+        let loginPassword = password;
+
         try {
-            const data = await ApiClient.login(email, password);
+            const data = await ApiClient.login(name, loginPassword);
 
             if (data.token) {
                 // ApiClient.setAuth already stores these with 'jsm_' prefix
@@ -163,19 +165,20 @@
                 }, 1000);
             }
         } catch (error) {
-            // The API answers 403 for bad credentials, which surfaces as a bare
-            // "Request failed (403)"; say something the user can act on instead.
+            // The API answers 403 for bad credentials
             const raw = (error.message || '').toLowerCase();
             const rejected = raw.includes('403') || raw.includes('401') || raw.includes('bad credentials');
             const sub = document.querySelector('.auth-sub');
             if (sub) {
                 sub.textContent = rejected
-                    ? 'Wrong email or password. Please try again.'
+                    ? 'Wrong name or password. Please try again.'
                     : (error.message || 'Login failed. Please try again.');
                 sub.classList.add('is-error');
             }
-            document.getElementById('email').classList.add('is-invalid');
-            document.getElementById('password').classList.add('is-invalid');
+            document.getElementById('name').classList.add('is-invalid');
+            if (loginPassword) {
+                document.getElementById('password').classList.add('is-invalid');
+            }
         }
     });
 </script>
