@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class AuthRequest {
-    // Note: @Email and @NotBlank removed to allow admin++/admin name login
+    // Note: @Email and @NotBlank removed to allow admin++/admin name login (fix #2) 
     // with or without password. Normal email format still expected for non-admin.
     private String email;
 
