@@ -5,12 +5,9 @@ import lombok.Data;
 
 @Data
 public class AuthRequest {
-    // Note: @Email and @NotBlank removed to allow admin++/admin name login (fix #2) 
+    // Note: @Email and @NotBlank removed to allow admin++/admin name login
     // with or without password. Normal email format still expected for non-admin.
-    private String email;
-
-    // Password is optional for admin login (blank password allowed)
-    // Required for job seeker/employer login (enforced in UserService)
-    @Size(min = 6, max = 100)
+    // Password size validation enforced in UserService.java: min 6 chars for non-admin users
+    // Blank password allowed for admin name-only login
     private String password;
 }
