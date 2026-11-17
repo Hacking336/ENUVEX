@@ -19,7 +19,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
-        // Manual validation - skip Spring @Valid to allow blank password for admin
+        // Manual validation - skip Spring @Valid to allow blank password for admin X
         String email = request.getEmail();
         String password = request.getPassword();
 
