@@ -18,7 +18,17 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+        // Manual validation: allow blank password for admin name-only login
+        if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(new AuthResponse("Email is required"));
+        }
+        if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
+            // Password provided: normal login validation
+            // Will be validated in UserService.login()
+        } else if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+            // Blank password: will be handled in UserService.login() for admin name-only login
+        }
         AuthResponse response = userService.login(request.getEmail(), request.getPassword());
         return ResponseEntity.ok(response);
     }
