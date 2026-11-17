@@ -13,7 +13,7 @@
 
     <groupId>com.jobskills</groupId>
     <artifactId>job-skills-matching-system</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <packaging>jar</packaging>
     <name>Job Skills Matching System</name>
     <description>Localized job marketplace and matching platform for Camarines Norte municipalities</description>
