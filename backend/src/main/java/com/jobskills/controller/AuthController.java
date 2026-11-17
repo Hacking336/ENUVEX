@@ -19,18 +19,26 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
-        // Manual validation: allow blank password for admin name-only login
-        if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+        // Manual validation - skip Spring @Valid to allow blank password for admin
+        String email = request.getEmail();
+        String password = request.getPassword();
+
+        // Basic email check
+        if (email == null || email.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(new AuthResponse("Email is required"));
         }
-        if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
-            // Password provided: normal login validation
-            // Will be validated in UserService.login()
-        } else if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
-            // Blank password: will be handled in UserService.login() for admin name-only login
+
+        // Check if this is an admin name-only login (blank password)
+        boolean isAdminNameLogin = (email != null && (email.equalsIgnoreCase("admin") || email.equalsIgnoreCase("admin++"))) && (password == null || password.trim().isEmpty());
+
+        if (isAdminNameLogin) {
+            // Admin name-only login: skip password validation, authenticate by name
+            return userService.login(email, password);
         }
-        AuthResponse response = userService.login(request.getEmail(), request.getPassword());
-        return ResponseEntity.ok(response);
+
+        // Normal login: require valid password
+        // Note: UserService.login() will validate password against hash
+        return userService.login(email, password);
     }
 
     @PostMapping(value = "/register", consumes = {"multipart/form-data"})
