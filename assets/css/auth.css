@@ -268,35 +268,6 @@
     font-size: 15.5px;
 }
 
-/* Admin access hint shown under the login button. */
-.admin-note {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin-top: 16px;
-    padding: 12px 14px;
-    border: 1px solid #dbe7f0;
-    border-radius: 10px;
-    background: #f6fafd;
-    color: #55677a;
-    font-size: 13.5px;
-    line-height: 1.45;
-}
-
-.admin-note i {
-    margin-top: 2px;
-    color: #2e9e41;
-}
-
-.admin-note code {
-    padding: 1px 5px;
-    border-radius: 5px;
-    background: #e8f1f8;
-    color: #33465a;
-    font-size: 13px;
-    font-weight: 600;
-}
-
 .auth-alt {
     margin: 20px 0 0;
     font-size: 14px;

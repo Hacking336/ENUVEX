@@ -81,11 +81,10 @@
                     <label for="name" class="form-label">Name or Email</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-user"></i></span>
-                        <input type="text" class="form-control" id="name" placeholder="Your name, email, or admin++" autocomplete="username" required>
+                        <input type="text" class="form-control" id="name" placeholder="Your name or email" autocomplete="username" required>
                     </div>
                 </div>
 
-                <!-- Password is optional for admin; required for job seeker/employer v4 - admin-name-only-fix -->
                 <div class="form-group position-password-toggle" id="passwordGroup">
                     <label for="password" class="form-label">Password</label>
                     <div class="input-group">
@@ -104,11 +103,6 @@
 
                 <button type="submit" id="loginBtn" class="btn btn-primary btn-lg btn-block">Login</button>
             </form>
-
-            <div class="admin-note">
-                <i class="fas fa-user-shield"></i>
-                <span><strong>Admin access:</strong> enter <code>admin++</code> as the name and leave the password empty.</span>
-            </div>
 
             <p class="auth-alt">
                 New to ENUVEX?
