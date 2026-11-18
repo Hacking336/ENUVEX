@@ -12,4 +12,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
     long countByUserType(UserType userType);
+    /** Used for the admin name-only login, where no email is supplied. */
+    Optional<User> findFirstByUserType(UserType userType);
 }

@@ -17,28 +17,15 @@ public class AuthController {
 
     private final UserService userService;
 
+    /**
+     * No @Valid here on purpose: the admin signs in with a name and no password,
+     * so the password field must be allowed to be blank. UserService enforces
+     * the password for job seekers and employers.
+     */
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
-        // Manual validation - skip Spring @Valid to allow blank password for admin X
-        String email = request.getEmail();
-        String password = request.getPassword();
-
-        // Basic email check
-        if (email == null || email.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(new AuthResponse("Email is required"));
-        }
-
-        // Check if this is an admin name-only login (blank password)
-        boolean isAdminNameLogin = (email != null && (email.equalsIgnoreCase("admin") || email.equalsIgnoreCase("admin++"))) && (password == null || password.trim().isEmpty());
-
-        if (isAdminNameLogin) {
-            // Admin name-only login: skip password validation, authenticate by name
-            return userService.login(email, password);
-        }
-
-        // Normal login: require valid password
-        // Note: UserService.login() will validate password against hash
-        return userService.login(email, password);
+        AuthResponse response = userService.login(request.getEmail(), request.getPassword());
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping(value = "/register", consumes = {"multipart/form-data"})

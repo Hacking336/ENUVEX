@@ -130,19 +130,22 @@ public class UserService {
     public AuthResponse login(String email, String password) {
         String normalizedEmail = normalizeEmail(email);
 
-        // Check if this is an admin login with name only (no password)
-        // Accept either "admin" or "admin++" as the admin name
-        // Hash: render-force-redeploy-20261106-v2
-        boolean isAdminNameLogin = (normalizedEmail.equalsIgnoreCase("admin") || normalizedEmail.equalsIgnoreCase("admin++")) && (password == null || password.trim().isEmpty());
-        // FIXED: admin blank pw enabled - v3 - forced rebuild
-
+        // Admin login takes a name only: "admin" or "admin++" with no password.
+        // Job seekers and employers always sign in with email + password.
+        boolean isAdminNameLogin = (normalizedEmail.equals("admin") || normalizedEmail.equals("admin++"))
+            && (password == null || password.trim().isEmpty());
 
         User user;
         if (isAdminNameLogin) {
-            // Admin login: find user by email (which is the admin name)
-            // and allow access without password check
+            // The seeded admin account uses a real email, so resolve it by role
+            // unless the typed name happens to match an account's email.
             user = userRepository.findByEmail(normalizedEmail)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid admin credentials"));
+                .orElseGet(() -> userRepository.findFirstByUserType(UserType.ADMIN)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid admin credentials")));
+
+            if (user.getUserType() != UserType.ADMIN) {
+                throw new IllegalArgumentException("Invalid admin credentials");
+            }
 
             if (!user.isActive()) {
                 throw new IllegalArgumentException("This admin account has been deactivated");

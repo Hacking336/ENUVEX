@@ -78,10 +78,10 @@
 
             <form class="validate" id="loginForm">
                 <div class="form-group">
-                    <label for="name" class="form-label">Name</label>
+                    <label for="name" class="form-label">Name or Email</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-user"></i></span>
-                        <input type="text" class="form-control" id="name" placeholder="Enter your name" autocomplete="name" required>
+                        <input type="text" class="form-control" id="name" placeholder="Your name, email, or admin++" autocomplete="username" required>
                     </div>
                 </div>
 
@@ -91,7 +91,7 @@
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-lock"></i></span>
                         <input type="password" class="form-control" id="password" placeholder="Enter your password" autocomplete="current-password">
-                        <small class="form-text text-muted">Leave blank for admin login ✅</small>
+                        <small class="form-text text-muted">Leave blank for admin login</small>
                     </div>
                 </div>
 
@@ -119,14 +119,6 @@
     // Handle register choice button
     document.getElementById('showRegisterChoice').addEventListener('click', function() {
         window.location.href = 'register.html';
-    });
-
-    // Toggle password visibility
-    document.getElementById('togglePassword').addEventListener('click', function() {
-        var p = document.getElementById('password');
-        p.type = p.type === 'password' ? 'text' : 'password';
-        this.querySelector('i').classList.toggle('fa-eye');
-        this.querySelector('i').classList.toggle('fa-eye-slash');
     });
 
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
