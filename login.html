@@ -86,12 +86,14 @@
                 </div>
 
                 <!-- Password is optional for admin; required for job seeker/employer v4 - admin-name-only-fix -->
-                <div class="form-group" id="passwordGroup">
+                <div class="form-group position-password-toggle" id="passwordGroup">
                     <label for="password" class="form-label">Password</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-lock"></i></span>
                         <input type="password" class="form-control" id="password" placeholder="Enter your password" autocomplete="current-password">
-                        <small class="form-text text-muted">Leave blank for admin login</small>
+                        <button type="button" class="btn btn-outline-secondary password-toggle" id="togglePassword" aria-label="Show password" onclick="var p=document.getElementById('password');p.type=p.type==='password'?'text':'password';this.querySelector('i').classList.toggle('fa-eye');this.querySelector('i').classList.toggle('fa-eye-slash');">
+                            <i class="fas fa-eye"></i>
+                        </button>
                     </div>
                 </div>
 
