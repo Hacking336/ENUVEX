@@ -10,7 +10,7 @@
     margin-bottom: 8px;
     font-size: 13.5px;
     font-weight: 600;
-    color: #33465a;
+    color: var(--ink-soft);
 }
 
 .login-page .form-group { margin-bottom: 18px; }
@@ -19,14 +19,14 @@
     display: flex;
     align-items: center;
     background: #fff;
-    border: 1.5px solid #dbe4ec;
+    border: 1.5px solid var(--line);
     border-radius: 12px;
     transition: border-color 0.16s ease, box-shadow 0.16s ease;
 }
 
 .login-page .input-group:focus-within {
-    border-color: #2e9e41;
-    box-shadow: 0 0 0 3px rgba(46, 158, 65, 0.14);
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(var(--green), 0.14);
 }
 
 .login-page .input-group-text {
@@ -35,11 +35,11 @@
     width: 48px;
     height: 48px;
     flex: 0 0 auto;
-    color: #7a8fa2;
+    color: var(--body);
     font-size: 14px;
-    background: #f5f9fb;
+    background: var(--page-bg);
     border: 0;
-    border-right: 1px solid #eef3f7;
+    border-right: 1px solid var(--line);
     border-radius: 11px 0 0 11px;
 }
 
@@ -49,6 +49,7 @@
     padding: 13px 14px;
     background: transparent;
     font-size: 15px;
+    color: var(--ink-soft);
 }
 
 .login-page .input-group .form-control:focus { box-shadow: none; }
@@ -74,7 +75,7 @@
     cursor: pointer;
 }
 
-.login-page .password-toggle:hover { background: #f1f6f9; color: #33465a; }
+.login-page .password-toggle:hover { background: var(--page-bg); color: var(--ink-soft); }
 
 /* Brand buttons */
 
@@ -114,12 +115,12 @@
 
 .login-page .login-logo h2 {
     font-size: 21px;
-    color: #0b2545;
+    color: var(--ink);
 }
 
-.login-page .login-logo p { font-size: 14px; color: #7a8fa2; }
+.login-page .login-logo p { font-size: 14px; color: var(--body); }
 
-.login-page .text-muted { color: #8a99a8; font-size: 12.5px; }
+.login-page .text-muted { color: var(--body); font-size: 12.5px; }
 
 /* ==========================================================================
    Split-screen login (login.html uses .login-page.auth-page)
@@ -148,7 +149,7 @@
     padding: 44px 52px;
     color: #fff;
     background:
-        linear-gradient(165deg, rgba(8, 29, 54, 0.93) 0%, rgba(9, 37, 45, 0.86) 55%, rgba(16, 66, 39, 0.8) 100%),
+        linear-gradient(165deg, rgba(11, 37, 69, 0.93) 0%, rgba(34, 55, 75, 0.86) 55%, rgba(43, 71, 91, 0.8) 100%),
         url('../img/hero-professionals.jpg') center / cover no-repeat;
 }
 
@@ -214,7 +215,7 @@
 .auth-aside-foot {
     margin: 0;
     font-size: 12.5px;
-    color: rgba(255, 255, 255, 0.55);
+    color: rgba(var(--body), 0.55);
 }
 
 /* Right: the form */
@@ -224,7 +225,7 @@
     align-items: center;
     justify-content: center;
     padding: 56px 40px;
-    background: #fff;
+    background: var(--page-bg);
 }
 
 .auth-form-wrap { width: 100%; max-width: 420px; }
@@ -239,7 +240,7 @@
     margin-bottom: 28px;
     font-size: 13.5px;
     font-weight: 600;
-    color: #2e9e41;
+    color: var(--green);
 }
 
 .auth-back:hover { color: #237d33; }
@@ -250,14 +251,14 @@
     font-size: 30px;
     font-weight: 800;
     letter-spacing: -0.6px;
-    color: #0b2545;
+    color: var(--ink);
 }
 
 .auth-sub {
     margin: 0 0 28px;
     font-size: 15px;
     line-height: 1.55;
-    color: #6b7c8c;
+    color: var(--body);
 }
 
 .auth-sub.is-error { color: #d64545; }
@@ -271,10 +272,10 @@
 .auth-alt {
     margin: 20px 0 0;
     font-size: 14px;
-    color: #55677a;
+    color: var(--body);
 }
 
-.auth-alt-muted { margin-top: 10px; font-size: 13.5px; }
+.auth-alt-muted { margin-top: 10px; font-size: 13.5px; color: var(--body); }
 
 .auth-alt a,
 .auth-link-btn {

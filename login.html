@@ -8,8 +8,58 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/auth.css">
+    <style>
+        :root {
+            --ink: #0b2545;
+            --ink-soft: #22374b;
+            --body: #55677a;
+            --green: #2e9e41;
+            --green-dark: #237d33;
+            --green-tint: rgba(46, 158, 65, 0.1);
+            --page-bg: #f3f7fa;
+            --line: #e4ebf1;
+            --radius: 16px;
+            --shadow-sm: 0 2px 8px rgba(11, 37, 69, 0.05);
+            --shadow-lg: 0 22px 50px rgba(11, 37, 69, 0.16);
+            --font-head: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+            --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: var(--font-body);
+            color: var(--body);
+            background: #fff;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { text-decoration: none; color: inherit; }
+        h1, h2, h3 { font-family: var(--font-head); color: var(--ink); margin: 0; }
+        .landing a { text-decoration: none; color: inherit; }
+        .btn-ghost, .btn-solid {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-family: var(--font-head);
+            font-size: 14.5px;
+            font-weight: 600;
+            transition: all 0.16s ease;
+            white-space: nowrap;
+        }
+        .btn-ghost {
+            color: var(--green);
+            border: 1.5px solid rgba(46, 158, 65, 0.55);
+            background: #fff;
+        }
+        .btn-ghost:hover { background: #f2f9f3; border-color: var(--green); }
+        .btn-solid {
+            color: #fff;
+            background: var(--green);
+            border: 1.5px solid var(--green);
+        }
+        .btn-solid:hover { background: var(--green-dark); border-color: var(--green-dark); }
+    </style>
     <link rel="icon" type="image/png" href="assets/logo.png">
 </head>
 <body class="login-page auth-page">
