@@ -6,6 +6,7 @@
     <title>Dashboard - Job & Skills Matching System</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/landing.css">
 </head>
 <body>
     <div class="app-layout">
@@ -19,6 +20,14 @@
                     <span>Job Seeker</span>
                 </div>
             </div>
+
+            <section class="sidebar-featured">
+                <h3 class="sidebar-featured-title">Featured</h3>
+                <div class="sidebar-featured-list">
+                    <a href="jobs.html" class="sidebar-featured-item">Search Jobs</a>
+                    <a href="profile.html" class="sidebar-featured-item">My Profile</a>
+                </div>
+            </section>
 
             <nav class="sidebar-nav" id="sidebarNav">
                 <!-- Injected by layout.js -->
@@ -63,29 +72,28 @@
 
             <!-- Page Content -->
             <main class="page-content">
-                <!-- Welcome Section -->
-                <section class="mb-4">
-                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-                        <div>
-                            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--dark-color); margin-bottom: 0.25rem;">
-                                Hello, <span class="text-primary">Maria</span>!
-                            </h2>
-                            <p style="color: var(--gray-500); font-size: 0.95rem;">Let's find the right job for you.</p>
+                <!-- Hero Section -->
+                <section class="hero-section mb-4">
+                    <div class="container hero-inner">
+                        <div class="hero-copy">
+                            <p class="eyebrow">Find Your Next Opportunity</p>
+                            <h1>Search. Apply.<br><span class="accent">Grow.</span></h1>
+                            <p class="lead">ENUVEX connects skilled professionals with the right employers.</p>
+
+            <ul class="hero-features">
+                <li><span class="feature-icon"><i class="fas fa-magnifying-glass"></i></span> Discover Top Jobs</li>
+                <li><span class="feature-icon"><i class="fas fa-bolt"></i></span> Apply in Minutes</li>
+                <li><span class="feature-icon"><i class="fas fa-chart-line"></i></span> Grow Your Career</li>
+            </ul>
                         </div>
-                        <!-- Profile Completion Card -->
-                        <div style="background: white; border-radius: var(--border-radius); box-shadow: var(--box-shadow); border: 1px solid var(--gray-200); padding: 1.25rem; min-width: 200px;">
-                            <div class="progress-container mb-2">
-                                <div class="progress-label">
-                                    <span>Profile Completion</span>
-                                    <span class="value">70%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill blue" style="width: 70%;"></div>
-                                </div>
-                            </div>
-                            <button class="btn btn-sm btn-outline btn-block" onclick="window.location.href='profile.html'">Complete Profile</button>
-                            <p style="font-size: 0.75rem; color: var(--gray-500); text-align: center; margin-top: 0.5rem;">Get better job matches</p>
-                        </div>
+
+        <form class="search-card" id="heroSearch" role="search">
+            <label class="search-field" for="jobQuery">
+                <i class="fas fa-magnifying-glass"></i>
+                <span class="visually-hidden">Search jobs</span>
+                <input type="search" id="jobQuery" name="q" placeholder="Search for job title, skills, or companies...">
+            </label>
+        </form>
                     </div>
                 </section>
 
@@ -465,6 +473,15 @@
         // Ensure user type is stored for proper sidebar detection
         localStorage.setItem('userType', 'JOB_SEEKER');
         localStorage.setItem('userName', 'Maria Santos');
+
+        // Hero search form
+        document.getElementById('heroSearch')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const query = document.getElementById('jobQuery')?.value || '';
+            if (query.trim()) {
+                window.location.href = 'jobs.html?q=' + encodeURIComponent(query);
+            }
+        });
     </script>
 </body>
 </html>
