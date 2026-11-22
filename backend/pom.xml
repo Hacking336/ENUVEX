@@ -177,6 +177,9 @@
                 <targetPath>static/job-seeker</targetPath>
                 <includes>
                     <include>**/*.html</include>
+                    <!-- Shared design system assets: the pages link these files. -->
+                    <include>**/*.css</include>
+                    <include>**/*.js</include>
                 </includes>
             </resource>
             <resource>
