@@ -32,10 +32,13 @@ public class JobSeekerController {
         return ResponseEntity.ok(userService.getJobSeekerProfile(extractUserId(authentication)));
     }
 
+    // No @Valid here: RegisterRequest's required email and password describe
+    // registration only. UserService never writes them on this path and
+    // validates every field it does write.
     @PutMapping("/profile")
     public ResponseEntity<JobSeekerProfile> updateProfile(
             Authentication authentication,
-            @Valid @RequestPart("profile") RegisterRequest request,
+            @RequestPart("profile") RegisterRequest request,
             @RequestPart(value = "profilePhoto", required = false) MultipartFile photo) {
         return ResponseEntity.ok(userService.updateJobSeekerProfile(extractUserId(authentication), request, photo));
     }
