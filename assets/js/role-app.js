@@ -641,8 +641,32 @@
         state: state
     };
 
+    var HOME_BY_ROLE = {
+        JOB_SEEKER: '../../job-seeker/dashboard.html',
+        EMPLOYER: '../../employer/dashboard.html',
+        ADMIN: '../../admin/dashboard.html'
+    };
+
+    /**
+     * The server rejects every call a role is not allowed to make; this only
+     * stops the wrong console from rendering at all when someone edits the URL.
+     * Returns true when navigation was started.
+     */
+    function redirectForWrongRole() {
+        var type = '';
+        try { type = String(localStorage.getItem('jsm_user_type') || '').toUpperCase(); } catch (e) { return false; }
+        if (!type) return false;
+
+        var expected = state.role === 'admin' ? 'ADMIN' : 'EMPLOYER';
+        if (type === expected) return false;
+
+        window.location.replace(HOME_BY_ROLE[type] || '../../login.html');
+        return true;
+    }
+
     function boot() {
         state.role = document.body.getAttribute('data-role') || 'employer';
+        if (redirectForWrongRole()) return;
         var config = pageConfig();
         renderSidebar(config.active);
         renderTopbar(config);
