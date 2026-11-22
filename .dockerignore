@@ -15,3 +15,7 @@ backend/.env.*
 # Not needed at build time.
 scripts
 **/*.md
+
+# The Capacitor app is built separately and never part of the server image.
+mobile
+**/node_modules

@@ -54,7 +54,16 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://127.0.0.1:8080", "https://enuvex.onrender.com", "https://YOUR_USERNAME.github.io"));
+        // https://localhost and capacitor://localhost are the origins a Capacitor
+        // WebView reports on Android and iOS; without them the packaged apps
+        // cannot call the API. They are the app's own local shell, not a site.
+        configuration.setAllowedOrigins(List.of(
+            "http://localhost:8080",
+            "http://127.0.0.1:8080",
+            "https://enuvex.onrender.com",
+            "https://localhost",
+            "capacitor://localhost",
+            "http://localhost"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

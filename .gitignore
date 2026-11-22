@@ -26,5 +26,12 @@ cp.txt
 .DS_Store
 Thumbs.db
 
+# Mobile app: dependencies and the assembled www folder are rebuilt by
+# "npm run sync" from the shared web pages, so they are not committed.
+mobile/node_modules/
+mobile/www/
+# The Gradle wrapper jar is source for the Android build, not build output.
+!mobile/android/gradle/wrapper/gradle-wrapper.jar
+
 # Local review screenshots (not part of the app)
 artifacts/
