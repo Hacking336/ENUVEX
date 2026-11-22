@@ -360,12 +360,42 @@
 
     /* ---------- identity + notifications --------------------------------- */
 
+    /** The last identity painted, so a page shows it on the first frame. */
+    var PROFILE_CACHE_KEY = 'enuvex_employer_profile';
+
+    function readCache(key) {
+        try {
+            var raw = sessionStorage.getItem(key);
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) { return null; }
+    }
+
+    function writeCache(key, value) {
+        try { sessionStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* storage unavailable */ }
+    }
+
+    function storedName() {
+        try { return localStorage.getItem('jsm_full_name') || ''; } catch (e) { return ''; }
+    }
+
     function displayName() {
         if (state.role === 'employer' && state.profile) {
             return state.profile.businessName || state.profile.employerName || 'Employer';
         }
         if (state.account && state.account.email) return state.account.email;
+        // Written at login, so the shell never waits on a request to draw a name.
+        if (storedName()) return storedName();
         return state.role === 'admin' ? 'Administrator' : 'Employer';
+    }
+
+    function paintCachedIdentity() {
+        if (state.role === 'employer') {
+            var cached = readCache(PROFILE_CACHE_KEY);
+            if (cached) state.profile = cached;
+        } else if (storedName()) {
+            state.account = { email: storedName() };
+        }
+        paintIdentity();
     }
 
     function paintIdentity() {
@@ -426,34 +456,48 @@
         }).join('');
     }
 
+    /**
+     * Refreshes the account shown in the shell. It deliberately runs after the
+     * page has been released, so a slow profile request never holds up the
+     * page's own data. The admin console reads the name stored at login instead
+     * of downloading the user table just to draw a header.
+     */
     async function loadIdentity() {
-        if (!window.ApiClient || !ApiClient.loadAuth()) {
-            document.dispatchEvent(new CustomEvent('enuvex:ready', { detail: null }));
-            return null;
-        }
+        if (!window.ApiClient || !ApiClient.loadAuth()) return null;
 
-        var requests = [safe(ApiClient.request('/notifications'))];
         if (state.role === 'employer') {
-            requests.unshift(safe(ApiClient.getProfile()));
-        } else {
-            requests.unshift(safe(ApiClient.getAdminUsers()));
+            var profileResult = await safe(ApiClient.getProfile());
+            if (!failed(profileResult)) {
+                state.profile = profileResult;
+                writeCache(PROFILE_CACHE_KEY, profileResult);
+                paintIdentity();
+            }
+        } else if (!storedName()) {
+            // Only for sessions that logged in before the name was stored.
+            var users = await safe(ApiClient.getAdminUsers());
+            if (!failed(users) && Array.isArray(users)) {
+                var myId = Number((function () {
+                    try { return localStorage.getItem('jsm_user_id') || 0; } catch (e) { return 0; }
+                })());
+                state.account = users.filter(function (user) { return myId && user.id === myId; })[0] || null;
+                paintIdentity();
+            }
         }
-
-        var results = await Promise.all(requests);
-
-        if (state.role === 'employer' && !failed(results[0])) {
-            state.profile = results[0];
-        } else if (state.role === 'admin' && !failed(results[0]) && Array.isArray(results[0])) {
-            var myId = Number(localStorage.getItem('jsm_user_id') || 0);
-            state.account = results[0].filter(function (user) { return myId && user.id === myId; })[0] || null;
-        }
-
-        if (!failed(results[1]) && Array.isArray(results[1])) state.notifications = results[1];
-
-        paintIdentity();
-        renderNotifications();
-        document.dispatchEvent(new CustomEvent('enuvex:ready', { detail: state }));
         return state;
+    }
+
+    /** Notifications are secondary: fetched once the first render is done. */
+    function loadNotifications() {
+        function run() {
+            if (!window.ApiClient || !ApiClient.loadAuth()) return;
+            safe(ApiClient.request('/notifications')).then(function (result) {
+                if (failed(result) || !Array.isArray(result)) return;
+                state.notifications = result;
+                renderNotifications();
+            });
+        }
+        if (window.requestIdleCallback) window.requestIdleCallback(run, { timeout: 1200 });
+        else setTimeout(run, 200);
     }
 
     /* ---------- interactions --------------------------------------------- */
@@ -672,7 +716,18 @@
         renderTopbar(config);
         renderBottomNav(config.active);
         wireShell();
-        loadIdentity();
+        paintCachedIdentity();
+
+        // Hand the page over immediately: its own API calls then run alongside
+        // the identity and notification calls instead of queueing behind them.
+        setTimeout(function () {
+            document.dispatchEvent(new CustomEvent('enuvex:ready', { detail: state }));
+        }, 0);
+
+        loadIdentity().then(function (identity) {
+            document.dispatchEvent(new CustomEvent('enuvex:identity', { detail: identity }));
+        });
+        loadNotifications();
     }
 
     if (document.readyState === 'loading') {
