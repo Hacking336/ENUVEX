@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Jobs — ENUVEX</title>
+    <link rel="icon" type="image/png" href="../assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="enuvex-app.css">
+    <script>
+        window.ENUVEX_PAGE = {
+            active: 'saved',
+            title: 'Saved Jobs',
+            subtitle: 'Jobs you bookmarked to apply to later'
+        };
+    </script>
+</head>
+<body>
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load your saved jobs.</span>
+            </div>
+
+            <div class="results-bar">
+                <div>
+                    <div class="results-count" id="savedCount">Loading saved jobs…</div>
+                    <div class="results-scope">Bookmarked from Search Jobs and your dashboard</div>
+                </div>
+                <div class="results-tools">
+                    <a class="btn-ghost btn-sm" href="jobs.html"><i class="fas fa-magnifying-glass"></i> Find more jobs</a>
+                </div>
+            </div>
+
+            <div class="job-panel">
+                <div class="job-list" id="savedList" aria-live="polite">
+                    <div class="loading">Loading saved jobs…</div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../assets/js/api.js"></script>
+<script src="enuvex-app.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var state = { saved: [] };
+
+    var el = {
+        list: document.getElementById('savedList'),
+        count: document.getElementById('savedCount'),
+        pageError: document.getElementById('pageError'),
+        pageErrorText: document.getElementById('pageErrorText')
+    };
+
+    function render() {
+        el.count.textContent = state.saved.length === 1
+            ? '1 saved job'
+            : state.saved.length + ' saved jobs';
+
+        if (!state.saved.length) {
+            el.list.innerHTML = `
+                <div class="empty">
+                    <i class="fas fa-bookmark"></i>
+                    <strong>No saved jobs yet</strong>
+                    Tap Save on any job to keep it here while you decide.
+                    <a class="btn-solid btn-sm" href="jobs.html"><i class="fas fa-magnifying-glass"></i> Browse Jobs</a>
+                </div>`;
+            return;
+        }
+
+        el.list.innerHTML = state.saved.map(function (entry) {
+            return ENUVEX.jobCard(entry.job || {}, { showSavedDate: true, savedAt: entry.savedAt });
+        }).join('');
+    }
+
+    async function loadSaved() {
+        el.pageError.hidden = true;
+
+        if (!window.ApiClient || !ApiClient.loadAuth()) {
+            state.saved = [];
+            el.count.textContent = 'Sign in required';
+            el.list.innerHTML = `<div class="empty"><i class="fas fa-lock"></i><strong>Sign in to see saved jobs</strong>Saved jobs are stored with your ENUVEX account.<a class="btn-solid btn-sm" href="../../login.html">Sign in</a></div>`;
+            return;
+        }
+
+        var result = await ENUVEX.safe(ApiClient.getSavedJobs());
+        if (ENUVEX.failed(result)) {
+            el.pageError.hidden = false;
+            el.pageErrorText.textContent = result.__error.message || 'Could not load your saved jobs.';
+            el.list.innerHTML = `<div class="empty"><i class="fas fa-triangle-exclamation"></i><strong>Saved jobs could not be loaded</strong>Please refresh the page to try again.</div>`;
+            return;
+        }
+
+        state.saved = (Array.isArray(result) ? result : []).filter(function (entry) { return entry && entry.job; });
+        ENUVEX.setSavedIds(state.saved);
+        render();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        ENUVEX.wireJobActions(function (action) {
+            if (action === 'saved') loadSaved();
+        });
+        loadSaved();
+    });
+})();
+</script>
+</body>
+</html>

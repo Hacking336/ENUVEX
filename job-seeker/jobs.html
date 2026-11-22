@@ -3,641 +3,542 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Jobs - Job & Skills Matching System</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <title>Search Jobs — ENUVEX</title>
+    <link rel="icon" type="image/png" href="../assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="enuvex-app.css">
+    <script>
+        window.ENUVEX_PAGE = {
+            active: 'jobs',
+            title: 'Search Jobs',
+            subtitle: 'Find work that matches your skills in Camarines Norte'
+        };
+    </script>
 </head>
 <body>
-    <div class="app-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">
-                    <div class="sidebar-logo-icon">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
-                    <span>Job Seeker</span>
-                </div>
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load jobs.</span>
             </div>
 
-            <nav class="sidebar-nav" id="sidebarNav">
-                <!-- Injected by layout.js -->
-            </nav>
+            <form class="card toolbar" id="searchForm" role="search">
+                <label class="field" for="keyword">
+                    <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                    <span class="visually-hidden">Job title, keyword, or company</span>
+                    <input type="search" id="keyword" name="q" placeholder="Job title, skill, or company">
+                </label>
+                <label class="field select" for="toolbarMunicipality">
+                    <i class="fas fa-location-dot" aria-hidden="true"></i>
+                    <span class="visually-hidden">Municipality</span>
+                    <select id="toolbarMunicipality" name="municipality">
+                        <option value="">All municipalities</option>
+                        <option value="BASUD">Basud</option>
+                        <option value="DAET">Daet</option>
+                        <option value="VINZONS">Vinzons</option>
+                        <option value="LABO">Labo</option>
+                    </select>
+                </label>
+                <label class="field select" for="toolbarCategory">
+                    <i class="fas fa-layer-group" aria-hidden="true"></i>
+                    <span class="visually-hidden">Job category</span>
+                    <select id="toolbarCategory" name="category">
+                        <option value="">Any category</option>
+                        <option value="RETAIL_STORE">Retail / Store</option>
+                        <option value="SALES">Sales</option>
+                        <option value="FOOD_SERVICE_RESTAURANT">Food Service / Restaurant</option>
+                        <option value="HOSPITALITY_TOURISM">Hospitality / Tourism</option>
+                        <option value="OFFICE_ADMINISTRATION">Office / Administration</option>
+                        <option value="ACCOUNTING_FINANCE">Accounting / Finance</option>
+                        <option value="HEALTHCARE">Healthcare</option>
+                        <option value="EDUCATION_TUTORING">Education / Tutoring</option>
+                        <option value="CONSTRUCTION_SKILLED_TRADES">Construction / Skilled Trades</option>
+                        <option value="AGRICULTURE">Agriculture</option>
+                        <option value="FISHERIES">Fisheries</option>
+                        <option value="MANUFACTURING">Manufacturing</option>
+                        <option value="LOGISTICS_DELIVERY">Logistics / Delivery</option>
+                        <option value="TRANSPORTATION">Transportation</option>
+                        <option value="AUTOMOTIVE_MECHANICAL">Automotive / Mechanical</option>
+                        <option value="CUSTOMER_SERVICE">Customer Service</option>
+                        <option value="SECURITY">Security</option>
+                        <option value="GENERAL_LABOR">General Labor</option>
+                        <option value="IT_TECHNOLOGY">IT / Technology</option>
+                        <option value="OTHER">Other</option>
+                    </select>
+                </label>
+                <button class="btn-solid" type="submit"><i class="fas fa-magnifying-glass"></i> Search</button>
+            </form>
 
-            <div class="sidebar-footer">
-                <div class="sidebar-user" onclick="window.location.href='profile.html'">
-                    <div class="sidebar-user-avatar">MS</div>
-                    <div class="sidebar-user-info">
-                        <div class="sidebar-user-name">Maria Santos</div>
-                        <div class="sidebar-user-role">Job Seeker</div>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Sidebar Overlay -->
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Top Header -->
-            <header class="top-header">
-                <div class="top-header-content">
-                    <div class="top-header-left">
-                        <button class="mobile-menu-btn" id="mobileMenuBtn">
-                            <i class="fas fa-bars"></i>
+            <div class="search-layout" style="margin-top: 18px;">
+                <aside class="filters" id="filters" aria-label="Job filters">
+                    <div class="filters-head">
+                        <h3><i class="fas fa-sliders"></i> Filters</h3>
+                        <button class="icon-btn icon-btn filters-close" id="filtersClose" type="button" aria-label="Close filters">
+                            <i class="fas fa-xmark"></i>
                         </button>
-                        <h1 class="top-header-title">Search Jobs</h1>
                     </div>
-                    <div class="top-header-right">
-                        <button class="header-btn" id="notificationBtn">
-                            <i class="fas fa-bell"></i>
-                            <span class="badge">3</span>
-                        </button>
-                        <button class="header-btn" id="userMenuBtn">
-                            <i class="fas fa-user-circle"></i>
-                        </button>
-                    </div>
-                </div>
-            </header>
 
-            <!-- Page Content -->
-            <main class="page-content">
-                <!-- Page Nav -->
-                <nav class="page-nav">
-                    <a href="dashboard.html"><i class="fas fa-home"></i> Home</a>
-                    <span style="color: var(--gray-300);">/</span>
-                    <span class="current">Search Jobs</span>
-                </nav>
+                    <form id="filterForm">
+                        <div class="filter-group">
+                            <span class="filter-title">Municipality</span>
+                            <div class="checklist">
+                                <label class="check"><input type="radio" name="municipality" value="" checked> All Municipalities</label>
+                                <label class="check"><input type="radio" name="municipality" value="BASUD"> Basud</label>
+                                <label class="check"><input type="radio" name="municipality" value="DAET"> Daet</label>
+                                <label class="check"><input type="radio" name="municipality" value="VINZONS"> Vinzons</label>
+                                <label class="check"><input type="radio" name="municipality" value="LABO"> Labo</label>
+                            </div>
+                        </div>
 
-                <div class="row" style="display: flex; gap: 1.5rem;">
-                    <!-- Filter Sidebar -->
-                    <aside class="filter-panel" style="width: 300px; flex-shrink: 0; position: sticky; top: 90px; height: fit-content;" id="filterSidebar">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h3><i class="fas fa-filter" style="margin-right: 0.5rem;"></i> Filters</h3>
-                            <button class="btn btn-sm btn-outline filter-toggle" id="mobileFilterToggle" style="display: none;">
-                                <i class="fas fa-times"></i> Close
+                        <div class="filter-group">
+                            <label class="filter-title" for="barangay">Barangay</label>
+                            <label class="field" for="barangay">
+                                <i class="fas fa-map-pin" aria-hidden="true"></i>
+                                <input type="text" id="barangay" name="barangay" placeholder="Enter barangay" autocomplete="off">
+                            </label>
+                            <p class="filter-note">Optional — narrows results inside a municipality.</p>
+                        </div>
+
+                        <div class="filter-group">
+                            <span class="filter-title">Distance / Near Me</span>
+                            <button class="btn-ghost btn-sm btn-block" id="nearMeBtn" type="button">
+                                <i class="fas fa-location-crosshairs"></i> Use my saved location
                             </button>
+                            <p class="filter-note" id="nearMeNote">Filters to the municipality saved on your profile.</p>
                         </div>
 
-                        <form id="jobFilterForm">
-                            <div class="filter-group">
-                                <label>Municipality</label>
-                                <div class="filter-options">
-                                    <label class="filter-option"><input type="checkbox" value=""> All Municipalities</label>
-                                    <label class="filter-option"><input type="checkbox" value="Basud"> Basud</label>
-                                    <label class="filter-option"><input type="checkbox" value="Daet"> Daet</label>
-                                    <label class="filter-option"><input type="checkbox" value="Vinzons"> Vinzons</label>
-                                    <label class="filter-option"><input type="checkbox" value="Labo"> Labo</label>
-                                </div>
+                        <div class="filter-group">
+                            <span class="filter-title">Employment Type</span>
+                            <div class="checklist">
+                                <label class="check"><input type="radio" name="employmentType" value="" checked> All Types</label>
+                                <label class="check"><input type="radio" name="employmentType" value="FULL_TIME"> Full-time</label>
+                                <label class="check"><input type="radio" name="employmentType" value="PART_TIME"> Part-time</label>
+                                <label class="check"><input type="radio" name="employmentType" value="CONTRACT"> Contract</label>
+                                <label class="check"><input type="radio" name="employmentType" value="TEMPORARY"> Temporary</label>
                             </div>
-
-                            <div class="filter-group">
-                                <label>Barangay</label>
-                                <input type="text" class="form-control" placeholder="Enter barangay" style="margin-bottom: 0.5rem;">
-                                <small style="color: var(--gray-500); font-size: 0.75rem;">Optional</small>
-                            </div>
-
-                            <div class="filter-group">
-                                <label>Distance / Near Me</label>
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="useLocation">
-                                    <label class="form-check-label" for="useLocation">Use my location</label>
-                                </div>
-                            </div>
-
-                            <div class="filter-group">
-                                <label>Job Category</label>
-                                <div class="filter-options">
-                                    <label class="filter-option"><input type="checkbox" value=""> All Categories</label>
-                                    <label class="filter-option"><input type="checkbox" value="Retail / Store"> Retail / Store</label>
-                                    <label class="filter-option"><input type="checkbox" value="Sales"> Sales</label>
-                                    <label class="filter-option"><input type="checkbox" value="Food Service / Restaurant"> Food Service / Restaurant</label>
-                                    <label class="filter-option"><input type="checkbox" value="Hospitality / Tourism"> Hospitality / Tourism</label>
-                                    <label class="filter-option"><input type="checkbox" value="Office / Administration"> Office / Administration</label>
-                                    <label class="filter-option"><input type="checkbox" value="Accounting / Finance"> Accounting / Finance</label>
-                                    <label class="filter-option"><input type="checkbox" value="Healthcare"> Healthcare</label>
-                                    <label class="filter-option"><input type="checkbox" value="Education / Tutoring"> Education / Tutoring</label>
-                                    <label class="filter-option"><input type="checkbox" value="Construction / Skilled Trades"> Construction / Skilled Trades</label>
-                                    <label class="filter-option"><input type="checkbox" value="Agriculture"> Agriculture</label>
-                                    <label class="filter-option"><input type="checkbox" value="Fisheries"> Fisheries</label>
-                                    <label class="filter-option"><input type="checkbox" value="Manufacturing"> Manufacturing</label>
-                                    <label class="filter-option"><input type="checkbox" value="Logistics / Delivery"> Logistics / Delivery</label>
-                                    <label class="filter-option"><input type="checkbox" value="Transportation"> Transportation</label>
-                                    <label class="filter-option"><input type="checkbox" value="Automotive / Mechanical"> Automotive / Mechanical</label>
-                                    <label class="filter-option"><input type="checkbox" value="Customer Service"> Customer Service</label>
-                                    <label class="filter-option"><input type="checkbox" value="Security"> Security</label>
-                                    <label class="filter-option"><input type="checkbox" value="General Labor"> General Labor</label>
-                                    <label class="filter-option"><input type="checkbox" value="IT / Technology"> IT / Technology</label>
-                                    <label class="filter-option"><input type="checkbox" value="Other"> Other</label>
-                                </div>
-                            </div>
-
-                            <div class="filter-group">
-                                <label>Employment Type</label>
-                                <div class="filter-options">
-                                    <label class="filter-option"><input type="checkbox" value=""> All Types</label>
-                                    <label class="filter-option"><input type="checkbox" value="Full-time"> Full-time</label>
-                                    <label class="filter-option"><input type="checkbox" value="Part-time"> Part-time</label>
-                                    <label class="filter-option"><input type="checkbox" value="Contract"> Contract</label>
-                                    <label class="filter-option"><input type="checkbox" value="Temporary"> Temporary</label>
-                                </div>
-                            </div>
-
-                            <div class="filter-group">
-                                <label>Work Schedule</label>
-                                <div class="filter-options">
-                                    <label class="filter-option"><input type="checkbox" value=""> All Schedules</label>
-                                    <label class="filter-option"><input type="checkbox" value="On-site"> On-site</label>
-                                    <label class="filter-option"><input type="checkbox" value="Remote"> Remote</label>
-                                    <label class="filter-option"><input type="checkbox" value="Hybrid"> Hybrid</label>
-                                    <label class="filter-option"><input type="checkbox" value="Shift"> Shift</label>
-                                </div>
-                            </div>
-
-                            <div class="filter-group">
-                                <label>Salary Range</label>
-                                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                    <input type="number" class="form-control form-control-sm" placeholder="Min" style="width: 50%;">
-                                    <input type="number" class="form-control form-control-sm" placeholder="Max" style="width: 50%;">
-                                </div>
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="salaryNegotiable">
-                                    <label class="form-check-label" for="salaryNegotiable">Include negotiable</label>
-                                </div>
-                            </div>
-
-                            <div class="filter-group">
-                                <label>Skills</label>
-                                <input type="text" class="form-control" placeholder="e.g., Customer Service, Cashier" style="margin-bottom: 0.5rem;">
-                                <small style="color: var(--gray-500); font-size: 0.75rem;">Comma-separated</small>
-                            </div>
-
-                            <div class="filter-group">
-                                <label>Experience</label>
-                                <div class="filter-options">
-                                    <label class="filter-option"><input type="checkbox" value=""> Any</label>
-                                    <label class="filter-option"><input type="checkbox" value="No Experience"> No Experience</label>
-                                    <label class="filter-option"><input type="checkbox" value="1-2 Years"> 1-2 Years</label>
-                                    <label class="filter-option"><input type="checkbox" value="3-5 Years"> 3-5 Years</label>
-                                    <label class="filter-option"><input type="checkbox" value="5+ Years"> 5+ Years</label>
-                                </div>
-                            </div>
-
-                            <div class="filter-group">
-                                <label>Education</label>
-                                <div class="filter-options">
-                                    <label class="filter-option"><input type="checkbox" value=""> Any</label>
-                                    <label class="filter-option"><input type="checkbox" value="Elementary"> Elementary</label>
-                                    <label class="filter-option"><input type="checkbox" value="High School"> High School</label>
-                                    <label class="filter-option"><input type="checkbox" value="Vocational"> Vocational</label>
-                                    <label class="filter-option"><input type="checkbox" value="College"> College</label>
-                                    <label class="filter-option"><input type="checkbox" value="Post Graduate"> Post Graduate</label>
-                                </div>
-                            </div>
-
-                            <div class="filter-actions">
-                                <button type="submit" class="btn btn-primary btn-block">Apply Filters</button>
-                                <button type="button" class="btn btn-outline btn-block" id="resetFilters">Reset</button>
-                            </div>
-                        </form>
-                    </aside>
-
-                    <!-- Job Listings -->
-                    <div style="flex: 1; min-width: 0;">
-                        <!-- Search Bar -->
-                        <div class="search-bar mb-4" role="search">
-                            <i class="fas fa-search search-icon"></i>
-                            <input type="text" id="jobSearchInput" placeholder="Search jobs, skills, or companies..." autocomplete="off">
                         </div>
 
-                        <!-- Info Bar -->
-                        <div style="background: white; border-radius: var(--border-radius); box-shadow: var(--box-shadow); border: 1px solid var(--gray-200); padding: 1rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
-                            <div>
-                                <strong>Showing jobs in Basud, Daet, Vinzons, Labo</strong>
-                                <span style="color: var(--gray-500); font-size: 0.85rem; margin-left: 0.5rem;">|</span>
-                                <span style="color: var(--primary-color); font-size: 0.85rem; font-weight: 600;">Filters help you find highly matched jobs</span>
+                        <div class="filter-group">
+                            <span class="filter-title">Work Schedule</span>
+                            <div class="checklist">
+                                <label class="check"><input type="radio" name="workSchedule" value="" checked> Any Schedule</label>
+                                <label class="check"><input type="radio" name="workSchedule" value="MORNING"> Morning</label>
+                                <label class="check"><input type="radio" name="workSchedule" value="AFTERNOON"> Afternoon</label>
+                                <label class="check"><input type="radio" name="workSchedule" value="EVENING"> Evening</label>
+                                <label class="check"><input type="radio" name="workSchedule" value="NIGHT"> Night</label>
+                                <label class="check"><input type="radio" name="workSchedule" value="WEEKEND"> Weekend</label>
+                                <label class="check"><input type="radio" name="workSchedule" value="FLEXIBLE"> Flexible</label>
                             </div>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <select class="form-control form-control-select form-control-sm" style="width: auto; min-width: 150px;" id="sortSelect">
+                        </div>
+
+                        <div class="filter-group">
+                            <span class="filter-title">Salary Range</span>
+                            <div class="filter-row">
+                                <label class="field" for="minSalary">
+                                    <i class="fas fa-peso-sign" aria-hidden="true"></i>
+                                    <input type="number" id="minSalary" name="minSalary" placeholder="Min" min="0" step="500">
+                                </label>
+                                <label class="field" for="maxSalary">
+                                    <i class="fas fa-peso-sign" aria-hidden="true"></i>
+                                    <input type="number" id="maxSalary" name="maxSalary" placeholder="Max" min="0" step="500">
+                                </label>
+                            </div>
+                            <p class="filter-note">Monthly amounts in pesos.</p>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-title" for="skills">Skills</label>
+                            <label class="field" for="skills">
+                                <i class="fas fa-star" aria-hidden="true"></i>
+                                <input type="text" id="skills" name="skills" placeholder="e.g. Cashier, Customer Service">
+                            </label>
+                            <p class="filter-note">Matches the skills employers require.</p>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-title" for="experience">Experience</label>
+                            <label class="field" for="experience">
+                                <i class="fas fa-briefcase" aria-hidden="true"></i>
+                                <input type="text" id="experience" name="experience" placeholder="e.g. 1-2 years">
+                            </label>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-title" for="education">Education</label>
+                            <label class="field" for="education">
+                                <i class="fas fa-graduation-cap" aria-hidden="true"></i>
+                                <input type="text" id="education" name="education" placeholder="e.g. High School Graduate">
+                            </label>
+                        </div>
+
+                        <div class="filter-actions">
+                            <button class="btn-solid btn-block" type="submit">Apply Filters</button>
+                            <button class="btn-soft btn-block" id="resetFilters" type="button">Reset</button>
+                        </div>
+                    </form>
+                </aside>
+
+                <div style="min-width: 0;">
+                    <div class="results-bar">
+                        <div>
+                            <div class="results-count" id="resultsCount">Loading jobs…</div>
+                            <div class="results-scope" id="resultsScope">All municipalities</div>
+                        </div>
+                        <div class="results-tools">
+                            <button class="btn-soft btn-sm filter-open" id="filtersOpen" type="button">
+                                <i class="fas fa-sliders"></i> Filters
+                            </button>
+                            <label class="field select" for="sortSelect">
+                                <i class="fas fa-arrow-down-wide-short" aria-hidden="true"></i>
+                                <span class="visually-hidden">Sort results</span>
+                                <select id="sortSelect">
                                     <option value="match">Best Match</option>
                                     <option value="newest">Newest First</option>
                                     <option value="salary-high">Salary: High to Low</option>
                                     <option value="salary-low">Salary: Low to High</option>
-                                    <option value="distance">Nearest First</option>
+                                    <option value="title">Title: A to Z</option>
                                 </select>
-                                <button class="btn btn-outline btn-sm" id="toggleView">
-                                    <i class="fas fa-th-large"></i>
-                                </button>
+                            </label>
+                            <div class="view-toggle" role="group" aria-label="Result layout">
+                                <button type="button" id="viewList" class="is-active" aria-label="List view"><i class="fas fa-list"></i></button>
+                                <button type="button" id="viewGrid" aria-label="Grid view"><i class="fas fa-table-cells-large"></i></button>
                             </div>
                         </div>
-
-                        <!-- Job Count -->
-                        <div id="jobResultsCount" style="margin-bottom: 1rem; color: var(--gray-600); font-size: 0.9rem;">
-                            <span id="jobCount">45</span> jobs found
-                        </div>
-
-                        <!-- Job List -->
-                        <div class="job-list" id="jobList">
-                            <!-- Injected by JS -->
-                        </div>
-
-                        <!-- Pagination -->
-                        <nav aria-label="Page navigation" style="display: flex; justify-content: center; margin-top: 2rem;">
-                            <ul class="pagination" style="display: flex; gap: 0.5rem;">
-                                <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--border-radius-sm); border: 1px solid var(--gray-300); color: var(--gray-400);"><i class="fas fa-chevron-left"></i></a></li>
-                                <li class="page-item active"><a class="page-link" href="#" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--border-radius-sm); background: var(--primary-color); color: white; border: none;">1</a></li>
-                                <li class="page-item"><a class="page-link" href="#" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--border-radius-sm); border: 1px solid var(--gray-300); color: var(--gray-600);">2</a></li>
-                                <li class="page-item"><a class="page-link" href="#" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--border-radius-sm); border: 1px solid var(--gray-300); color: var(--gray-600);">3</a></li>
-                                <li class="page-item"><a class="page-link" href="#" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--border-radius-sm); border: 1px solid var(--gray-300); color: var(--gray-600);"><i class="fas fa-chevron-right"></i></a></li>
-                            </ul>
-                        </nav>
                     </div>
+
+                    <div class="job-panel">
+                        <div class="job-list" id="jobList" aria-live="polite">
+                            <div class="loading">Loading jobs…</div>
+                        </div>
+                    </div>
+
+                    <div class="pagination" id="pagination"></div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </main>
     </div>
+</div>
 
-    <!-- Bottom Navigation (Mobile) -->
-    <nav class="bottom-nav" id="bottomNav">
-        <!-- Injected by layout.js -->
-    </nav>
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
+<script src="../assets/js/api.js"></script>
+<script src="enuvex-app.js"></script>
+<script>
+(function () {
+    'use strict';
 
-    <script src="../assets/js/main.js"></script>
-    <script src="../assets/js/layout.js"></script>
-    <script>
-        // Job Search Page Data & Logic
-        const allJobs = [
-            {
-                id: 1,
-                title: 'Restaurant Crew',
-                company: "Juan's Eatery",
-                municipality: 'Daet',
-                barangay: 'Bagasbas',
-                salary: '₱12,000 - ₱14,000',
-                employmentType: 'Full-time',
-                workSchedule: 'On-site',
-                match: 88,
-                tags: ['Food Service', 'Customer Service', 'Entry Level'],
-                category: 'Food Service / Restaurant',
-                icon: 'fa-utensils',
-                iconClass: 'alt',
-                posted: '2 days ago'
-            },
-            {
-                id: 2,
-                title: 'Pharmacy Assistant',
-                company: 'Daet Health Pharmacy',
-                municipality: 'Daet',
-                barangay: 'Centro',
-                salary: '₱10,000 - ₱12,000',
-                employmentType: 'Full-time',
-                workSchedule: 'On-site',
-                match: 82,
-                tags: ['Healthcare', 'Customer Service', 'Entry Level'],
-                category: 'Healthcare',
-                icon: 'fa-pills',
-                iconClass: 'third',
-                posted: '1 day ago'
-            },
-            {
-                id: 3,
-                title: 'Sales Associate',
-                company: 'Basud Retail Store',
-                municipality: 'Basud',
-                barangay: 'Poblacion',
-                salary: '₱8,500 - ₱10,000',
-                employmentType: 'Full-time',
-                workSchedule: 'On-site',
-                match: 78,
-                tags: ['Retail', 'Sales', 'Customer Service'],
-                category: 'Retail / Store',
-                icon: 'fa-shopping-cart',
-                iconClass: 'fourth',
-                posted: '3 days ago'
-            },
-            {
-                id: 4,
-                title: 'Driver / Delivery',
-                company: 'Daet Logistics',
-                municipality: 'Daet',
-                barangay: 'Centro',
-                salary: '₱9,000 - ₱11,000',
-                employmentType: 'Full-time',
-                workSchedule: 'On-site',
-                match: 75,
-                tags: ['Transportation', 'Logistics'],
-                category: 'Logistics / Delivery',
-                icon: 'fa-truck',
-                iconClass: '',
-                posted: '5 hours ago'
-            },
-            {
-                id: 5,
-                title: 'Construction Worker',
-                company: 'Labo Builders Inc.',
-                municipality: 'Labo',
-                barangay: 'Poblacion',
-                salary: '₱350/day',
-                employmentType: 'Temporary',
-                workSchedule: 'On-site',
-                match: 72,
-                tags: ['Construction', 'Manual Labor', 'Immediate Hire'],
-                category: 'Construction / Skilled Trades',
-                icon: 'fa-hard-hat',
-                iconClass: 'alt',
-                posted: '1 week ago'
-            },
-            {
-                id: 6,
-                title: 'Admin Staff',
-                company: 'Vinzons Municipal Office',
-                municipality: 'Vinzons',
-                barangay: 'Poblacion',
-                salary: '₱11,000 - ₱13,000',
-                employmentType: 'Full-time',
-                workSchedule: 'On-site',
-                match: 70,
-                tags: ['Office', 'Administration', 'Clerical'],
-                category: 'Office / Administration',
-                icon: 'fa-file-alt',
-                iconClass: 'third',
-                posted: '2 days ago'
-            },
-            {
-                id: 7,
-                title: 'Farm Worker',
-                company: 'Basud Agri-Farm',
-                municipality: 'Basud',
-                barangay: 'San Felipe',
-                salary: '₱300/day',
-                employmentType: 'Temporary',
-                workSchedule: 'On-site',
-                match: 68,
-                tags: ['Agriculture', 'Manual Labor'],
-                category: 'Agriculture',
-                icon: 'fa-tractor',
-                iconClass: 'fourth',
-                posted: '4 days ago'
-            },
-            {
-                id: 8,
-                title: 'Cashier',
-                company: '7-Eleven Daet',
-                municipality: 'Daet',
-                barangay: 'Bagasbas',
-                salary: '₱8,500 - ₱9,500',
-                employmentType: 'Part-time',
-                workSchedule: 'On-site',
-                match: 65,
-                tags: ['Retail', 'Customer Service'],
-                category: 'Retail / Store',
-                icon: 'fa-cash-register',
-                iconClass: '',
-                posted: '1 day ago'
-            },
-            {
-                id: 9,
-                title: 'Kitchen Helper',
-                company: 'Vinzons Restaurant',
-                municipality: 'Vinzons',
-                barangay: 'Centro',
-                salary: '₱8,000 - ₱9,500',
-                employmentType: 'Part-time',
-                workSchedule: 'On-site',
-                match: 62,
-                tags: ['Food Service', 'Kitchen'],
-                category: 'Food Service / Restaurant',
-                icon: 'fa-utensils',
-                iconClass: 'alt',
-                posted: '3 days ago'
-            },
-            {
-                id: 10,
-                title: 'Security Guard',
-                company: 'Daet Security Services',
-                municipality: 'Daet',
-                barangay: 'Centro',
-                salary: '₱10,000 - ₱12,000',
-                employmentType: 'Full-time',
-                workSchedule: 'Shift',
-                match: 60,
-                tags: ['Security', 'Night Shift'],
-                category: 'Security',
-                icon: 'fa-shield-alt',
-                iconClass: 'third',
-                posted: '1 week ago'
-            },
-            {
-                id: 11,
-                title: 'Teacher / Tutor',
-                company: 'Vinzons Learning Center',
-                municipality: 'Vinzons',
-                barangay: 'Poblacion',
-                salary: '₱200/hour',
-                employmentType: 'Part-time',
-                workSchedule: 'Flexible',
-                match: 58,
-                tags: ['Education', 'Tutoring', 'Flexible'],
-                category: 'Education / Tutoring',
-                icon: 'fa-chalkboard-teacher',
-                iconClass: 'fourth',
-                posted: '5 days ago'
-            },
-            {
-                id: 12,
-                title: 'Warehouse Assistant',
-                company: 'Basud Agricultural Supply',
-                municipality: 'Basud',
-                barangay: 'Poblacion',
-                salary: '₱9,500 - ₱11,500',
-                employmentType: 'Full-time',
-                workSchedule: 'On-site',
-                match: 55,
-                tags: ['Warehouse', 'Logistics', 'Inventory'],
-                category: 'Logistics / Delivery',
-                icon: 'fa-boxes',
-                iconClass: '',
-                posted: '2 weeks ago'
-            }
-        ];
+    var PAGE_SIZE = 12;
+    var state = { jobs: [], page: 0, totalPages: 0, totalElements: 0, keyword: '', sort: 'match', view: 'list' };
 
-        let filteredJobs = [...allJobs];
-        let currentView = 'list';
+    var el = {
+        filterForm: document.getElementById('filterForm'),
+        searchForm: document.getElementById('searchForm'),
+        keyword: document.getElementById('keyword'),
+        toolbarMunicipality: document.getElementById('toolbarMunicipality'),
+        toolbarCategory: document.getElementById('toolbarCategory'),
+        sortSelect: document.getElementById('sortSelect'),
+        jobList: document.getElementById('jobList'),
+        resultsCount: document.getElementById('resultsCount'),
+        resultsScope: document.getElementById('resultsScope'),
+        pagination: document.getElementById('pagination'),
+        pageError: document.getElementById('pageError'),
+        pageErrorText: document.getElementById('pageErrorText'),
+        filters: document.getElementById('filters'),
+        drawerOverlay: document.getElementById('drawerOverlay')
+    };
 
-        function renderJobs() {
-            const container = document.getElementById('jobList');
-            const countEl = document.getElementById('jobCount');
-            if (!container) return;
+    function param(name) {
+        return new URLSearchParams(window.location.search).get(name) || '';
+    }
 
-            if (countEl) countEl.textContent = filteredJobs.length;
+    function radioValue(name) {
+        var checked = el.filterForm.querySelector('input[name="' + name + '"]:checked');
+        return checked ? checked.value : '';
+    }
 
-            if (filteredJobs.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon"><i class="fas fa-search"></i></div>
-                        <h4>No jobs found</h4>
-                        <p>Try adjusting your filters or search terms</p>
-                    </div>
-                `;
-                return;
-            }
+    function setRadio(name, value) {
+        el.filterForm.querySelectorAll('input[name="' + name + '"]').forEach(function (input) {
+            input.checked = input.value === value;
+        });
+    }
 
-            container.innerHTML = filteredJobs.map(job => `
-                <div class="card job-card fade-in ${currentView === 'grid' ? 'grid-view' : ''}" onclick="window.location.href='job-details.html?id=${job.id}'">
-                    <div class="job-card-icon ${job.iconClass || ''}">
-                        <i class="fas ${job.icon}"></i>
-                    </div>
-                    <div class="job-card-info">
-                        <div class="job-card-title">${job.title}</div>
-                        <div class="job-card-company">${job.company}</div>
-                        <div class="job-card-meta">
-                            <span><i class="fas fa-map-marker-alt"></i> ${job.municipality}, Camarines Norte</span>
-                            <span><i class="fas fa-clock"></i> ${job.employmentType}</span>
-                            <span><i class="fas fa-tag"></i> ${job.salary}</span>
-                            <span><i class="fas fa-clock"></i> ${job.posted}</span>
-                        </div>
-                        <div class="job-card-tags">
-                            ${job.tags.map(tag => `<span class="job-tag">${tag}</span>`).join('')}
-                        </div>
-                        <div class="match-percentage">
-                            <div class="match-circle ${job.match >= 80 ? 'high' : job.match >= 60 ? 'medium' : 'low'}">${job.match}%</div>
-                            <div class="match-info">
-                                <h4>${job.match >= 80 ? 'Excellent Match' : job.match >= 60 ? 'Good Match' : 'Fair Match'}</h4>
-                                <div class="match-bar">
-                                    <div class="match-bar-fill ${job.match >= 80 ? 'high' : job.match >= 60 ? 'medium' : 'low'}" style="width: ${job.match}%;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="job-card-actions">
-                        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); saveJob(${job.id})"><i class="fas fa-bookmark"></i></button>
-                        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); applyJob(${job.id})"><i class="fas fa-paper-plane"></i> Apply</button>
-                    </div>
-                </div>
-            `).join('');
+    function buildParams() {
+        var params = new URLSearchParams();
+        var municipality = radioValue('municipality') || el.toolbarMunicipality.value;
+        var category = el.toolbarCategory.value;
+        var employmentType = radioValue('employmentType');
+        var workSchedule = radioValue('workSchedule');
+        var barangay = document.getElementById('barangay').value.trim();
+        var minSalary = document.getElementById('minSalary').value.trim();
+        var maxSalary = document.getElementById('maxSalary').value.trim();
+        var skills = document.getElementById('skills').value.trim();
+        var experience = document.getElementById('experience').value.trim();
+        var education = document.getElementById('education').value.trim();
+
+        if (municipality) params.set('municipality', municipality);
+        if (category) params.set('category', category);
+        if (employmentType) params.set('employmentType', employmentType);
+        if (workSchedule) params.set('workSchedule', workSchedule);
+        if (barangay) params.set('barangay', barangay);
+        if (minSalary) params.set('minSalary', minSalary);
+        if (maxSalary) params.set('maxSalary', maxSalary);
+        if (skills) params.set('skills', skills);
+        if (experience) params.set('experience', experience);
+        if (education) params.set('education', education);
+
+        params.set('page', String(state.page));
+        params.set('size', String(PAGE_SIZE));
+
+        switch (state.sort) {
+            case 'newest':
+                params.set('sortBy', 'createdAt');
+                params.set('sortDir', 'DESC');
+                break;
+            case 'salary-high':
+                params.set('sortBy', 'salaryMax');
+                params.set('sortDir', 'DESC');
+                break;
+            case 'salary-low':
+                params.set('sortBy', 'salaryMin');
+                params.set('sortDir', 'ASC');
+                break;
+            case 'title':
+                params.set('sortBy', 'jobTitle');
+                params.set('sortDir', 'ASC');
+                break;
+            default:
+                params.set('sortBy', 'matchPercentage');
+                params.set('sortDir', 'DESC');
         }
 
-        function applyFilters() {
-            const form = document.getElementById('jobFilterForm');
-            if (!form) return;
+        return params;
+    }
 
-            const formData = new FormData(form);
-            const selectedMunicipalities = formData.getAll('municipality').filter(v => v);
-            const selectedCategories = formData.getAll('category').filter(v => v);
-            const selectedEmploymentTypes = formData.getAll('employmentType').filter(v => v);
-            const selectedWorkSchedules = formData.getAll('workSchedule').filter(v => v);
-            const selectedExperience = formData.getAll('experience').filter(v => v);
-            const selectedEducation = formData.getAll('education').filter(v => v);
+    function matchesKeyword(job, keyword) {
+        if (!keyword) return true;
+        var needle = keyword.toLowerCase();
+        var haystack = [job.jobTitle, job.companyName, job.requiredSkills, job.barangay, job.jobLocation]
+            .filter(Boolean).join(' ').toLowerCase();
+        return haystack.indexOf(needle) !== -1;
+    }
 
-            filteredJobs = allJobs.filter(job => {
-                if (selectedMunicipalities.length > 0 && !selectedMunicipalities.includes(job.municipality)) return false;
-                if (selectedCategories.length > 0 && !selectedCategories.includes(job.category)) return false;
-                if (selectedEmploymentTypes.length > 0 && !selectedEmploymentTypes.includes(job.employmentType)) return false;
-                if (selectedWorkSchedules.length > 0 && !selectedWorkSchedules.includes(job.workSchedule)) return false;
-                if (selectedExperience.length > 0) {
-                    // Would need to parse job experience
-                }
-                if (selectedEducation.length > 0) {
-                    // Would need to parse job education
-                }
-                return true;
-            });
+    function scopeText() {
+        var municipality = radioValue('municipality') || el.toolbarMunicipality.value;
+        var barangay = document.getElementById('barangay').value.trim();
+        var parts = [];
+        if (municipality) parts.push(ENUVEX.municipalityLabel(municipality));
+        if (barangay) parts.push(barangay);
+        var base = parts.length ? 'Showing jobs in ' + parts.join(', ') : 'Showing jobs in all municipalities';
+        if (state.keyword) base += ' · matching “' + state.keyword + '”';
+        return base;
+    }
 
-            renderJobs();
+    function render() {
+        var jobs = state.jobs;
+
+        if (!jobs.length) {
+            el.jobList.innerHTML = `
+                <div class="empty">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <strong>No jobs match these filters</strong>
+                    Try removing a filter, widening the salary range, or searching a different municipality.
+                </div>`;
+        } else {
+            el.jobList.innerHTML = jobs.map(function (job) { return ENUVEX.jobCard(job); }).join('');
         }
 
-        function resetFilters() {
-            document.getElementById('jobFilterForm').reset();
-            filteredJobs = [...allJobs];
-            renderJobs();
+        el.jobList.classList.toggle('is-grid', state.view === 'grid');
+        el.resultsCount.textContent = state.totalElements === 1 ? '1 job found' : state.totalElements + ' jobs found';
+        el.resultsScope.textContent = scopeText();
+        renderPagination();
+    }
+
+    function renderPagination() {
+        if (state.totalPages <= 1) {
+            el.pagination.innerHTML = '';
+            return;
+        }
+        var buttons = ['<button type="button" data-page="' + (state.page - 1) + '"' + (state.page === 0 ? ' disabled' : '') + ' aria-label="Previous page"><i class="fas fa-chevron-left"></i></button>'];
+        var start = Math.max(0, Math.min(state.page - 2, state.totalPages - 5));
+        var end = Math.min(state.totalPages, start + 5);
+
+        for (var i = start; i < end; i += 1) {
+            buttons.push('<button type="button" data-page="' + i + '"' + (i === state.page ? ' class="is-active" aria-current="page"' : '') + '>' + (i + 1) + '</button>');
+        }
+        buttons.push('<button type="button" data-page="' + (state.page + 1) + '"' + (state.page >= state.totalPages - 1 ? ' disabled' : '') + ' aria-label="Next page"><i class="fas fa-chevron-right"></i></button>');
+        el.pagination.innerHTML = buttons.join('');
+    }
+
+    async function loadJobs() {
+        el.pageError.hidden = true;
+        el.jobList.innerHTML = '<div class="loading">Loading jobs…</div>';
+
+        if (!window.ApiClient || !ApiClient.loadAuth()) {
+            state.jobs = [];
+            state.totalElements = 0;
+            state.totalPages = 0;
+            el.resultsCount.textContent = 'Sign in required';
+            el.resultsScope.textContent = 'Sign in to search jobs and see your match scores';
+            el.jobList.innerHTML = `
+                <div class="empty">
+                    <i class="fas fa-lock"></i>
+                    <strong>Sign in to browse jobs</strong>
+                    Job search, saved jobs and applications need your ENUVEX account.
+                    <a class="btn-solid btn-sm" href="../../login.html">Sign in</a>
+                </div>`;
+            el.pagination.innerHTML = '';
+            return;
         }
 
-        function saveJob(jobId) {
-            showToast('Job saved!', 'success');
+        var params = buildParams();
+        state.keyword = el.keyword.value.trim();
+
+        var result = await ENUVEX.safe(ApiClient.request('/job-seekers/jobs?' + params.toString()));
+        if (ENUVEX.failed(result)) {
+            el.pageError.hidden = false;
+            el.pageErrorText.textContent = result.__error.message || 'Could not load jobs right now.';
+            el.jobList.innerHTML = `
+                <div class="empty">
+                    <i class="fas fa-triangle-exclamation"></i>
+                    <strong>Jobs could not be loaded</strong>
+                    Please try again in a moment.
+                </div>`;
+            return;
         }
 
-        function applyJob(jobId) {
-            showToast('Application submitted!', 'success');
+        var content = (result && result.content) || [];
+        state.jobs = state.keyword ? content.filter(function (job) { return matchesKeyword(job, state.keyword); }) : content;
+        state.totalElements = state.keyword ? state.jobs.length : (result.totalElements || state.jobs.length);
+        state.totalPages = state.keyword ? 1 : (result.totalPages || 0);
+        render();
+    }
+
+    function openFilters() {
+        el.filters.classList.add('is-open');
+        el.drawerOverlay.classList.add('is-visible');
+    }
+
+    function closeFilters() {
+        el.filters.classList.remove('is-open');
+        el.drawerOverlay.classList.remove('is-visible');
+    }
+
+    function applyView(view) {
+        state.view = view;
+        document.getElementById('viewList').classList.toggle('is-active', view === 'list');
+        document.getElementById('viewGrid').classList.toggle('is-active', view === 'grid');
+        try { localStorage.setItem('enuvex_jobs_view', view); } catch (e) { /* storage unavailable */ }
+        el.jobList.classList.toggle('is-grid', view === 'grid');
+    }
+
+    function search() {
+        state.page = 0;
+        loadJobs();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var initialQuery = param('q');
+        var initialMunicipality = param('municipality');
+        var initialCategory = param('category');
+        var initialType = param('employmentType');
+
+        if (initialQuery) el.keyword.value = initialQuery;
+        if (initialMunicipality) {
+            el.toolbarMunicipality.value = initialMunicipality;
+            setRadio('municipality', initialMunicipality);
         }
+        if (initialCategory) el.toolbarCategory.value = initialCategory;
+        if (initialType) setRadio('employmentType', initialType);
 
-        // Search functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            renderJobs();
+        try {
+            var savedView = localStorage.getItem('enuvex_jobs_view');
+            if (savedView === 'grid') applyView('grid');
+        } catch (e) { /* storage unavailable */ }
 
-            // Filter form
-            document.getElementById('jobFilterForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                applyFilters();
-                // Close mobile filter sidebar
-                const sidebar = document.getElementById('filterSidebar');
-                if (sidebar && window.innerWidth <= 1024) {
-                    sidebar.classList.remove('active');
-                }
-            });
-
-            document.getElementById('resetFilters').addEventListener('click', resetFilters);
-
-            // Search input
-            document.getElementById('jobSearchInput').addEventListener('input', function(e) {
-                const query = e.target.value.toLowerCase();
-                if (query.trim() === '') {
-                    filteredJobs = [...allJobs];
-                } else {
-                    filteredJobs = allJobs.filter(job =>
-                        job.title.toLowerCase().includes(query) ||
-                        job.company.toLowerCase().includes(query) ||
-                        job.tags.some(tag => tag.toLowerCase().includes(query))
-                    );
-                }
-                renderJobs();
-            });
-
-            // Sort select
-            document.getElementById('sortSelect').addEventListener('change', function(e) {
-                const sort = e.target.value;
-                switch (sort) {
-                    case 'match':
-                        filteredJobs.sort((a, b) => b.match - a.match);
-                        break;
-                    case 'newest':
-                        // Would need actual dates
-                        break;
-                    case 'salary-high':
-                        filteredJobs.sort((a, b) => parseSalary(b.salary) - parseSalary(a.salary));
-                        break;
-                    case 'salary-low':
-                        filteredJobs.sort((a, b) => parseSalary(a.salary) - parseSalary(b.salary));
-                        break;
-                }
-                renderJobs();
-            });
-
-            // Toggle view
-            document.getElementById('toggleView').addEventListener('click', function() {
-                currentView = currentView === 'list' ? 'grid' : 'list';
-                this.innerHTML = currentView === 'list' ? '<i class="fas fa-th-large"></i>' : '<i class="fas fa-th-list"></i>';
-                renderJobs();
-            });
-
-            // Mobile filter toggle
-            document.getElementById('mobileFilterToggle').addEventListener('click', function() {
-                document.getElementById('filterSidebar').classList.toggle('active');
-            });
+        el.searchForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            search();
         });
 
-        function parseSalary(salaryStr) {
-            const nums = salaryStr.match(/[\d,]+/g);
-            if (!nums) return 0;
-            return Math.max(...nums.map(n => parseInt(n.replace(/,/g, ''))));
-        }
+        el.filterForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            closeFilters();
+            search();
+        });
 
-        // Ensure user type is stored for proper sidebar detection
-        localStorage.setItem('userType', 'JOB_SEEKER');
-    </script>
-    <script src="../assets/js/layout.js"></script>
+        document.getElementById('resetFilters').addEventListener('click', function () {
+            el.filterForm.reset();
+            el.toolbarMunicipality.value = '';
+            el.toolbarCategory.value = '';
+            el.keyword.value = '';
+            state.sort = 'match';
+            el.sortSelect.value = 'match';
+            closeFilters();
+            search();
+        });
+
+        el.toolbarMunicipality.addEventListener('change', search);
+        el.toolbarCategory.addEventListener('change', search);
+
+        el.sortSelect.addEventListener('change', function () {
+            state.sort = this.value;
+            search();
+        });
+
+        document.getElementById('viewList').addEventListener('click', function () { applyView('list'); });
+        document.getElementById('viewGrid').addEventListener('click', function () { applyView('grid'); });
+
+        document.getElementById('filtersOpen').addEventListener('click', openFilters);
+        document.getElementById('filtersClose').addEventListener('click', closeFilters);
+        el.drawerOverlay.addEventListener('click', closeFilters);
+
+        el.pagination.addEventListener('click', function (event) {
+            var button = event.target.closest('[data-page]');
+            if (!button || button.disabled) return;
+            state.page = Number(button.getAttribute('data-page'));
+            loadJobs().then(function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+        });
+
+        document.getElementById('nearMeBtn').addEventListener('click', function () {
+            var profile = ENUVEX.state.profile;
+            var note = document.getElementById('nearMeNote');
+            if (!profile || !profile.municipality) {
+                note.textContent = 'Sign in (or add a municipality to your profile) to use this.';
+                return;
+            }
+            el.toolbarMunicipality.value = profile.municipality;
+            setRadio('municipality', profile.municipality);
+            note.textContent = 'Filtering to ' + ENUVEX.municipalityLabel(profile.municipality) + '.';
+            search();
+        });
+
+        document.addEventListener('enuvex:user', function () {
+            var profile = ENUVEX.state.profile;
+            if (profile && profile.municipality && !radioValue('municipality')) {
+                document.getElementById('nearMeNote').textContent =
+                    'Filters to your saved municipality (' + ENUVEX.municipalityLabel(profile.municipality) + ').';
+            }
+        });
+
+        ENUVEX.wireJobActions(function (action) {
+            if (action === 'applied') loadJobs();
+        });
+
+        loadJobs();
+    });
+})();
+</script>
 </body>
 </html>

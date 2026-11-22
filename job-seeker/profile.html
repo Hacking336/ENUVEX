@@ -3,285 +3,462 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile - Job & Skills Matching System</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <title>Profile — ENUVEX</title>
+    <link rel="icon" type="image/png" href="../assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="enuvex-app.css">
+    <script>
+        window.ENUVEX_PAGE = {
+            active: 'profile',
+            title: 'My Profile',
+            subtitle: 'The details employers see when you apply'
+        };
+    </script>
 </head>
 <body>
-    <div class="app-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">
-                    <div class="sidebar-logo-icon">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
-                    <span>Job Seeker</span>
-                </div>
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load your profile.</span>
             </div>
 
-            <nav class="sidebar-nav" id="sidebarNav">
-                <!-- Injected by layout.js -->
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="sidebar-user" onclick="window.location.href='profile.html'">
-                    <div class="sidebar-user-avatar">MS</div>
-                    <div class="sidebar-user-info">
-                        <div class="sidebar-user-name">Maria Santos</div>
-                        <div class="sidebar-user-role">Job Seeker</div>
-                    </div>
+            <section class="profile-hero">
+                <div id="profileAvatar"><span class="avatar avatar-lg">JS</span></div>
+                <div class="profile-hero-main">
+                    <h2 id="profileName">Job Seeker</h2>
+                    <p class="profile-hero-sub" id="profileLocation"><i class="fas fa-location-dot"></i> Add your municipality</p>
                 </div>
+                <div class="profile-hero-actions">
+                    <button class="btn-solid" id="editProfileBtn" type="button"><i class="fas fa-pen"></i> Edit Profile</button>
+                    <a class="btn-ghost" href="jobs.html"><i class="fas fa-magnifying-glass"></i> Find Jobs</a>
+                </div>
+            </section>
+
+            <div class="profile-grid">
+                <div class="profile-main">
+                    <section class="card panel">
+                        <div class="panel-head">
+                            <h3><i class="fas fa-user"></i> About Me</h3>
+                        </div>
+                        <dl class="detail-list" id="aboutList">
+                            <div class="loading">Loading your details…</div>
+                        </dl>
+                    </section>
+
+                    <section class="card panel">
+                        <div class="panel-head">
+                            <h3><i class="fas fa-graduation-cap"></i> Education</h3>
+                        </div>
+                        <dl class="detail-list" id="educationList">
+                            <div class="loading">Loading…</div>
+                        </dl>
+                    </section>
+
+                    <section class="card panel">
+                        <div class="panel-head">
+                            <h3><i class="fas fa-star"></i> Skills</h3>
+                        </div>
+                        <div id="skillsBox"><p class="panel-empty">No skills added yet.</p></div>
+                    </section>
+
+                    <section class="card panel">
+                        <div class="panel-head">
+                            <h3><i class="fas fa-briefcase"></i> Work Experience</h3>
+                        </div>
+                        <div id="experienceBox"><p class="panel-empty">No work experience added yet.</p></div>
+                    </section>
+
+                    <section class="card panel">
+                        <div class="panel-head">
+                            <h3><i class="fas fa-certificate"></i> Certifications</h3>
+                        </div>
+                        <div id="certificationsBox"><p class="panel-empty">No certifications added yet.</p></div>
+                    </section>
+                </div>
+
+                <aside class="profile-side">
+                    <section class="card panel">
+                        <div class="panel-head">
+                            <h3><i class="fas fa-chart-simple"></i> Profile Completion</h3>
+                        </div>
+                        <div class="completion" style="display: block;">
+                            <div class="completion-main">
+                                <div class="completion-head">
+                                    <h3>Your progress</h3>
+                                    <strong id="completionValue">—</strong>
+                                </div>
+                                <div class="progress" role="progressbar" aria-label="Profile completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="completionBar">
+                                    <span id="completionFill" style="width: 0%"></span>
+                                </div>
+                                <p id="completionHint">A complete profile helps ENUVEX match you with better jobs.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card panel">
+                        <div class="panel-head">
+                            <h3><i class="fas fa-bullseye"></i> Career Preferences</h3>
+                        </div>
+                        <dl class="detail-list" id="preferenceList">
+                            <div class="loading">Loading…</div>
+                        </dl>
+                    </section>
+
+                    <section class="card panel">
+                        <div class="panel-head">
+                            <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 9px;">
+                            <a class="btn-soft btn-sm" href="jobs.html"><i class="fas fa-magnifying-glass"></i> Search Jobs</a>
+                            <a class="btn-soft btn-sm" href="applications.html"><i class="fas fa-file-lines"></i> My Applications</a>
+                            <a class="btn-soft btn-sm" href="saved-jobs.html"><i class="fas fa-bookmark"></i> Saved Jobs</a>
+                        </div>
+                    </section>
+                </aside>
             </div>
-        </aside>
+        </main>
+    </div>
+</div>
 
-        <!-- Sidebar Overlay -->
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Top Header -->
-            <header class="top-header">
-                <div class="top-header-content">
-                    <div class="top-header-left">
-                        <button class="mobile-menu-btn" id="mobileMenuBtn">
-                            <i class="fas fa-bars"></i>
-                        </button>
-                        <h1 class="top-header-title">My Profile</h1>
-                    </div>
-                    <div class="top-header-right">
-                        <button class="header-btn" id="notificationBtn">
-                            <i class="fas fa-bell"></i>
-                            <span class="badge">3</span>
-                        </button>
-                        <button class="header-btn" id="userMenuBtn">
-                            <i class="fas fa-user-circle"></i>
-                        </button>
-                    </div>
-                </div>
-            </header>
+<div class="modal" id="editModal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+        <div class="modal-head">
+            <h3 id="editModalTitle">Edit Profile</h3>
+            <button class="icon-btn" id="closeModal" type="button" aria-label="Close"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="alert" id="modalError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="modalErrorText"></span>
+            </div>
 
-            <!-- Page Content -->
-            <main class="page-content">
-                <!-- Page Nav -->
-                <nav class="page-nav">
-                    <a href="dashboard.html"><i class="fas fa-home"></i> Home</a>
-                    <span style="color: var(--gray-300);">/</span>
-                    <span class="current">Profile</span>
-                </nav>
-
-                <!-- Profile Header -->
-                <div class="profile-header fade-in">
-                    <div class="profile-avatar">MS</div>
-                    <h1 class="profile-name">Maria Santos</h1>
-                    <p class="profile-location"><i class="fas fa-map-marker-alt" style="margin-right: 0.25rem;"></i> Daet, Camarines Norte</p>
-                    <span class="profile-completion">Profile 70% Complete</span>
-                    <button class="btn btn-outline btn-sm mt-3" onclick="editProfile()"><i class="fas fa-edit" style="margin-right: 0.35rem;"></i> Edit Profile</button>
-                </div>
-
-                <!-- Profile Sections -->
-                <div class="profile-section fade-in">
-                    <h3><i class="fas fa-user" style="color: var(--primary-color);"></i> About Me</h3>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Full Name</span>
-                        <span class="profile-detail-value">Maria Santos</span>
+            <form id="profileForm">
+                <div class="form-grid">
+                    <div class="form-field span-2">
+                        <label for="photoInput">Profile photo</label>
+                        <input type="file" id="photoInput" accept="image/*">
+                        <span class="hint">Optional. JPG or PNG up to a few megabytes.</span>
                     </div>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Email</span>
-                        <span class="profile-detail-value">maria.santos@email.com</span>
+                    <div class="form-field">
+                        <label for="fullName">Full name</label>
+                        <input type="text" id="fullName" name="fullName" required autocomplete="name">
                     </div>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Phone</span>
-                        <span class="profile-detail-value">+63 912 345 6789</span>
+                    <div class="form-field">
+                        <label for="contactNumber">Contact number</label>
+                        <input type="text" id="contactNumber" name="contactNumber" placeholder="09XX XXX XXXX" autocomplete="tel">
                     </div>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Location</span>
-                        <span class="profile-detail-value">Barangay Bagasbas, Daet, Camarines Norte</span>
+                    <div class="form-field">
+                        <label for="municipality">Municipality</label>
+                        <select id="municipality" name="municipality" required>
+                            <option value="">Select municipality</option>
+                            <option value="BASUD">Basud</option>
+                            <option value="DAET">Daet</option>
+                            <option value="VINZONS">Vinzons</option>
+                            <option value="LABO">Labo</option>
+                        </select>
                     </div>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Date of Birth</span>
-                        <span class="profile-detail-value">January 15, 1998 (Age 26)</span>
+                    <div class="form-field">
+                        <label for="barangay">Barangay</label>
+                        <input type="text" id="barangay" name="barangay">
                     </div>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Civil Status</span>
-                        <span class="profile-detail-value">Single</span>
+                    <div class="form-field">
+                        <label for="educationLevel">Highest education</label>
+                        <select id="educationLevel" name="educationLevel">
+                            <option value="">Not specified</option>
+                            <option value="ELEMENTARY_GRADUATE">Elementary Graduate</option>
+                            <option value="HIGH_SCHOOL_GRADUATE">High School Graduate</option>
+                            <option value="VOCATIONAL_TECHNICAL">Vocational / Technical</option>
+                            <option value="COLLEGE_GRADUATE">College Graduate</option>
+                            <option value="POST_GRADUATE">Post Graduate</option>
+                        </select>
                     </div>
-                </div>
-
-                <div class="profile-section fade-in">
-                    <h3><i class="fas fa-graduation-cap" style="color: var(--primary-color);"></i> Education</h3>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Highest Level</span>
-                        <span class="profile-detail-value">High School Graduate</span>
+                    <div class="form-field">
+                        <label for="courseField">Course / strand</label>
+                        <input type="text" id="courseField" name="courseField" placeholder="e.g. General Academic Strand">
                     </div>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">School</span>
-                        <span class="profile-detail-value">Daet National High School</span>
+                    <div class="form-field">
+                        <label for="employmentTypePreference">Preferred employment type</label>
+                        <select id="employmentTypePreference" name="employmentTypePreference">
+                            <option value="">Not specified</option>
+                            <option value="FULL_TIME">Full-time</option>
+                            <option value="PART_TIME">Part-time</option>
+                            <option value="CONTRACT">Contract</option>
+                            <option value="TEMPORARY">Temporary</option>
+                        </select>
                     </div>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Year Graduated</span>
-                        <span class="profile-detail-value">2016</span>
+                    <div class="form-field">
+                        <label for="preferredWorkSchedule">Preferred schedule</label>
+                        <select id="preferredWorkSchedule" name="preferredWorkSchedule">
+                            <option value="">Not specified</option>
+                            <option value="MORNING">Morning</option>
+                            <option value="AFTERNOON">Afternoon</option>
+                            <option value="EVENING">Evening</option>
+                            <option value="NIGHT">Night</option>
+                            <option value="WEEKEND">Weekend</option>
+                            <option value="FLEXIBLE">Flexible</option>
+                        </select>
                     </div>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Course / Strand</span>
-                        <span class="profile-detail-value">General Academic Strand (GAS)</span>
+                    <div class="form-field">
+                        <label for="availability">Availability</label>
+                        <select id="availability" name="availability">
+                            <option value="">Not specified</option>
+                            <option value="IMMEDIATELY">Immediately</option>
+                            <option value="WITHIN_1_WEEK">Within 1 week</option>
+                            <option value="WITHIN_2_WEEKS">Within 2 weeks</option>
+                            <option value="WITHIN_1_MONTH">Within 1 month</option>
+                            <option value="WITHIN_3_MONTHS">Within 3 months</option>
+                            <option value="MORE_THAN_3_MONTHS">More than 3 months</option>
+                        </select>
                     </div>
-                </div>
-
-                <div class="profile-section fade-in">
-                    <h3><i class="fas fa-code" style="color: var(--primary-color);"></i> Skills</h3>
-                    <div class="profile-skills">
-                        <span class="skill-tag">Customer Service</span>
-                        <span class="skill-tag">Cash Handling</span>
-                        <span class="skill-tag">Food Preparation</span>
-                        <span class="skill-tag">Teamwork</span>
-                        <span class="skill-tag">Communication</span>
-                        <span class="skill-tag">POS Systems</span>
-                        <span class="skill-tag">Food Safety</span>
-                        <span class="skill-tag">Time Management</span>
+                    <div class="form-field">
+                        <label for="expectedSalaryMin">Expected salary — minimum</label>
+                        <input type="number" id="expectedSalaryMin" name="expectedSalaryMin" min="0" step="500" placeholder="₱">
                     </div>
-                    <button class="btn btn-outline btn-sm mt-3" onclick="editSkills()"><i class="fas fa-plus" style="margin-right: 0.35rem;"></i> Add Skill</button>
-                </div>
-
-                <div class="profile-section fade-in">
-                    <h3><i class="fas fa-briefcase" style="color: var(--primary-color);"></i> Experience</h3>
-                    <div style="margin-bottom: 1.5rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                            <div>
-                                <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem;">Cashier</h4>
-                                <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Juan's Eatery • Daet, Camarines Norte</p>
-                            </div>
-                            <span class="text-muted" style="font-size: 0.85rem;">Jan 2022 - Dec 2023</span>
-                        </div>
-                        <ul style="color: var(--gray-600); font-size: 0.9rem; padding-left: 1.25rem; line-height: 1.8;">
-                            <li>Handled cash transactions and POS operations</li>
-                            <li>Provided excellent customer service</li>
-                            <li>Maintained cleanliness of dining area</li>
-                            <li>Assisted in food preparation during peak hours</li>
-                        </ul>
+                    <div class="form-field">
+                        <label for="expectedSalaryMax">Expected salary — maximum</label>
+                        <input type="number" id="expectedSalaryMax" name="expectedSalaryMax" min="0" step="500" placeholder="₱">
                     </div>
-                    <div style="margin-bottom: 1.5rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                            <div>
-                                <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem;">Sales Associate</h4>
-                                <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Basud Retail Store • Basud, Camarines Norte</p>
-                            </div>
-                            <span class="text-muted" style="font-size: 0.85rem;">Jun 2019 - Dec 2021</span>
-                        </div>
-                        <ul style="color: var(--gray-600); font-size: 0.9rem; padding-left: 1.25rem; line-height: 1.8;">
-                            <li>Assisted customers with product inquiries</li>
-                            <li>Managed inventory and stock replenishment</li>
-                            <li>Processed payments and returns</li>
-                        </ul>
+                    <div class="form-field span-2">
+                        <label for="skills">Skills</label>
+                        <textarea id="skills" name="skills" placeholder="Customer Service, Cash Handling, POS Systems"></textarea>
+                        <span class="hint">Separate skills with commas.</span>
                     </div>
-                    <button class="btn btn-outline btn-sm" onclick="addExperience()"><i class="fas fa-plus" style="margin-right: 0.35rem;"></i> Add Experience</button>
-                </div>
-
-                <div class="profile-section fade-in">
-                    <h3><i class="fas fa-certificate" style="color: var(--primary-color);"></i> Certifications</h3>
-                    <div class="profile-skills">
-                        <span class="skill-tag">Food Safety Training (2022)</span>
-                        <span class="skill-tag">Customer Service Excellence (2021)</span>
-                        <span class="skill-tag">Basic First Aid (2020)</span>
+                    <div class="form-field span-2">
+                        <label for="workExperience">Work experience</label>
+                        <textarea id="workExperience" name="workExperience" placeholder="Cashier — Juan's Eatery (2022–2023): handled cash and POS operations."></textarea>
                     </div>
-                    <button class="btn btn-outline btn-sm mt-3" onclick="addCertification()"><i class="fas fa-plus" style="margin-right: 0.35rem;"></i> Add Certification</button>
-                </div>
-
-                <div class="profile-section fade-in">
-                    <h3><i class="fas fa-heart" style="color: var(--primary-color);"></i> Preferences</h3>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Employment Type</span>
-                        <span class="profile-detail-value">Full-time</span>
-                    </div>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Preferred Work Schedule</span>
-                        <span class="profile-detail-value">On-site (Flexible shifts)</span>
-                    </div>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Preferred Distance</span>
-                        <span class="profile-detail-value">Within 25 km</span>
-                    </div>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Willing to Relocate</span>
-                        <span class="profile-detail-value">No</span>
+                    <div class="form-field span-2">
+                        <label for="certifications">Certifications</label>
+                        <textarea id="certifications" name="certifications" placeholder="Food Safety Training (2022)"></textarea>
                     </div>
                 </div>
 
-                <div class="profile-section fade-in">
-                    <h3><i class="fas fa-clock" style="color: var(--primary-color);"></i> Availability</h3>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Availability</span>
-                        <span class="profile-detail-value">Immediately</span>
-                    </div>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Preferred Shifts</span>
-                        <span class="profile-detail-value">Morning, Afternoon, Evening</span>
-                    </div>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Days Available</span>
-                        <span class="profile-detail-value">Monday - Sunday (Flexible)</span>
-                    </div>
+                <div class="form-actions">
+                    <button class="btn-soft" id="cancelEdit" type="button">Cancel</button>
+                    <button class="btn-solid" id="saveProfile" type="submit"><i class="fas fa-floppy-disk"></i> Save Changes</button>
                 </div>
-
-                <div class="profile-section fade-in">
-                    <h3><i class="fas fa-won-sign" style="color: var(--primary-color);"></i> Expected Salary</h3>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Minimum Expected</span>
-                        <span class="profile-detail-value">₱12,000/month</span>
-                    </div>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Maximum Expected</span>
-                        <span class="profile-detail-value">₱15,000/month</span>
-                    </div>
-                    <div class="profile-detail-row">
-                        <span class="profile-detail-label">Negotiable</span>
-                        <span class="profile-detail-value">Yes</span>
-                    </div>
-                </div>
-
-                <!-- Resume Download -->
-                <div class="profile-section fade-in">
-                    <h3><i class="fas fa-file-download" style="color: var(--primary-color);"></i> Resume</h3>
-                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                        <button class="btn btn-primary"><i class="fas fa-download" style="margin-right: 0.5rem;"></i> Download Resume</button>
-                        <button class="btn btn-outline"><i class="fas fa-upload" style="margin-right: 0.5rem;"></i> Upload New Resume</button>
-                    </div>
-                    <p class="text-muted" style="font-size: 0.85rem; margin-top: 0.75rem;">Last updated: May 1, 2026</p>
-                </div>
-            </main>
+            </form>
         </div>
     </div>
+</div>
 
-    <!-- Bottom Navigation (Mobile) -->
-    <nav class="bottom-nav" id="bottomNav">
-        <!-- Injected by layout.js -->
-    </nav>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
+<script src="../assets/js/api.js"></script>
+<script src="enuvex-app.js"></script>
+<script>
+(function () {
+    'use strict';
 
-    <script src="../assets/js/main.js"></script>
-    <script src="../assets/js/layout.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize any profile-specific JS here
+    var state = { profile: null };
+
+    var el = {
+        pageError: document.getElementById('pageError'),
+        pageErrorText: document.getElementById('pageErrorText'),
+        modal: document.getElementById('editModal'),
+        modalError: document.getElementById('modalError'),
+        modalErrorText: document.getElementById('modalErrorText'),
+        form: document.getElementById('profileForm')
+    };
+
+    function detailRow(label, value) {
+        return `<div class="detail-row"><dt>${ENUVEX.esc(label)}</dt><dd>${ENUVEX.esc(value || 'Not provided')}</dd></div>`;
+    }
+
+    function render(profile) {
+        state.profile = profile;
+        var name = profile.fullName || 'Job Seeker';
+        var location = [profile.barangay, ENUVEX.municipalityLabel(profile.municipality)].filter(Boolean).join(', ');
+
+        document.getElementById('profileAvatar').innerHTML = ENUVEX.avatarHtml(profile, 'avatar-lg');
+        document.getElementById('profileName').textContent = name;
+        document.getElementById('profileLocation').innerHTML =
+            '<i class="fas fa-location-dot"></i> ' + ENUVEX.esc(location || 'Add your municipality');
+
+        document.getElementById('aboutList').innerHTML = [
+            detailRow('Full name', profile.fullName),
+            detailRow('Contact number', profile.contactNumber),
+            detailRow('Municipality', ENUVEX.municipalityLabel(profile.municipality)),
+            detailRow('Barangay', profile.barangay),
+            detailRow('Availability', ENUVEX.availabilityLabel(profile.availability))
+        ].join('');
+
+        document.getElementById('educationList').innerHTML = [
+            detailRow('Highest level', ENUVEX.educationLabel(profile.educationLevel)),
+            detailRow('Course / strand', profile.courseField)
+        ].join('');
+
+        var skills = String(profile.skills || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+        document.getElementById('skillsBox').innerHTML = skills.length
+            ? `<div class="chips">${skills.map(function (skill) { return `<span class="chip">${ENUVEX.esc(skill)}</span>`; }).join('')}</div>`
+            : '<p class="panel-empty">No skills added yet. Add the skills employers look for to improve your matches.</p>';
+
+        document.getElementById('experienceBox').innerHTML = profile.workExperience
+            ? `<p class="prose">${ENUVEX.esc(profile.workExperience)}</p>`
+            : '<p class="panel-empty">No work experience added yet.</p>';
+
+        document.getElementById('certificationsBox').innerHTML = profile.certifications
+            ? `<p class="prose">${ENUVEX.esc(profile.certifications)}</p>`
+            : '<p class="panel-empty">No certifications added yet.</p>';
+
+        var salary = ENUVEX.salaryLabel({ salaryMin: profile.expectedSalaryMin, salaryMax: profile.expectedSalaryMax });
+        document.getElementById('preferenceList').innerHTML = [
+            detailRow('Employment type', ENUVEX.typeLabel(profile.employmentTypePreference)),
+            detailRow('Work schedule', ENUVEX.scheduleLabel(profile.preferredWorkSchedule)),
+            detailRow('Availability', ENUVEX.availabilityLabel(profile.availability)),
+            detailRow('Expected salary', salary)
+        ].join('');
+    }
+
+    function renderCompletion(completion) {
+        var value = Number(completion);
+        var hasValue = isFinite(value) && value >= 0;
+        var pct = hasValue ? Math.max(0, Math.min(100, Math.round(value))) : 0;
+
+        document.getElementById('completionValue').textContent = hasValue ? pct + '%' : '—';
+        document.getElementById('completionFill').style.width = pct + '%';
+        document.getElementById('completionBar').setAttribute('aria-valuenow', String(pct));
+
+        var hint = document.getElementById('completionHint');
+        if (pct >= 100) hint.textContent = 'Your profile is complete — employers can see everything they need.';
+        else if (pct >= 70) hint.textContent = 'Almost there. Add the remaining details to improve your matches.';
+        else hint.textContent = 'A complete profile helps ENUVEX match you with better jobs.';
+    }
+
+    async function loadProfile() {
+        el.pageError.hidden = true;
+
+        if (!window.ApiClient || !ApiClient.loadAuth()) {
+            el.pageError.hidden = false;
+            el.pageErrorText.textContent = 'Sign in to view and edit your profile.';
+            document.getElementById('profileName').textContent = 'Sign in required';
+            return;
+        }
+
+        var results = await Promise.all([
+            ENUVEX.safe(ApiClient.getProfile()),
+            ENUVEX.safe(ApiClient.getProfileCompletion())
+        ]);
+
+        if (ENUVEX.failed(results[0])) {
+            el.pageError.hidden = false;
+            el.pageErrorText.textContent = results[0].__error.message || 'Could not load your profile.';
+            return;
+        }
+
+        render(results[0]);
+        renderCompletion(ENUVEX.failed(results[1]) ? null : (results[1] || {}).completion);
+        ENUVEX.state.profile = results[0];
+        ENUVEX.loadIdentity();
+    }
+
+    function fillForm(profile) {
+        var fields = ['fullName', 'contactNumber', 'municipality', 'barangay', 'educationLevel', 'courseField',
+            'employmentTypePreference', 'preferredWorkSchedule', 'availability', 'skills', 'workExperience', 'certifications'];
+        fields.forEach(function (id) {
+            var input = document.getElementById(id);
+            if (input) input.value = profile[id] || '';
+        });
+        document.getElementById('expectedSalaryMin').value = profile.expectedSalaryMin || '';
+        document.getElementById('expectedSalaryMax').value = profile.expectedSalaryMax || '';
+        document.getElementById('photoInput').value = '';
+    }
+
+    function openModal() {
+        if (!state.profile) return;
+        fillForm(state.profile);
+        el.modalError.hidden = true;
+        el.modal.hidden = false;
+        document.body.style.overflow = 'hidden';
+        document.getElementById('fullName').focus();
+    }
+
+    function closeModal() {
+        el.modal.hidden = true;
+        document.body.style.overflow = '';
+    }
+
+    function payload() {
+        var data = {
+            fullName: document.getElementById('fullName').value.trim(),
+            contactNumber: document.getElementById('contactNumber').value.trim(),
+            municipality: document.getElementById('municipality').value,
+            barangay: document.getElementById('barangay').value.trim(),
+            educationLevel: document.getElementById('educationLevel').value,
+            courseField: document.getElementById('courseField').value.trim(),
+            employmentTypePreference: document.getElementById('employmentTypePreference').value,
+            preferredWorkSchedule: document.getElementById('preferredWorkSchedule').value,
+            availability: document.getElementById('availability').value,
+            skills: document.getElementById('skills').value.trim(),
+            workExperience: document.getElementById('workExperience').value.trim(),
+            certifications: document.getElementById('certifications').value.trim()
+        };
+
+        var min = document.getElementById('expectedSalaryMin').value.trim();
+        var max = document.getElementById('expectedSalaryMax').value.trim();
+        if (min) data.expectedSalaryMin = Number(min);
+        if (max) data.expectedSalaryMax = Number(max);
+
+        return data;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('editProfileBtn').addEventListener('click', openModal);
+        document.getElementById('closeModal').addEventListener('click', closeModal);
+        document.getElementById('cancelEdit').addEventListener('click', closeModal);
+        el.modal.addEventListener('click', function (event) {
+            if (event.target === el.modal) closeModal();
+        });
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && !el.modal.hidden) closeModal();
         });
 
-        function editProfile() {
-            showToast('Edit profile feature coming soon!', 'info');
-        }
+        el.form.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            var saveBtn = document.getElementById('saveProfile');
+            var photo = document.getElementById('photoInput').files[0];
+            el.modalError.hidden = true;
+            saveBtn.disabled = true;
 
-        function editSkills() {
-            showToast('Edit skills feature coming soon!', 'info');
-        }
+            try {
+                var updated = await ApiClient.updateJobSeekerProfile(payload(), photo);
+                if (updated) render(updated);
+                else await loadProfile();
 
-        function addExperience() {
-            showToast('Add experience feature coming soon!', 'info');
-        }
+                var completion = await ENUVEX.safe(ApiClient.getProfileCompletion());
+                renderCompletion(ENUVEX.failed(completion) ? null : (completion || {}).completion);
 
-        function addCertification() {
-            showToast('Add certification feature coming soon!', 'info');
-        }
-    </script>
+                ENUVEX.state.profile = updated || state.profile;
+                ENUVEX.loadIdentity();
+                closeModal();
+                ENUVEX.toast('Profile updated.', 'success');
+            } catch (error) {
+                el.modalError.hidden = false;
+                el.modalErrorText.textContent = error.message || 'Could not save your profile.';
+            } finally {
+                saveBtn.disabled = false;
+            }
+        });
+
+        document.addEventListener('enuvex:user', function (event) {
+            if (event.detail && !state.profile) render(event.detail);
+        });
+
+        loadProfile();
+    });
+})();
+</script>
 </body>
 </html>

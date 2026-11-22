@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Data
 public class ApplicationResponse {
     private Long id;
+    private Long jobPostId;
     private String jobTitle;
     private String companyName;
     private LocalDateTime appliedAt;

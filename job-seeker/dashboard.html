@@ -11,6 +11,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
+            /* ENUVEX brand tokens, shared with enuvex-app.css. */
+            --enuvex-navy: #102B4C;
+            --enuvex-green: #2FA247;
+            --enuvex-green-dark: #25853A;
+            --enuvex-green-soft: #EAF5EC;
+            --enuvex-background: #F5F8FA;
+            --enuvex-white: #FFFFFF;
+            --enuvex-text: #26384A;
+            --enuvex-muted: #64748B;
+            --enuvex-border: #E3EAF0;
+
             --ink: #102b4c;
             --ink-soft: #26384a;
             --body: #55677a;
@@ -1023,7 +1034,7 @@
                 <a class="side-link" href="applications.html">
                     <i class="fas fa-file-alt"></i> <span>Applications</span>
                 </a>
-                <a class="side-link" href="jobs.html">
+                <a class="side-link" href="saved-jobs.html">
                     <i class="fas fa-bookmark"></i> <span>Saved Jobs</span>
                 </a>
                 <a class="side-link" href="profile.html">
@@ -1099,6 +1110,7 @@
                         </div>
                         <a href="profile.html"><i class="fas fa-user"></i> My Profile</a>
                         <a href="applications.html"><i class="fas fa-file-alt"></i> My Applications</a>
+                        <a href="saved-jobs.html"><i class="fas fa-bookmark"></i> Saved Jobs</a>
                         <a href="jobs.html"><i class="fas fa-magnifying-glass"></i> Search Jobs</a>
                         <hr>
                         <button type="button" data-logout><i class="fas fa-right-from-bracket"></i> Log out</button>
@@ -1503,7 +1515,7 @@
         apps.forEach(function (app) {
             var key = String(app.status || 'APPLIED').toUpperCase();
             if (key === 'INTERVIEW') interview += 1;
-            else if (key === 'HIRED') offered += 1;
+            else if (key === 'ACCEPTED' || key === 'HIRED') offered += 1;
             else if (key === 'REJECTED') rejected += 1;
         });
 

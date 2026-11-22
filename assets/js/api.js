@@ -117,6 +117,41 @@ const ApiClient = {
         return this.request(`/${this.userType.toLowerCase() === 'job_seeker' ? 'job-seekers' : 'employers'}/profile`);
     },
 
+    /**
+     * Updates the signed-in job seeker's profile. The backend reads the record
+     * as a multipart part named "profile" plus an optional "profilePhoto".
+     */
+    async updateJobSeekerProfile(payload, photoFile) {
+        const formData = new FormData();
+        formData.append('profile', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+        if (photoFile) formData.append('profilePhoto', photoFile);
+
+        const response = await fetch(`${API_BASE_URL}/job-seekers/profile`, {
+            method: 'PUT',
+            headers: this.token ? { Authorization: `Bearer ${this.token}` } : {},
+            body: formData
+        });
+
+        const raw = await response.text();
+        let data = null;
+        if (raw) {
+            try { data = JSON.parse(raw); } catch (e) { data = null; }
+        }
+
+        if (response.status === 401) {
+            this.clearAuth();
+            window.location.href = '/login.html';
+            throw new Error('Your session expired. Please log in again.');
+        }
+
+        if (!response.ok) {
+            const message = (data && (data.message || data.error)) || `Could not save your profile (${response.status})`;
+            throw new Error(message);
+        }
+
+        return data;
+    },
+
     async getJobs(params = {}) {
         const queryString = new URLSearchParams(params).toString();
         return this.request(`/jobs${queryString ? '?' + queryString : ''}`);

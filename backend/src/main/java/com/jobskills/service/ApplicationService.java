@@ -96,6 +96,7 @@ public class ApplicationService {
     private ApplicationResponse mapToResponse(JobApplication application) {
         ApplicationResponse response = new ApplicationResponse();
         response.setId(application.getId());
+        response.setJobPostId(application.getJobPost().getId());
         response.setJobTitle(application.getJobPost().getJobTitle());
         response.setCompanyName(application.getJobPost().getEmployer().getBusinessName());
         response.setAppliedAt(application.getAppliedAt());

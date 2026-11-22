@@ -3,336 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Applications - Job & Skills Matching System</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <title>Applications — ENUVEX</title>
+    <link rel="icon" type="image/png" href="../assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="enuvex-app.css">
+    <script>
+        window.ENUVEX_PAGE = {
+            active: 'applications',
+            title: 'Applications',
+            subtitle: 'Track every job you have applied to and where it stands'
+        };
+    </script>
 </head>
 <body>
-    <div class="app-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">
-                    <div class="sidebar-logo-icon">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
-                    <span>Job Seeker</span>
-                </div>
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load your applications.</span>
             </div>
 
-            <nav class="sidebar-nav" id="sidebarNav">
-                <!-- Injected by layout.js -->
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="sidebar-user" onclick="window.location.href='profile.html'">
-                    <div class="sidebar-user-avatar">MS</div>
-                    <div class="sidebar-user-info">
-                        <div class="sidebar-user-name">Maria Santos</div>
-                        <div class="sidebar-user-role">Job Seeker</div>
+            <section class="metrics" id="summaryMetrics" aria-label="Application summary">
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-file-lines"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricTotal">—</div>
+                        <div class="metric-label">Total Applications</div>
+                        <div class="metric-desc">Every job you applied to</div>
                     </div>
-                </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-hourglass-half"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricProgress">—</div>
+                        <div class="metric-label">In Progress</div>
+                        <div class="metric-desc">Applied, under review or shortlisted</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-comments"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricInterview">—</div>
+                        <div class="metric-label">Interviews</div>
+                        <div class="metric-desc">Employers who invited you</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-circle-check"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricAccepted">—</div>
+                        <div class="metric-label">Offered</div>
+                        <div class="metric-desc">Applications accepted</div>
+                    </div>
+                </article>
+            </section>
+
+            <div class="tabs" id="statusTabs" role="tablist" aria-label="Filter applications by status">
+                <button class="tab is-active" type="button" data-status="ALL" role="tab" aria-selected="true">All <span class="count" id="countAll">0</span></button>
+                <button class="tab" type="button" data-status="APPLIED" role="tab" aria-selected="false">Applied <span class="count" id="countApplied">0</span></button>
+                <button class="tab" type="button" data-status="UNDER_REVIEW" role="tab" aria-selected="false">Under Review <span class="count" id="countReview">0</span></button>
+                <button class="tab" type="button" data-status="SHORTLISTED" role="tab" aria-selected="false">Shortlisted <span class="count" id="countShortlisted">0</span></button>
+                <button class="tab" type="button" data-status="INTERVIEW" role="tab" aria-selected="false">Interview <span class="count" id="countInterview">0</span></button>
+                <button class="tab" type="button" data-status="ACCEPTED" role="tab" aria-selected="false">Accepted <span class="count" id="countAccepted">0</span></button>
+                <button class="tab" type="button" data-status="REJECTED" role="tab" aria-selected="false">Rejected <span class="count" id="countRejected">0</span></button>
             </div>
-        </aside>
 
-        <!-- Sidebar Overlay -->
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Top Header -->
-            <header class="top-header">
-                <div class="top-header-content">
-                    <div class="top-header-left">
-                        <button class="mobile-menu-btn" id="mobileMenuBtn">
-                            <i class="fas fa-bars"></i>
-                        </button>
-                        <h1 class="top-header-title">My Applications</h1>
-                    </div>
-                    <div class="top-header-right">
-                        <button class="header-btn" id="notificationBtn">
-                            <i class="fas fa-bell"></i>
-                            <span class="badge">3</span>
-                        </button>
-                        <button class="header-btn" id="userMenuBtn">
-                            <i class="fas fa-user-circle"></i>
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Page Content -->
-            <main class="page-content">
-                <!-- Page Nav -->
-                <nav class="page-nav">
-                    <a href="dashboard.html"><i class="fas fa-home"></i> Home</a>
-                    <span style="color: var(--gray-300);">/</span>
-                    <span class="current">Applications</span>
-                </nav>
-
-                <!-- Tabs -->
-                <div class="tab-nav" id="applicationTabs">
-                    <button class="tab-btn active" data-tab="all">All <span class="badge" style="background: var(--gray-200); color: var(--gray-600); font-size: 0.7rem; margin-left: 0.35rem;">12</span></button>
-                    <button class="tab-btn" data-tab="applied">Applied <span class="badge" style="background: var(--gray-200); color: var(--gray-600); font-size: 0.7rem; margin-left: 0.35rem;">4</span></button>
-                    <button class="tab-btn" data-tab="under-review">Under Review <span class="badge" style="background: rgba(67,97,238,0.1); color: var(--primary-color); font-size: 0.7rem; margin-left: 0.35rem;">3</span></button>
-                    <button class="tab-btn" data-tab="shortlisted">Shortlisted <span class="badge" style="background: rgba(248,150,30,0.1); color: var(--warning-color); font-size: 0.7rem; margin-left: 0.35rem;">2</span></button>
-                    <button class="tab-btn" data-tab="interview">Interview <span class="badge" style="background: rgba(126,87,194,0.1); color: #7e57c2; font-size: 0.7rem; margin-left: 0.35rem;">1</span></button>
-                    <button class="tab-btn" data-tab="accepted">Accepted <span class="badge" style="background: rgba(42,157,143,0.1); color: #2a9d8f; font-size: 0.7rem; margin-left: 0.35rem;">1</span></button>
-                    <button class="tab-btn" data-tab="rejected">Rejected <span class="badge" style="background: rgba(249,65,68,0.1); color: var(--danger-color); font-size: 0.7rem; margin-left: 0.35rem;">1</span></button>
-                </div>
-
-                <!-- Applications List -->
-                <div id="applicationsContainer">
-                    <!-- Rendered by JS -->
-                </div>
-            </main>
-        </div>
+            <div class="app-list" id="applicationList" aria-live="polite">
+                <div class="loading">Loading your applications…</div>
+            </div>
+        </main>
     </div>
+</div>
 
-    <!-- Bottom Navigation (Mobile) -->
-    <nav class="bottom-nav" id="bottomNav">
-        <!-- Injected by layout.js -->
-    </nav>
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
+<script src="../assets/js/api.js"></script>
+<script src="enuvex-app.js"></script>
+<script>
+(function () {
+    'use strict';
 
-    <script src="../assets/js/main.js"></script>
-    <script src="../assets/js/layout.js"></script>
-    <script>
-        // Applications Data
-        const applicationsData = [
-            {
-                id: 1,
-                title: 'Restaurant Crew',
-                company: "Juan's Eatery",
-                salary: '₱12,000 - ₱14,000',
-                appliedDate: 'May 15, 2026',
-                status: 'under-review',
-                match: 88,
-                icon: 'fa-utensils',
-                iconClass: 'alt'
-            },
-            {
-                id: 2,
-                title: 'Pharmacy Assistant',
-                company: 'Daet Health Pharmacy',
-                salary: '₱10,000 - ₱12,000',
-                appliedDate: 'May 12, 2026',
-                status: 'shortlisted',
-                match: 82,
-                icon: 'fa-pills',
-                iconClass: 'third'
-            },
-            {
-                id: 3,
-                title: 'Driver / Delivery',
-                company: 'Daet Logistics',
-                salary: '₱9,000 - ₱11,000',
-                appliedDate: 'May 10, 2026',
-                status: 'interview',
-                match: 75,
-                icon: 'fa-truck',
-                iconClass: ''
-            },
-            {
-                id: 4,
-                title: 'Construction Worker',
-                company: 'Labo Builders Inc.',
-                salary: '₱350/day',
-                appliedDate: 'May 8, 2026',
-                status: 'under-review',
-                match: 72,
-                icon: 'fa-hard-hat',
-                iconClass: 'alt'
-            },
-            {
-                id: 5,
-                title: 'Admin Staff',
-                company: 'Vinzons Municipal Office',
-                salary: '₱11,000 - ₱13,000',
-                appliedDate: 'May 5, 2026',
-                status: 'rejected',
-                match: 70,
-                icon: 'fa-file-alt',
-                iconClass: 'third'
-            },
-            {
-                id: 6,
-                title: 'Sales Associate',
-                company: 'Basud Retail Store',
-                salary: '₱8,500 - ₱10,000',
-                appliedDate: 'May 3, 2026',
-                status: 'applied',
-                match: 78,
-                icon: 'fa-shopping-cart',
-                iconClass: 'fourth'
-            },
-            {
-                id: 7,
-                title: 'Farm Worker',
-                company: 'Basud Agri-Farm',
-                salary: '₱300/day',
-                appliedDate: 'May 1, 2026',
-                status: 'applied',
-                match: 68,
-                icon: 'fa-tractor',
-                iconClass: 'fourth'
-            },
-            {
-                id: 8,
-                title: 'Cashier',
-                company: '7-Eleven Daet',
-                salary: '₱8,500 - ₱9,500',
-                appliedDate: 'Apr 28, 2026',
-                status: 'applied',
-                match: 65,
-                icon: 'fa-cash-register',
-                iconClass: ''
-            },
-            {
-                id: 9,
-                title: 'Kitchen Helper',
-                company: 'Vinzons Restaurant',
-                salary: '₱8,000 - ₱9,500',
-                appliedDate: 'Apr 25, 2026',
-                status: 'under-review',
-                match: 62,
-                icon: 'fa-utensils',
-                iconClass: 'alt'
-            },
-            {
-                id: 10,
-                title: 'Security Guard',
-                company: 'Daet Security Services',
-                salary: '₱10,000 - ₱12,000',
-                appliedDate: 'Apr 20, 2026',
-                status: 'shortlisted',
-                match: 60,
-                icon: 'fa-shield-alt',
-                iconClass: 'third'
-            },
-            {
-                id: 11,
-                title: 'Teacher / Tutor',
-                company: 'Vinzons Learning Center',
-                salary: '₱200/hour',
-                appliedDate: 'Apr 15, 2026',
-                status: 'accepted',
-                match: 58,
-                icon: 'fa-chalkboard-teacher',
-                iconClass: 'fourth'
-            },
-            {
-                id: 12,
-                title: 'Warehouse Assistant',
-                company: 'Basud Agricultural Supply',
-                salary: '₱9,500 - ₱11,500',
-                appliedDate: 'Apr 10, 2026',
-                status: 'applied',
-                match: 55,
-                icon: 'fa-boxes',
-                iconClass: ''
-            }
-        ];
+    var state = { applications: [], status: 'ALL' };
 
-        let currentTab = 'all';
+    var el = {
+        list: document.getElementById('applicationList'),
+        pageError: document.getElementById('pageError'),
+        pageErrorText: document.getElementById('pageErrorText')
+    };
 
-        function getStatusClass(status) {
-            const classes = {
-                'applied': 'status-applied',
-                'under-review': 'status-under-review',
-                'shortlisted': 'status-shortlisted',
-                'interview': 'status-interview',
-                'accepted': 'status-accepted',
-                'rejected': 'status-rejected'
-            };
-            return classes[status] || 'status-applied';
-        }
+    function countBy(status) {
+        if (status === 'ALL') return state.applications.length;
+        return state.applications.filter(function (app) {
+            return String(app.status || '').toUpperCase() === status;
+        }).length;
+    }
 
-        function getStatusLabel(status) {
-            const labels = {
-                'applied': 'Applied',
-                'under-review': 'Under Review',
-                'shortlisted': 'Shortlisted',
-                'interview': 'Interview',
-                'accepted': 'Accepted',
-                'rejected': 'Rejected'
-            };
-            return labels[status] || status;
-        }
+    function sortNewestFirst(list) {
+        return list.slice().sort(function (a, b) {
+            return new Date(b.appliedAt || 0) - new Date(a.appliedAt || 0);
+        });
+    }
 
-        function filterApplications(tab) {
-            if (tab === 'all') return applicationsData;
-            return applicationsData.filter(app => app.status === tab);
-        }
+    function card(app) {
+        var meta = ENUVEX.statusMeta(app.status);
+        var match = Number(app.matchPercentage);
+        var title = ENUVEX.esc(app.jobTitle || 'Job');
+        var company = ENUVEX.esc(app.companyName || 'Employer');
+        var detailsHref = app.jobPostId ? 'job-details.html?id=' + encodeURIComponent(app.jobPostId) : 'jobs.html';
 
-        function renderApplications(apps) {
-            const container = document.getElementById('applicationsContainer');
-            if (!container) return;
-
-            if (apps.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon"><i class="fas fa-file-alt"></i></div>
-                        <h4>No applications found</h4>
-                        <p>Start applying to jobs to see them here</p>
-                        <a href="jobs.html" class="btn btn-primary mt-3"><i class="fas fa-search"></i> Browse Jobs</a>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = apps.map(app => `
-                <div class="card fade-in">
-                    <div class="card-body">
-                        <div style="display: flex; gap: 1rem;">
-                            <div class="job-card-icon ${app.iconClass || ''}" style="width: 56px; height: 56px;">
-                                <i class="fas ${app.icon}"></i>
+        return `
+            <article class="card app-card">
+                <div class="app-card-top">
+                    <div class="job-icon"><i class="fas fa-briefcase"></i></div>
+                    <div class="app-card-main">
+                        <div class="job-head">
+                            <div>
+                                <h3>${title}</h3>
+                                <div class="job-company">${company}</div>
                             </div>
-                            <div style="flex: 1; min-width: 0;">
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                                    <div>
-                                        <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem;">${app.title}</h4>
-                                        <p style="font-size: 0.85rem; color: var(--gray-500); margin: 0;">${app.company}</p>
-                                    </div>
-                                    <span class="status-badge ${getStatusClass(app.status)}">${getStatusLabel(app.status)}</span>
-                                </div>
-                                <div style="display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.85rem; color: var(--gray-600); margin-bottom: 0.5rem;">
-                                    <span><i class="fas fa-tag"></i> ${app.salary}</span>
-                                    <span><i class="fas fa-calendar-alt"></i> Applied: ${app.appliedDate}</span>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div style="display: flex; gap: 0.5rem;">
-                                        <button class="btn btn-outline btn-sm" onclick="window.location.href='job-details.html?id=${app.id}'"><i class="fas fa-eye"></i> View Job</button>
-                                    </div>
-                                    <div class="match-percentage" style="margin-top: 0;">
-                                        <div class="match-circle ${app.match >= 80 ? 'high' : app.match >= 60 ? 'medium' : 'low'}" style="width: 40px; height: 40px; font-size: 0.85rem;">${app.match}%</div>
-                                    </div>
-                                </div>
-                            </div>
+                            <span class="status ${meta.cls}">${ENUVEX.esc(meta.label)}</span>
                         </div>
                     </div>
                 </div>
-            `).join('');
+                <div class="app-card-bottom">
+                    <div class="app-highlights">
+                        <span><i class="fas fa-calendar-check"></i>Applied ${ENUVEX.esc(ENUVEX.dateLabel(app.appliedAt) || '—')}</span>
+                        ${isFinite(match) && match > 0 ? `<span><i class="fas fa-bullseye"></i>${Math.round(match)}% match</span>` : ''}
+                    </div>
+                    <a class="btn-ghost btn-sm" href="${detailsHref}"><i class="fas fa-eye"></i> View Details</a>
+                </div>
+            </article>`;
+    }
+
+    function render() {
+        var list = sortNewestFirst(state.applications).filter(function (app) {
+            return state.status === 'ALL' || String(app.status || '').toUpperCase() === state.status;
+        });
+
+        if (!list.length) {
+            el.list.innerHTML = state.applications.length
+                ? `<div class="empty"><i class="fas fa-filter"></i><strong>No applications with this status</strong>Choose another status to see your other applications.</div>`
+                : `<div class="empty"><i class="fas fa-file-lines"></i><strong>No applications yet</strong>Once you apply to a job it will appear here with its live status.<a class="btn-solid btn-sm" href="jobs.html"><i class="fas fa-magnifying-glass"></i> Browse Jobs</a></div>`;
+            return;
         }
 
-        // Tab switching
-        document.addEventListener('DOMContentLoaded', function() {
-            const tabs = document.querySelectorAll('.tab-btn');
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    tabs.forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                    currentTab = this.dataset.tab;
-                    const filtered = filterApplications(currentTab);
-                    renderApplications(filtered);
-                });
-            });
+        el.list.innerHTML = list.map(card).join('');
+    }
 
-            // Initial render
-            renderApplications(applicationsData);
+    function renderSummary() {
+        var total = countBy('ALL');
+        var accepted = countBy('ACCEPTED');
+        document.getElementById('metricTotal').textContent = total;
+        document.getElementById('metricProgress').textContent = countBy('APPLIED') + countBy('UNDER_REVIEW') + countBy('SHORTLISTED');
+        document.getElementById('metricInterview').textContent = countBy('INTERVIEW');
+        document.getElementById('metricAccepted').textContent = accepted;
+
+        document.getElementById('countAll').textContent = total;
+        document.getElementById('countApplied').textContent = countBy('APPLIED');
+        document.getElementById('countReview').textContent = countBy('UNDER_REVIEW');
+        document.getElementById('countShortlisted').textContent = countBy('SHORTLISTED');
+        document.getElementById('countInterview').textContent = countBy('INTERVIEW');
+        document.getElementById('countAccepted').textContent = accepted;
+        document.getElementById('countRejected').textContent = countBy('REJECTED');
+    }
+
+    async function loadApplications() {
+        el.pageError.hidden = true;
+
+        if (!window.ApiClient || !ApiClient.loadAuth()) {
+            state.applications = [];
+            renderSummary();
+            el.list.innerHTML = `<div class="empty"><i class="fas fa-lock"></i><strong>Sign in to see your applications</strong>Your applications, statuses and match scores appear here after you sign in.<a class="btn-solid btn-sm" href="../../login.html">Sign in</a></div>`;
+            return;
+        }
+
+        var result = await ENUVEX.safe(ApiClient.getApplications());
+        if (ENUVEX.failed(result)) {
+            el.pageError.hidden = false;
+            el.pageErrorText.textContent = result.__error.message || 'Could not load your applications.';
+            el.list.innerHTML = `<div class="empty"><i class="fas fa-triangle-exclamation"></i><strong>Applications could not be loaded</strong>Please refresh the page to try again.</div>`;
+            return;
+        }
+
+        state.applications = Array.isArray(result) ? result : [];
+        renderSummary();
+        render();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('statusTabs').addEventListener('click', function (event) {
+            var tab = event.target.closest('[data-status]');
+            if (!tab) return;
+            state.status = tab.getAttribute('data-status');
+            document.querySelectorAll('#statusTabs .tab').forEach(function (button) {
+                var isActive = button === tab;
+                button.classList.toggle('is-active', isActive);
+                button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            });
+            render();
         });
-    </script>
+
+        loadApplications();
+    });
+})();
+</script>
 </body>
 </html>

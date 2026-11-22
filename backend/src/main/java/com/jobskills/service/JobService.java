@@ -201,6 +201,26 @@ public class JobService {
         return savedJobRepository.findByJobSeekerId(seeker.getId());
     }
 
+    /** Saved jobs with their job details, newest bookmark first. */
+    public List<SavedJobResponse> getSavedJobsForSeeker(Long seekerUserId) {
+        JobSeekerProfile seeker = requireSeeker(seekerUserId);
+        return savedJobRepository.findByJobSeekerId(seeker.getId()).stream()
+            .sorted(Comparator.comparing(SavedJob::getSavedAt,
+                Comparator.nullsLast(Comparator.reverseOrder())))
+            .map(saved -> {
+                SavedJobResponse response = new SavedJobResponse();
+                response.setId(saved.getId());
+                response.setSavedAt(saved.getSavedAt());
+                JobPost job = saved.getJobPost();
+                response.setJobPostId(job.getId());
+                JobResponse jobResponse = mapToResponse(job);
+                jobResponse.setMatchPercentage(matchingEngine.calculateMatch(seeker, job).getOverallMatch());
+                response.setJob(jobResponse);
+                return response;
+            })
+            .collect(Collectors.toList());
+    }
+
     @Transactional
     public JobApplication applyForJob(Long seekerUserId, Long jobId) {
         JobSeekerProfile seeker = requireSeeker(seekerUserId);

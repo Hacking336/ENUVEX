@@ -92,8 +92,8 @@ public class JobSeekerController {
     }
 
     @GetMapping("/saved")
-    public ResponseEntity<List<com.jobskills.model.SavedJob>> getSavedJobs(Authentication authentication) {
-        return ResponseEntity.ok(jobService.getSavedJobs(extractUserId(authentication)));
+    public ResponseEntity<List<SavedJobResponse>> getSavedJobs(Authentication authentication) {
+        return ResponseEntity.ok(jobService.getSavedJobsForSeeker(extractUserId(authentication)));
     }
 
     private Long extractUserId(Authentication authentication) {
