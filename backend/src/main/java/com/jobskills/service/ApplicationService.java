@@ -109,6 +109,11 @@ public class ApplicationService {
     private ApplicantDto mapToApplicantDto(JobApplication application) {
         JobSeekerProfile seeker = application.getJobSeeker();
         ApplicantDto dto = new ApplicantDto();
+        dto.setApplicationId(application.getId());
+        dto.setApplicationStatus(application.getApplicationStatus());
+        dto.setAppliedAt(application.getAppliedAt());
+        dto.setJobPostId(application.getJobPost().getId());
+        dto.setJobTitle(application.getJobPost().getJobTitle());
         dto.setId(seeker.getId());
         dto.setFullName(seeker.getFullName());
         dto.setProfilePhoto(seeker.getProfilePhoto());

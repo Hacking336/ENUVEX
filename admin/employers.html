@@ -3,166 +3,316 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Employers - Admin Panel - Job & Skills Matching System</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/admin-employers.css">
+    <title>Employer Verification — ENUVEX</title>
+    <link rel="icon" type="image/png" href="../assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../job-seeker/enuvex-app.css">
+    <link rel="stylesheet" href="../assets/css/enuvex-role.css">
+    <script>
+        window.ENUVEX_PAGE = {
+            active: 'employers',
+            title: 'Employer Verification',
+            subtitle: 'Review company registrations before they hire'
+        };
+    </script>
 </head>
-<body>
-    <div class="app-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">
-                    <div class="sidebar-logo-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <span>Admin Panel</span>
+<body data-role="admin">
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="page-head">
+                <div>
+                    <h2>Employer accounts</h2>
+                    <p>Approve a company after reviewing the details it submitted.</p>
                 </div>
             </div>
 
-            <nav class="sidebar-nav" id="sidebarNav">
-                <!-- Injected by layout.js -->
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="sidebar-user" onclick="window.location.href='profile.html'">
-                    <div class="sidebar-user-avatar">AD</div>
-                    <div class="sidebar-user-info">
-                        <div class="sidebar-user-name">System Admin</div>
-                        <div class="sidebar-user-role">Administrator</div>
-                    </div>
-                </div>
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load employers.</span>
             </div>
-        </aside>
 
-        <!-- Sidebar Overlay -->
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+            <section class="metrics cols-3" aria-label="Verification metrics">
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-building"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricTotal">—</div>
+                        <div class="metric-label">Employer Profiles</div>
+                        <div class="metric-desc">Companies on the platform</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-circle-check"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricVerified">—</div>
+                        <div class="metric-label">Verified</div>
+                        <div class="metric-desc">Approved employer accounts</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-clock"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricPending">—</div>
+                        <div class="metric-label">Pending</div>
+                        <div class="metric-desc">Waiting for your review</div>
+                    </div>
+                </article>
+            </section>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Top Header -->
-            <header class="top-header">
-                <div class="top-header-content">
-                    <div class="top-header-left">
-                        <button class="mobile-menu-btn" id="mobileMenuBtn">
-                            <i class="fas fa-bars"></i>
-                        </button>
-                        <h1 class="top-header-title">Verify Employers</h1>
-                    </div>
-                    <div class="top-header-right">
-                        <button class="header-btn" id="notificationBtn">
-                            <i class="fas fa-bell"></i>
-                            <span class="badge">0</span>
-                        </button>
-                        <button class="header-btn" id="userMenuBtn">
-                            <i class="fas fa-user-circle"></i>
-                        </button>
-                    </div>
+            <div class="card rv-toolbar" style="margin-top: 20px;">
+                <label class="field" for="employerSearch">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <input type="search" id="employerSearch" placeholder="Search company, contact, or email">
+                </label>
+                <div class="form-field">
+                    <label for="verifyFilter">Verification</label>
+                    <select id="verifyFilter">
+                        <option value="ALL">All employers</option>
+                        <option value="PENDING">Pending only</option>
+                        <option value="VERIFIED">Verified only</option>
+                    </select>
                 </div>
-            </header>
+                <span class="rv-spacer"></span>
+                <span class="muted" id="resultCount"></span>
+            </div>
 
-            <!-- Page Content -->
-            <main class="page-content">
-                <section class="mb-4">
-                    <div class="d-flex justify-content-between align-items-center gap-2">
-                        <div>
-                            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--dark-color);">
-                                Employers <span class="text-primary">(89)</span>
-                            </h2>
-                            <p style="color: var(--gray-500); font-size: 0.95rem;">
-                                Review and verify employer registrations.
-                            </p>
-                        </div>
-                        <button class="btn btn-primary" style="padding: 0.75rem 1.25rem;">
-                            <i class="fas fa-user-plus me-2"></i> Add Employer
-                        </button>
-                    </div>
-                </section>
+            <div id="employerTable">
+                <div class="loading">Loading employers…</div>
+            </div>
+        </main>
+    </div>
+</div>
 
-                <!-- Employers Table -->
-                <section class="mb-4">
-                    <div class="table-responsive">
-                        <table class="table table-hover table-dark" style="width: 100%; min-width: 600px;">
-                            <thead>
-                                <tr>
-                                    <th style="width: 40px;">#</th>
-                                    <th>Company Name</th>
-                                    <th>Email</th>
-                                    <th style="width: 140px;">User Type</th>
-                                    <th style="width: 140px;">Status</th>
-                                    <th style="width: 160px;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>Example Corp</td>
-                                    <td>contact@example.com</td>
-                                    <td><span class="badge bg-secondary">EMPLOYER</span></td>
-                                    <td><span class="badge bg-warning">Pending</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Verify</button>
-                                        <button class="btn btn-sm btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Reject</button>
-                                    </td>
-                                </tr>
-                                <tr class="text-secondary">
-                                    <td>2</td>
-                                    <td>Test Enterprise</td>
-                                    <td>test@example.com</td>
-                                    <td><span class="badge bg-secondary">EMPLOYER</span></td>
-                                    <td><span class="badge bg-success">Verified</span></td>
-                                    <td><button class="btn btn-sm btn-outline">View</button></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- Pending Verifications -->
-                <section class="mb-4">
-                    <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 1rem;">Pending Verifications <span class="badge bg-warning">5</span></h3>
-                    <div style="display: grid; gap: 1rem;">
-                        <div class="card" style="padding: 1rem; background: var(--card-bg); border-radius: var(--border-radius); border: 1px solid var(--gray-200);">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h4 style="font-size: 1rem; font-weight: 600;">Daet Health Pharmacy</h4>
-                                    <p style="font-size: 0.85rem; color: var(--gray-500);">Pharmacy Assistant position</p>
-                                </div>
-                                <div class="badge bg-warning ms-2" style="font-size: 0.75rem;">Pending</div>
-                            </div>
-                            <small style="color: var(--gray-500); display: block;">Submitted 2 days ago</small>
-                        </div>
-                        <div class="card" style="padding: 1rem; background: var(--card-bg); border-radius: var(--border-radius); border: 1px solid var(--gray-200);">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h4 style="font-size: 1rem; font-weight: 600;">Daet Logistics</h4>
-                                    <p style="font-size: 0.85rem; color: var(--gray-500);">Driver / Delivery position</p>
-                                </div>
-                                <div class="badge bg-warning ms-2" style="font-size: 0.75rem;">Pending</div>
-                            </div>
-                            <small style="color: var(--gray-500); display: block;">Submitted 3 days ago</small>
-                        </div>
-                    </div>
-                </section>
-            </main>
+<div class="modal" id="employerModal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="employerModalTitle">
+        <div class="modal-head">
+            <h3 id="employerModalTitle">Employer details</h3>
+            <button class="modal-close" type="button" id="closeEmployerModal" aria-label="Close"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="modal-body" id="employerModalBody"></div>
+        <div class="modal-foot" id="employerModalFoot">
+            <button class="btn-soft" type="button" id="dismissEmployerModal">Close</button>
         </div>
     </div>
+</div>
 
-    <!-- Bottom Navigation (Mobile) -->
-    <nav class="bottom-nav" id="bottomNav">
-        <!-- Injected by layout.js -->
-    </nav>
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/role-app.js"></script>
+<script>
+(function () {
+    'use strict';
 
-    <script src="../assets/js/main.js"></script>
-    <script src="../assets/js/layout.js"></script>
-    <script>
-        // Ensure user type is stored for proper sidebar detection
-        localStorage.setItem('userType', 'ADMIN');
-        localStorage.setItem('userName', 'System Admin');
-    </script>
+    var state = { employers: [], query: '', filter: 'ALL', openId: null };
+
+    function showError(message) {
+        var box = document.getElementById('pageError');
+        var text = document.getElementById('pageErrorText');
+        if (!box || !text) return;
+        text.textContent = message;
+        box.hidden = false;
+    }
+
+    function filtered() {
+        return state.employers.filter(function (employer) {
+            if (state.filter === 'PENDING' && employer.verified) return false;
+            if (state.filter === 'VERIFIED' && !employer.verified) return false;
+            if (!state.query) return true;
+            var haystack = [employer.businessName, employer.employerName, employer.email, employer.barangay]
+                .filter(Boolean).join(' ').toLowerCase();
+            return haystack.indexOf(state.query) !== -1;
+        }).sort(function (a, b) {
+            if (!!a.verified !== !!b.verified) return a.verified ? 1 : -1;
+            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        });
+    }
+
+    function render() {
+        var list = filtered();
+        var total = state.employers.length;
+        var verified = state.employers.filter(function (employer) { return employer.verified; }).length;
+
+        document.getElementById('metricTotal').textContent = total;
+        document.getElementById('metricVerified').textContent = verified;
+        document.getElementById('metricPending').textContent = total - verified;
+        document.getElementById('resultCount').textContent = list.length + ' of ' + total + ' employer' + (total === 1 ? '' : 's');
+
+        var container = document.getElementById('employerTable');
+        if (!total) {
+            container.innerHTML = `<div class="card panel"><div class="empty">
+                <i class="fas fa-building"></i>
+                <strong>No employer profiles yet</strong>
+                <p>Registered companies will appear here for verification.</p>
+            </div></div>`;
+            return;
+        }
+        if (!list.length) {
+            container.innerHTML = `<div class="card panel"><div class="empty">
+                <i class="fas fa-filter"></i>
+                <strong>No employers match this filter</strong>
+                <p>Try another verification state or search term.</p>
+            </div></div>`;
+            return;
+        }
+
+        container.innerHTML = `<div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th class="num">#</th>
+                        <th>Company</th>
+                        <th>Contact</th>
+                        <th>Location</th>
+                        <th>Business type</th>
+                        <th>Verification</th>
+                        <th>Registered</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${list.map(function (employer, index) {
+                        return `<tr>
+                            <td class="num">${index + 1}</td>
+                            <td>
+                                <span class="cell-main">${ROLE.esc(employer.businessName || 'Unnamed business')}</span>
+                                <span class="cell-sub">${ROLE.esc(employer.email || 'No account email')}</span>
+                            </td>
+                            <td>
+                                <span class="cell-main">${ROLE.esc(employer.employerName || '—')}</span>
+                                <span class="cell-sub">${ROLE.esc(employer.contactNumber || 'No contact number')}</span>
+                            </td>
+                            <td>${ROLE.esc(ROLE.municipalityLabel(employer.municipality) || '—')}${employer.barangay ? '<span class="cell-sub">' + ROLE.esc(employer.barangay) + '</span>' : ''}</td>
+                            <td>${ROLE.esc(ROLE.businessTypeLabel(employer.businessType))}</td>
+                            <td>
+                                <span class="${employer.verified ? 'badge-ok' : 'badge-wait'}">
+                                    <i class="fas ${employer.verified ? 'fa-circle-check' : 'fa-clock'}"></i>
+                                    ${employer.verified ? 'Verified' : 'Pending'}
+                                </span>
+                            </td>
+                            <td>${ROLE.esc(ROLE.dateLabel(employer.createdAt))}</td>
+                            <td>
+                                <div class="row-actions">
+                                    <button class="btn-soft btn-sm" type="button" data-view="${ROLE.esc(String(employer.userId || ''))}">View</button>
+                                    ${employer.verified ? '' : `<button class="btn-solid btn-sm" type="button" data-verify="${ROLE.esc(String(employer.userId || ''))}">Verify</button>`}
+                                </div>
+                            </td>
+                        </tr>`;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>`;
+    }
+
+    function openEmployer(userId) {
+        var employer = state.employers.filter(function (item) { return String(item.userId) === String(userId); })[0];
+        if (!employer) return;
+        state.openId = userId;
+
+        document.getElementById('employerModalTitle').textContent = employer.businessName || 'Employer details';
+        document.getElementById('employerModalBody').innerHTML = `<div class="kv-grid">
+            <div class="kv"><span>Account email</span><strong>${ROLE.esc(employer.email || '—')}</strong></div>
+            <div class="kv"><span>Contact person</span><strong>${ROLE.esc(employer.employerName || '—')}</strong></div>
+            <div class="kv"><span>Contact number</span><strong>${ROLE.esc(employer.contactNumber || '—')}</strong></div>
+            <div class="kv"><span>Business type</span><strong>${ROLE.esc(ROLE.businessTypeLabel(employer.businessType))}</strong></div>
+            <div class="kv"><span>Municipality</span><strong>${ROLE.esc(ROLE.municipalityLabel(employer.municipality) || '—')}</strong></div>
+            <div class="kv"><span>Barangay</span><strong>${ROLE.esc(employer.barangay || '—')}</strong></div>
+            <div class="kv"><span>Address</span><strong>${ROLE.esc(employer.businessAddress || '—')}</strong></div>
+            <div class="kv"><span>Registered</span><strong>${ROLE.esc(ROLE.dateLabel(employer.createdAt))}</strong></div>
+        </div>
+        <div style="margin-top: 16px;">
+            <p class="block-title">Company description</p>
+            ${employer.businessDescription
+                ? '<p class="prose">' + ROLE.esc(employer.businessDescription) + '</p>'
+                : '<p class="muted">No description submitted.</p>'}
+        </div>`;
+
+        document.getElementById('employerModalFoot').innerHTML =
+            '<button class="btn-soft" type="button" id="dismissEmployerModal">Close</button>' +
+            (employer.verified ? '' : `<button class="btn-solid" type="button" id="modalVerify"><i class="fas fa-circle-check"></i> Approve employer</button>`);
+
+        document.getElementById('employerModal').hidden = false;
+
+        var dismiss = document.getElementById('dismissEmployerModal');
+        if (dismiss) dismiss.addEventListener('click', closeModal);
+        var verify = document.getElementById('modalVerify');
+        if (verify) verify.addEventListener('click', function () { verifyEmployer(employer.userId, verify); });
+    }
+
+    function closeModal() {
+        document.getElementById('employerModal').hidden = true;
+        state.openId = null;
+    }
+
+    async function verifyEmployer(userId, button) {
+        if (!userId) {
+            ROLE.toast('This employer account has no user id to verify.', 'error');
+            return;
+        }
+        if (button) button.disabled = true;
+        try {
+            await ApiClient.verifyEmployer(userId);
+            ROLE.toast('Employer verified.', 'success');
+            closeModal();
+            await load();
+        } catch (error) {
+            ROLE.toast(error.message || 'Could not verify this employer.', 'error');
+            if (button) button.disabled = false;
+        }
+    }
+
+    async function load() {
+        var result = await ROLE.safe(ApiClient.getAdminEmployers());
+        if (ROLE.failed(result)) {
+            showError(result.__error);
+            document.getElementById('employerTable').innerHTML = `<div class="card panel"><div class="empty">
+                <i class="fas fa-triangle-exclamation"></i>
+                <strong>Employers unavailable</strong>
+                <p>The employer list could not be loaded.</p>
+            </div></div>`;
+            return;
+        }
+        state.employers = Array.isArray(result) ? result : [];
+        render();
+    }
+
+    document.addEventListener('enuvex:ready', async function () {
+        document.getElementById('employerSearch').addEventListener('input', function () {
+            state.query = this.value.trim().toLowerCase();
+            render();
+        });
+        document.getElementById('verifyFilter').addEventListener('change', function () {
+            state.filter = this.value;
+            render();
+        });
+
+        document.getElementById('employerTable').addEventListener('click', function (event) {
+            var view = event.target.closest('[data-view]');
+            if (view) {
+                openEmployer(view.getAttribute('data-view'));
+                return;
+            }
+            var verify = event.target.closest('[data-verify]');
+            if (verify) verifyEmployer(verify.getAttribute('data-verify'), verify);
+        });
+
+        document.getElementById('closeEmployerModal').addEventListener('click', closeModal);
+        document.getElementById('employerModal').addEventListener('click', function (event) {
+            if (event.target === this) closeModal();
+        });
+
+        await load();
+    }, { once: true });
+})();
+</script>
 </body>
 </html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Profile — ENUVEX</title>
+    <link rel="icon" type="image/png" href="../assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../job-seeker/enuvex-app.css">
+    <link rel="stylesheet" href="../assets/css/enuvex-role.css">
+    <script>
+        window.ENUVEX_PAGE = {
+            active: 'profile',
+            title: 'Company Profile',
+            subtitle: 'How job seekers see your business'
+        };
+    </script>
+</head>
+<body data-role="employer">
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="page-head">
+                <div>
+                    <h2>Company profile</h2>
+                    <p>This information appears on every job post you publish.</p>
+                </div>
+                <div class="page-head-actions">
+                    <button class="btn-solid" type="button" id="editBtn" disabled><i class="fas fa-pen"></i> Edit profile</button>
+                </div>
+            </div>
+
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load your company profile.</span>
+            </div>
+
+            <div id="profileBody">
+                <div class="loading">Loading your company profile…</div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div class="modal" id="editModal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+        <div class="modal-head">
+            <h3 id="editTitle">Edit company profile</h3>
+            <button class="modal-close" type="button" id="closeModal" aria-label="Close"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="alert" id="modalError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="modalErrorText">Could not save your profile.</span>
+            </div>
+            <form id="profileForm" class="form-grid" novalidate>
+                <div class="form-field span-2">
+                    <label for="businessName">Company name *</label>
+                    <input type="text" id="businessName" required>
+                </div>
+                <div class="form-field">
+                    <label for="employerName">Contact person *</label>
+                    <input type="text" id="employerName" required>
+                </div>
+                <div class="form-field">
+                    <label for="contactNumber">Contact number</label>
+                    <input type="text" id="contactNumber" placeholder="e.g. 0917 000 0000">
+                </div>
+                <div class="form-field">
+                    <label for="businessType">Business type</label>
+                    <select id="businessType"></select>
+                </div>
+                <div class="form-field">
+                    <label for="municipality">Municipality</label>
+                    <select id="municipality"></select>
+                </div>
+                <div class="form-field">
+                    <label for="barangay">Barangay</label>
+                    <input type="text" id="barangay">
+                </div>
+                <div class="form-field">
+                    <label for="logo">Company logo</label>
+                    <input type="file" id="logo" accept="image/*">
+                </div>
+                <div class="form-field span-2">
+                    <label for="businessAddress">Business address</label>
+                    <input type="text" id="businessAddress" placeholder="Street, building, landmark">
+                </div>
+                <div class="form-field span-2">
+                    <label for="businessDescription">About the company</label>
+                    <textarea id="businessDescription" placeholder="What your business does and who you hire."></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-foot">
+            <button class="btn-soft" type="button" id="cancelEdit">Cancel</button>
+            <button class="btn-solid" type="button" id="saveBtn"><i class="fas fa-floppy-disk"></i> Save changes</button>
+        </div>
+    </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/role-app.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var BUSINESS_TYPES = [
+        'RETAIL_STORE', 'RESTAURANT_FOOD_SERVICE', 'HOSPITALITY', 'OFFICE_ADMINISTRATION',
+        'HEALTHCARE', 'EDUCATION', 'CONSTRUCTION', 'AGRICULTURE', 'FISHERIES',
+        'MANUFACTURING', 'LOGISTICS_DELIVERY', 'TRANSPORTATION', 'AUTOMOTIVE',
+        'SECURITY', 'IT_TECHNOLOGY', 'OTHER'
+    ];
+
+    var MUNICIPALITIES = ['BASUD', 'DAET', 'VINZONS', 'LABO'];
+    var profile = null;
+
+    function field(id) { return document.getElementById(id); }
+
+    function showError(id, textId, message) {
+        var box = field(id);
+        var text = field(textId);
+        if (!box || !text) return;
+        text.textContent = message;
+        box.hidden = false;
+    }
+
+    function options(select, values, labelFn) {
+        select.innerHTML = '<option value="">Not set</option>';
+        values.forEach(function (value) {
+            var option = document.createElement('option');
+            option.value = value;
+            option.textContent = labelFn(value);
+            select.appendChild(option);
+        });
+    }
+
+    function render() {
+        var name = profile.businessName || 'Your company';
+        var avatar = profile.logo
+            ? '<img src="' + ROLE.esc(ROLE.photoUrl(profile.logo)) + '" alt="">'
+            : ROLE.esc(ROLE.initials(name));
+
+        var hero = `<div class="card panel" style="margin-bottom: 18px;">
+            <div style="display: flex; align-items: center; gap: 18px; flex-wrap: wrap;">
+                <span class="avatar avatar-lg">${avatar}</span>
+                <div style="flex: 1 1 240px; min-width: 0;">
+                    <h3 style="margin: 0; font-family: var(--font-head); font-size: 19px; color: var(--ink);">${ROLE.esc(name)}</h3>
+                    <p class="muted" style="margin-top: 4px;">${ROLE.esc(profile.email || 'No account email on file')}</p>
+                    <div class="tag-list" style="margin-top: 10px;">
+                        <span class="${profile.verified ? 'badge-ok' : 'badge-wait'}">
+                            <i class="fas ${profile.verified ? 'fa-circle-check' : 'fa-clock'}"></i>
+                            ${profile.verified ? 'Verified employer' : 'Verification pending'}
+                        </span>
+                        <span class="${profile.active === false ? 'badge-off' : 'badge-neutral'}">
+                            ${profile.active === false ? 'Account inactive' : 'Account active'}
+                        </span>
+                        <span class="badge-neutral">${ROLE.esc(ROLE.businessTypeLabel(profile.businessType))}</span>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+
+        var details = `<div class="kv-grid">
+            <div class="kv"><span>Contact person</span><strong>${ROLE.esc(profile.employerName || '—')}</strong></div>
+            <div class="kv"><span>Contact number</span><strong>${ROLE.esc(profile.contactNumber || '—')}</strong></div>
+            <div class="kv"><span>Municipality</span><strong>${ROLE.esc(ROLE.municipalityLabel(profile.municipality) || '—')}</strong></div>
+            <div class="kv"><span>Barangay</span><strong>${ROLE.esc(profile.barangay || '—')}</strong></div>
+            <div class="kv"><span>Business address</span><strong>${ROLE.esc(profile.businessAddress || '—')}</strong></div>
+            <div class="kv"><span>Employer since</span><strong>${ROLE.esc(ROLE.dateLabel(profile.createdAt))}</strong></div>
+        </div>`;
+
+        var about = profile.businessDescription
+            ? '<p class="prose">' + ROLE.esc(profile.businessDescription) + '</p>'
+            : '<p class="muted">No company description yet. Add one so applicants know what you do.</p>';
+
+        field('profileBody').innerHTML = hero +
+            `<div class="split">
+                <section class="card panel">
+                    <div class="panel-head"><h3><i class="fas fa-address-card"></i> Company details</h3></div>
+                    ${details}
+                </section>
+                <section class="card panel">
+                    <div class="panel-head"><h3><i class="fas fa-align-left"></i> About the company</h3></div>
+                    ${about}
+                </section>
+            </div>`;
+    }
+
+    async function load() {
+        var result = await ROLE.safe(ApiClient.getEmployerProfile());
+        if (ROLE.failed(result)) {
+            showError('pageError', 'pageErrorText', result.__error);
+            field('profileBody').innerHTML = `<div class="empty">
+                <i class="fas fa-triangle-exclamation"></i>
+                <strong>Company profile unavailable</strong>
+                <p>The profile could not be loaded. Sign in again and retry.</p>
+            </div>`;
+            return;
+        }
+        profile = result || {};
+        render();
+        field('editBtn').disabled = false;
+    }
+
+    function openModal() {
+        field('modalError').hidden = true;
+        field('businessName').value = profile.businessName || '';
+        field('employerName').value = profile.employerName || '';
+        field('contactNumber').value = profile.contactNumber || '';
+        field('businessType').value = profile.businessType || '';
+        field('municipality').value = profile.municipality || '';
+        field('barangay').value = profile.barangay || '';
+        field('businessAddress').value = profile.businessAddress || '';
+        field('businessDescription').value = profile.businessDescription || '';
+        field('logo').value = '';
+        field('editModal').hidden = false;
+    }
+
+    function closeModal() {
+        field('editModal').hidden = true;
+    }
+
+    async function save() {
+        var payload = {
+            businessName: field('businessName').value.trim(),
+            employerName: field('employerName').value.trim(),
+            contactNumber: field('contactNumber').value.trim(),
+            businessType: field('businessType').value || null,
+            municipality: field('municipality').value || null,
+            barangay: field('barangay').value.trim(),
+            businessAddress: field('businessAddress').value.trim(),
+            businessDescription: field('businessDescription').value.trim()
+        };
+
+        if (!payload.businessName) {
+            showError('modalError', 'modalErrorText', 'Enter your company name.');
+            return;
+        }
+        if (!payload.employerName) {
+            showError('modalError', 'modalErrorText', 'Enter the contact person for this account.');
+            return;
+        }
+
+        var file = field('logo').files[0] || null;
+        var button = field('saveBtn');
+        button.disabled = true;
+        try {
+            await ApiClient.updateEmployerProfile(payload, file);
+            ROLE.toast('Company profile updated.', 'success');
+            closeModal();
+            await load();
+            if (window.ROLE && ROLE.state) ROLE.state.profile = profile;
+        } catch (error) {
+            showError('modalError', 'modalErrorText', error.message || 'Could not save your profile.');
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+    document.addEventListener('enuvex:ready', async function () {
+        options(field('businessType'), BUSINESS_TYPES, ROLE.businessTypeLabel);
+        options(field('municipality'), MUNICIPALITIES, ROLE.municipalityLabel);
+
+        field('editBtn').addEventListener('click', openModal);
+        field('closeModal').addEventListener('click', closeModal);
+        field('cancelEdit').addEventListener('click', closeModal);
+        field('saveBtn').addEventListener('click', save);
+        field('editModal').addEventListener('click', function (event) {
+            if (event.target === field('editModal')) closeModal();
+        });
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && !field('editModal').hidden) closeModal();
+        });
+
+        await load();
+    }, { once: true });
+})();
+</script>
+</body>
+</html>

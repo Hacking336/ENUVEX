@@ -27,10 +27,12 @@ public class ProfileController {
         return ResponseEntity.ok(Map.of("completion", userService.calculateProfileCompletion(profile)));
     }
 
+    // The update endpoints reuse RegisterRequest but must not require the
+    // registration-only fields (email and password are never written here).
     @PutMapping("/job-seeker")
     public ResponseEntity<JobSeekerProfile> updateJobSeeker(
             Authentication authentication,
-            @Valid @RequestPart("profile") RegisterRequest request,
+            @RequestPart("profile") RegisterRequest request,
             @RequestPart(value = "profilePhoto", required = false) MultipartFile photo) {
         Long userId = extractUserId(authentication);
         return ResponseEntity.ok(userService.updateJobSeekerProfile(userId, request, photo));
@@ -39,7 +41,7 @@ public class ProfileController {
     @PutMapping("/employer")
     public ResponseEntity<EmployerProfile> updateEmployer(
             Authentication authentication,
-            @Valid @RequestPart("profile") RegisterRequest request,
+            @RequestPart("profile") RegisterRequest request,
             @RequestPart(value = "logo", required = false) MultipartFile logo) {
         Long userId = extractUserId(authentication);
         return ResponseEntity.ok(userService.updateEmployerProfile(userId, request, logo));

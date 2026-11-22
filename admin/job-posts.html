@@ -3,166 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Job Posts - Admin Panel - Job & Skills Matching System</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/admin-job-posts.css">
-    <link rel="stylesheet" href="https://cdnjs.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-    <div class="app-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">
-                    <div class="sidebar-logo-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <span>Admin Panel</span>
-                </div>
-            </div>
-
-            <nav class="sidebar-nav" id="sidebarNav">
-                <!-- Injected by layout.js -->
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="sidebar-user" onclick="window.location.href='profile.html'">
-                    <div class="sidebar-user-avatar">AD</div>
-                    <div class="sidebar-user-info">
-                        <div class="sidebar-user-name">System Admin</div>
-                        <div class="sidebar-user-role">Administrator</div>
-</div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Sidebar Overlay -->
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Top Header -->
-            <header class="top-header">
-                <div class="top-header-content">
-                    <div class="top-header-left">
-                        <button class="mobile-menu-btn" id="mobileMenuBtn">
-                            <i class="fas fa-bars"></i>
-                        </button>
-                        <h1 class="top-header-title">Manage Job Posts</h1>
-                    </div>
-                    <div class="top-header-right">
-                        <button class="header-btn" id="notificationBtn">
-                            <i class="fas fa-bell"></i>
-                            <span class="badge">0</span>
-                        </button>
-                        <button class="header-btn" id="userMenuBtn">
-                            <i class="fas fa-user-circle"></i>
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Page Content -->
-            <main class="page-content">
-                <section class="mb-4">
-                    <div class="d-flex justify-content-between align-items-center gap-2">
-                        <div>
-                            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--dark-color);">
-                                Job Posts <span class="text-primary">(342)</span>
-                            </h2>
-                            <p style="color: var(--gray-500); font-size: 0.95rem;">
-                                Review and moderate job posts.
-                            </p>
-                        </div>
-                        <button class="btn btn-primary" style="padding: 0.75rem 1.25rem;">
-                            <i class="fas fa-plus me-2"></i> Post Job
-                        </button>
-                    </div>
-                </section>
-
-                <!-- Job Posts Table -->
-                <section class="mb-4">
-                    <div class="table-responsive">
-                        <table class="table table-hover table-dark" style="width: 100%; min-width: 600px;">
-                            <thead>
-                                <tr>
-                                    <th style="width: 40px;">#</th>
-                                    <th>Title</th>
-                                    <th>Category</th>
-                                    <th style="width: 140px;">Employer</th>
-                                    <th style="width: 140px;">Status</th>
-                                    <th style="width: 160px;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>Restaurant Manager</td>
-                                    <td>Restaurant/Food Service</td>
-                                    <td>Jollybee Foods</td>
-                                    <td><span class="badge bg-success">Active</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</button>
-                                        <button class="btn btn-sm btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete</button>
-                                    </td>
-                                </tr>
-                                <tr class="text-secondary">
-                                    <td>2</td>
-                                    <td>Warehouse Supervisor</td>
-                                    <td>Logistics/Transportation</td>
-                                    <td>Daet Logistics</td>
-                                    <td><span class="badge bg-warning">Pending Review</span></td>
-                                    <td><button class="btn btn-sm btn-outline">Review</button></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- Pending Reviews -->
-                <section class="mb-4">
-                    <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 1rem;">Pending Reviews <span class="badge bg-warning">12</span></h3>
-                    <div style="display: grid; gap: 1rem;">
-                        <div class="card" style="padding: 1rem; background: var(--card-bg); border-radius: var(--border-radius); border: 1px solid var(--gray-200);">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h4 style="font-size: 1rem; font-weight: 600;">Warehouse Supervisor at Daet Logistics</h4>
-                                    <p style="font-size: 0.85rem; color: var(--gray-500);">Logistics/Transportation</p>
-                                </div>
-                                <div class="badge bg-warning ms-2" style="font-size: 0.75rem;">Pending</div>
-                            </div>
-                            <small style="color: var(--gray-500); display: block;">Posted 1 day ago</small>
-                        </div>
-                        <div class="card" style="padding: 1rem; background: var(--card-bg); border-radius: var(--border-radius); border: 1px solid var(--gray-200);">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h4 style="font-size: 1rem; font-weight: 600;">Chef at Jollybee Foods</h4>
-                                    <p style="font-size: 0.85rem; color: var(--gray-500);">Restaurant/Food Service</p>
-                                </div>
-                                <div class="badge bg-warning ms-2" style="font-size: 0.75rem;">Pending</div>
-                            </div>
-                            <small style="color: var(--gray-500); display: block;">Posted 2 days ago</small>
-                        </div>
-                    </div>
-                </section>
-            </main>
-        </div>
-    </div>
-
-    <!-- Bottom Navigation (Mobile) -->
-    <nav class="bottom-nav" id="bottomNav">
-        <!-- Injected by layout.js -->
-    </nav>
-
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
-
-    <script src="../assets/js/main.js"></script>
-    <script src="../assets/js/layout.js"></script>
+    <title>Job Management — ENUVEX</title>
+    <link rel="icon" type="image/png" href="../assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../job-seeker/enuvex-app.css">
+    <link rel="stylesheet" href="../assets/css/enuvex-role.css">
     <script>
-        // Ensure user type is stored for proper sidebar detection
-        localStorage.setItem('userType', 'ADMIN');
-        localStorage.setItem('userName', 'System Admin');
+        window.ENUVEX_PAGE = {
+            active: 'job-posts',
+            title: 'Job Management',
+            subtitle: 'Every listing published on the platform'
+        };
     </script>
+</head>
+<body data-role="admin">
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="page-head">
+                <div>
+                    <h2>Job posts</h2>
+                    <p>Moderate listings from every employer. Removal is permanent.</p>
+                </div>
+                <div class="page-head-actions">
+                    <span class="badge-neutral" id="totalBadge">0 posts</span>
+                </div>
+            </div>
+
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load job posts.</span>
+            </div>
+
+            <div class="card rv-toolbar">
+                <label class="field" for="jobSearch">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <input type="search" id="jobSearch" placeholder="Search title, employer, or barangay">
+                </label>
+                <div class="form-field">
+                    <label for="statusFilter">Status</label>
+                    <select id="statusFilter">
+                        <option value="ALL">All statuses</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="INACTIVE">Inactive</option>
+                    </select>
+                </div>
+                <span class="rv-spacer"></span>
+                <span class="muted" id="resultCount"></span>
+            </div>
+
+            <div id="jobTable">
+                <div class="loading">Loading job posts…</div>
+            </div>
+
+            <div class="pagination" id="pager" hidden></div>
+        </main>
+    </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/role-app.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var PAGE_SIZE = 15;
+    var state = { jobs: [], query: '', status: 'ALL', page: 0 };
+
+    function showError(message) {
+        var box = document.getElementById('pageError');
+        var text = document.getElementById('pageErrorText');
+        if (!box || !text) return;
+        text.textContent = message;
+        box.hidden = false;
+    }
+
+    function filtered() {
+        return state.jobs.filter(function (job) {
+            if (state.status === 'ACTIVE' && !job.active) return false;
+            if (state.status === 'INACTIVE' && job.active) return false;
+            if (!state.query) return true;
+            var haystack = [job.jobTitle, job.employerName, job.barangay, job.category]
+                .filter(Boolean).join(' ').toLowerCase();
+            return haystack.indexOf(state.query) !== -1;
+        }).sort(function (a, b) {
+            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        });
+    }
+
+    function render() {
+        var list = filtered();
+        var pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+        if (state.page >= pages) state.page = pages - 1;
+        var slice = list.slice(state.page * PAGE_SIZE, (state.page + 1) * PAGE_SIZE);
+
+        document.getElementById('totalBadge').textContent = state.jobs.length + ' posts';
+        document.getElementById('resultCount').textContent = list.length + ' matching post' + (list.length === 1 ? '' : 's');
+
+        var container = document.getElementById('jobTable');
+        if (!state.jobs.length) {
+            container.innerHTML = `<div class="card panel"><div class="empty">
+                <i class="fas fa-briefcase"></i>
+                <strong>No job posts on the platform yet</strong>
+                <p>Listings created by employers will appear here.</p>
+            </div></div>`;
+            document.getElementById('pager').hidden = true;
+            return;
+        }
+        if (!slice.length) {
+            container.innerHTML = `<div class="card panel"><div class="empty">
+                <i class="fas fa-filter"></i>
+                <strong>No posts match this filter</strong>
+                <p>Try another status or search term.</p>
+            </div></div>`;
+            document.getElementById('pager').hidden = true;
+            return;
+        }
+
+        container.innerHTML = `<div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th class="num">#</th>
+                        <th>Position</th>
+                        <th>Employer</th>
+                        <th>Category</th>
+                        <th>Location</th>
+                        <th>Salary</th>
+                        <th>Applicants</th>
+                        <th>Status</th>
+                        <th>Posted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${slice.map(function (job, index) {
+                        return `<tr>
+                            <td class="num">${state.page * PAGE_SIZE + index + 1}</td>
+                            <td><span class="cell-main">${ROLE.esc(job.jobTitle)}</span>
+                                <span class="cell-sub">${ROLE.esc(ROLE.typeLabel(job.employmentType) || 'Type not set')}</span></td>
+                            <td>${ROLE.esc(job.employerName || 'Unknown employer')}</td>
+                            <td>${ROLE.esc(ROLE.categoryLabel(job.category))}</td>
+                            <td>${ROLE.esc(ROLE.municipalityLabel(job.municipality) || '—')}${job.barangay ? '<span class="cell-sub">' + ROLE.esc(job.barangay) + '</span>' : ''}</td>
+                            <td>${ROLE.esc(ROLE.salaryLabel(job))}</td>
+                            <td>${ROLE.esc(String(job.applicantCount == null ? 0 : job.applicantCount))}</td>
+                            <td>
+                                <span class="${job.active ? 'badge-ok' : 'badge-off'}">
+                                    <i class="fas ${job.active ? 'fa-circle-check' : 'fa-circle-pause'}"></i>
+                                    ${job.active ? 'Active' : 'Inactive'}
+                                </span>
+                            </td>
+                            <td>${ROLE.esc(ROLE.dateLabel(job.createdAt))}</td>
+                            <td>
+                                <div class="row-actions">
+                                    <button class="btn-danger btn-sm" type="button" data-delete="${ROLE.esc(String(job.id))}">Delete</button>
+                                </div>
+                            </td>
+                        </tr>`;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>`;
+
+        var pager = document.getElementById('pager');
+        if (pages <= 1) {
+            pager.hidden = true;
+        } else {
+            pager.hidden = false;
+            pager.innerHTML = `<button class="btn-soft btn-sm" type="button" data-page="prev" ${state.page === 0 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-left"></i> Previous</button>
+                <span class="muted">Page ${state.page + 1} of ${pages}</span>
+                <button class="btn-soft btn-sm" type="button" data-page="next" ${state.page >= pages - 1 ? 'disabled' : ''}>
+                    Next <i class="fas fa-chevron-right"></i></button>`;
+        }
+    }
+
+    async function load() {
+        var result = await ROLE.safe(ApiClient.request('/admin/job-posts?page=0&size=200'));
+        if (ROLE.failed(result)) {
+            showError(result.__error);
+            document.getElementById('jobTable').innerHTML = `<div class="card panel"><div class="empty">
+                <i class="fas fa-triangle-exclamation"></i>
+                <strong>Job posts unavailable</strong>
+                <p>The moderation list could not be loaded.</p>
+            </div></div>`;
+            return;
+        }
+        state.jobs = result && Array.isArray(result.content) ? result.content : [];
+        render();
+    }
+
+    document.addEventListener('enuvex:ready', async function () {
+        document.getElementById('jobSearch').addEventListener('input', function () {
+            state.query = this.value.trim().toLowerCase();
+            state.page = 0;
+            render();
+        });
+        document.getElementById('statusFilter').addEventListener('change', function () {
+            state.status = this.value;
+            state.page = 0;
+            render();
+        });
+        document.getElementById('pager').addEventListener('click', function (event) {
+            var button = event.target.closest('[data-page]');
+            if (!button) return;
+            state.page += button.getAttribute('data-page') === 'next' ? 1 : -1;
+            render();
+        });
+
+        document.getElementById('jobTable').addEventListener('click', async function (event) {
+            var button = event.target.closest('[data-delete]');
+            if (!button) return;
+            var id = button.getAttribute('data-delete');
+            if (!window.confirm('Delete this job post permanently? This cannot be undone.')) return;
+            button.disabled = true;
+            try {
+                await ApiClient.deleteAdminJobPost(id);
+                ROLE.toast('Job post deleted.', 'success');
+                await load();
+            } catch (error) {
+                ROLE.toast(error.message || 'Could not delete this job post.', 'error');
+                button.disabled = false;
+            }
+        });
+
+        await load();
+    }, { once: true });
+})();
+</script>
 </body>
 </html>

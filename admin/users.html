@@ -3,165 +3,306 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Users - Admin Panel - Job & Skills Matching System</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/admin-users.css">
+    <title>User Management — ENUVEX</title>
+    <link rel="icon" type="image/png" href="../assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../job-seeker/enuvex-app.css">
+    <link rel="stylesheet" href="../assets/css/enuvex-role.css">
+    <script>
+        window.ENUVEX_PAGE = {
+            active: 'users',
+            title: 'User Management',
+            subtitle: 'Every registered account on the platform'
+        };
+    </script>
 </head>
-<body>
-    <div class="app-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">
-                    <div class="sidebar-logo-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <span>Admin Panel</span>
+<body data-role="admin">
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="page-head">
+                <div>
+                    <h2>All users</h2>
+                    <p>Search by email, filter by role or status, and activate or deactivate an account.</p>
+                </div>
+                <div class="page-head-actions">
+                    <span class="badge-neutral" id="totalBadge">0 accounts</span>
                 </div>
             </div>
 
-            <nav class="sidebar-nav" id="sidebarNav">
-                <!-- Injected by layout.js -->
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="sidebar-user" onclick="window.location.href='profile.html'">
-                    <div class="sidebar-user-avatar">AD</div>
-                    <div class="sidebar-user-info">
-                        <div class="sidebar-user-name">System Admin</div>
-                        <div class="sidebar-user-role">Administrator</div>
-                    </div>
-                </div>
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load users.</span>
             </div>
-        </aside>
 
-        <!-- Sidebar Overlay -->
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Top Header -->
-            <header class="top-header">
-                <div class="top-header-content">
-                    <div class="top-header-left">
-                        <button class="mobile-menu-btn" id="mobileMenuBtn">
-                            <i class="fas fa-bars"></i>
-                        </button>
-                        <h1 class="top-header-title">Manage Users</h1>
-                    </div>
-                    <div class="top-header-right">
-                        <button class="header-btn" id="notificationBtn">
-                            <i class="fas fa-bell"></i>
-                            <span class="badge">0</span>
-                        </button>
-                        <button class="header-btn" id="userMenuBtn">
-                            <i class="fas fa-user-circle"></i>
-                        </button>
-                    </div>
+            <div class="card rv-toolbar">
+                <label class="field" for="userSearch">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <input type="search" id="userSearch" placeholder="Search by email">
+                </label>
+                <div class="form-field">
+                    <label for="roleFilter">Role</label>
+                    <select id="roleFilter">
+                        <option value="ALL">All roles</option>
+                        <option value="JOB_SEEKER">Job seeker</option>
+                        <option value="EMPLOYER">Employer</option>
+                        <option value="ADMIN">Admin</option>
+                    </select>
                 </div>
-            </header>
+                <div class="form-field">
+                    <label for="statusFilter">Status</label>
+                    <select id="statusFilter">
+                        <option value="ALL">All statuses</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="INACTIVE">Inactive</option>
+                    </select>
+                </div>
+                <span class="rv-spacer"></span>
+                <span class="muted" id="resultCount"></span>
+            </div>
 
-            <!-- Page Content -->
-            <main class="page-content">
-                <section class="mb-4">
-                    <div class="d-flex justify-content-between align-items-center gap-2">
-                        <div>
-                            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--dark-color);">
-                                All Users <span class="text-primary">(1,247)</span>
-                            </h2>
-                            <p style="color: var(--gray-500); font-size: 0.95rem;">
-                                View and manage all registered users on the platform.
-                            </p>
-                        </div>
-                        <button class="btn btn-primary" style="padding: 0.75rem 1.25rem;">
-                            <i class="fas fa-user-plus me-2"></i> Add New User
-                        </button>
-                    </div>
-                </section>
+            <div id="userTable">
+                <div class="loading">Loading users…</div>
+            </div>
 
-                <!-- Users Table -->
-                <section class="mb-4">
-                    <div class="table-responsive">
-                        <table class="table table-hover table-dark" style="width: 100%; min-width: 600px;">
-                            <thead>
-                                <tr>
-                                    <th style="width: 40px;">#</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th style="width: 140px;">User Type</th>
-                                    <th style="width: 140px;">Status</th>
-                                    <th style="width: 160px;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>admin@jobskillsmatching.com</td>
-                                    <td>admin@jobskillsmatching.com</td>
-                                    <td><span class="badge bg-primary">ADMIN</span></td>
-                                    <td><span class="badge bg-success">Active</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">View</button>
-                                        <button class="btn btn-sm btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete</button>
-                                    </td>
-                                </tr>
-                                <tr class="text-secondary">
-                                    <td>2</td>
-                                    <td>Job Seeker</td>
-                                    <td>jobseeker@example.com</td>
-                                    <td><span class="badge bg-secondary">JOB_SEEKER</span></td>
-                                    <td><span class="badge bg-warning">Verified</span></td>
-                                    <td><button class="btn btn-sm btn-outline">View</button></td>
-                                </tr>
-                                <tr>
-                                    <td>3</td>
-                                    <td>Employer</td>
-                                    <td>employer@example.com</td>
-                                    <td><span class="badge bg-secondary">EMPLOYER</span></td>
-                                    <td><span class="badge bg-warning">Pending</span></td>
-                                    <td><button class="btn btn-sm btn-outline">Verify</button></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
+            <div class="pagination" id="pager" hidden></div>
+        </main>
+    </div>
+</div>
 
-                <!-- Bulk Actions -->
-                <section class="mb-4">
-                    <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 1rem;">Bulk Actions</h3>
-                    <div style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid var(--gray-200);">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="selectAll">
-                            <label class="form-check-label" for="selectAll">Select all</label>
-                        </div>
-                        <select class="form-select form-select-sm mb-2" style="width: 100%; max-width: 300px;">
-                            <option selected>Bulk action</option>
-                            <option>Activate selected</option>
-                            <option>Deactivate selected</option>
-                            <option>Delete selected</option>
-                        </select>
-                        <button class="btn btn-primary ms-2" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Apply</button>
-                    </div>
-                </section>
-            </main>
+<div class="modal" id="userModal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="userModalTitle">
+        <div class="modal-head">
+            <h3 id="userModalTitle">Account details</h3>
+            <button class="modal-close" type="button" id="closeUserModal" aria-label="Close"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="modal-body" id="userModalBody"></div>
+        <div class="modal-foot">
+            <button class="btn-soft" type="button" id="dismissUserModal">Close</button>
         </div>
     </div>
+</div>
 
-    <!-- Bottom Navigation (Mobile) -->
-    <nav class="bottom-nav" id="bottomNav">
-        <!-- Injected by layout.js -->
-    </nav>
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/role-app.js"></script>
+<script>
+(function () {
+    'use strict';
 
-    <script src="../assets/js/main.js"></script>
-    <script src="../assets/js/layout.js"></script>
-    <script>
-        // Ensure user type is stored for proper sidebar detection
-        localStorage.setItem('userType', 'ADMIN');
-        localStorage.setItem('userName', 'System Admin');
-    </script>
+    var PAGE_SIZE = 12;
+    var state = { users: [], query: '', role: 'ALL', status: 'ALL', page: 0 };
+
+    function showError(message) {
+        var box = document.getElementById('pageError');
+        var text = document.getElementById('pageErrorText');
+        if (!box || !text) return;
+        text.textContent = message;
+        box.hidden = false;
+    }
+
+    function roleBadge(role) {
+        var label = role === 'JOB_SEEKER' ? 'Job seeker' : role === 'EMPLOYER' ? 'Employer' : role === 'ADMIN' ? 'Admin' : role;
+        var cls = role === 'ADMIN' ? 'badge-neutral' : role === 'EMPLOYER' ? 'badge-wait' : 'badge-ok';
+        return '<span class="' + cls + '">' + ROLE.esc(label) + '</span>';
+    }
+
+    function filtered() {
+        return state.users.filter(function (user) {
+            if (state.role !== 'ALL' && String(user.userType) !== state.role) return false;
+            if (state.status === 'ACTIVE' && !user.active) return false;
+            if (state.status === 'INACTIVE' && user.active) return false;
+            if (!state.query) return true;
+            return String(user.email || '').toLowerCase().indexOf(state.query) !== -1;
+        }).sort(function (a, b) {
+            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        });
+    }
+
+    function render() {
+        var list = filtered();
+        var pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+        if (state.page >= pages) state.page = pages - 1;
+
+        var slice = list.slice(state.page * PAGE_SIZE, (state.page + 1) * PAGE_SIZE);
+        document.getElementById('resultCount').textContent = list.length + ' shown from ' + state.users.length + ' accounts';
+        document.getElementById('totalBadge').textContent = state.users.length + ' accounts';
+
+        var container = document.getElementById('userTable');
+        if (!state.users.length) {
+            container.innerHTML = `<div class="card panel"><div class="empty">
+                <i class="fas fa-users"></i>
+                <strong>No user accounts found</strong>
+                <p>Registered accounts will appear here.</p>
+            </div></div>`;
+            document.getElementById('pager').hidden = true;
+            return;
+        }
+
+        if (!slice.length) {
+            container.innerHTML = `<div class="card panel"><div class="empty">
+                <i class="fas fa-filter"></i>
+                <strong>No accounts match this filter</strong>
+                <p>Try another role, status, or search term.</p>
+            </div></div>`;
+            document.getElementById('pager').hidden = true;
+            return;
+        }
+
+        container.innerHTML = `<div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th class="num">#</th>
+                        <th>Account</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Registered</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${slice.map(function (user, index) {
+                        var number = state.page * PAGE_SIZE + index + 1;
+                        return `<tr>
+                            <td class="num">${number}</td>
+                            <td>
+                                <span class="cell-main">${ROLE.esc(user.email || 'No email')}</span>
+                                <span class="cell-sub">ID ${ROLE.esc(String(user.id))}</span>
+                            </td>
+                            <td>${roleBadge(user.userType)}</td>
+                            <td>
+                                <span class="${user.active ? 'badge-ok' : 'badge-off'}">
+                                    <i class="fas ${user.active ? 'fa-circle-check' : 'fa-circle-minus'}"></i>
+                                    ${user.active ? 'Active' : 'Inactive'}
+                                </span>
+                            </td>
+                            <td>${ROLE.esc(ROLE.dateLabel(user.createdAt))}</td>
+                            <td>
+                                <div class="row-actions">
+                                    <button class="btn-soft btn-sm" type="button" data-view="${ROLE.esc(String(user.id))}">View</button>
+                                    <button class="btn-ghost btn-sm" type="button" data-toggle="${ROLE.esc(String(user.id))}">
+                                        ${user.active ? 'Deactivate' : 'Activate'}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>`;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>`;
+
+        var pager = document.getElementById('pager');
+        if (pages <= 1) {
+            pager.hidden = true;
+        } else {
+            pager.hidden = false;
+            pager.innerHTML = `<button class="btn-soft btn-sm" type="button" data-page="prev" ${state.page === 0 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-left"></i> Previous</button>
+                <span class="muted">Page ${state.page + 1} of ${pages}</span>
+                <button class="btn-soft btn-sm" type="button" data-page="next" ${state.page >= pages - 1 ? 'disabled' : ''}>
+                    Next <i class="fas fa-chevron-right"></i></button>`;
+        }
+    }
+
+    function openUser(id) {
+        var user = state.users.filter(function (item) { return String(item.id) === String(id); })[0];
+        if (!user) return;
+        document.getElementById('userModalTitle').textContent = user.email || 'Account details';
+        document.getElementById('userModalBody').innerHTML = `<div class="kv-grid">
+            <div class="kv"><span>Account ID</span><strong>${ROLE.esc(String(user.id))}</strong></div>
+            <div class="kv"><span>Email</span><strong>${ROLE.esc(user.email || '—')}</strong></div>
+            <div class="kv"><span>Role</span><strong>${ROLE.esc(String(user.userType || '').replace(/_/g, ' '))}</strong></div>
+            <div class="kv"><span>Status</span><strong>${user.active ? 'Active' : 'Inactive'}</strong></div>
+            <div class="kv"><span>Verified</span><strong>${user.verified ? 'Yes' : 'No'}</strong></div>
+            <div class="kv"><span>Registered</span><strong>${ROLE.esc(ROLE.dateLabel(user.createdAt))}</strong></div>
+            <div class="kv"><span>Last updated</span><strong>${ROLE.esc(ROLE.dateLabel(user.updatedAt))}</strong></div>
+        </div>`;
+        document.getElementById('userModal').hidden = false;
+    }
+
+    async function load() {
+        var result = await ROLE.safe(ApiClient.getAdminUsers());
+        if (ROLE.failed(result)) {
+            showError(result.__error);
+            document.getElementById('userTable').innerHTML = `<div class="card panel"><div class="empty">
+                <i class="fas fa-triangle-exclamation"></i>
+                <strong>Users unavailable</strong>
+                <p>The account list could not be loaded.</p>
+            </div></div>`;
+            return;
+        }
+        state.users = Array.isArray(result) ? result : [];
+        render();
+    }
+
+    document.addEventListener('enuvex:ready', async function () {
+        document.getElementById('userSearch').addEventListener('input', function () {
+            state.query = this.value.trim().toLowerCase();
+            state.page = 0;
+            render();
+        });
+        document.getElementById('roleFilter').addEventListener('change', function () {
+            state.role = this.value;
+            state.page = 0;
+            render();
+        });
+        document.getElementById('statusFilter').addEventListener('change', function () {
+            state.status = this.value;
+            state.page = 0;
+            render();
+        });
+
+        document.getElementById('pager').addEventListener('click', function (event) {
+            var button = event.target.closest('[data-page]');
+            if (!button) return;
+            state.page += button.getAttribute('data-page') === 'next' ? 1 : -1;
+            render();
+        });
+
+        document.getElementById('userTable').addEventListener('click', async function (event) {
+            var view = event.target.closest('[data-view]');
+            if (view) {
+                openUser(view.getAttribute('data-view'));
+                return;
+            }
+            var toggle = event.target.closest('[data-toggle]');
+            if (!toggle) return;
+            var id = toggle.getAttribute('data-toggle');
+            toggle.disabled = true;
+            try {
+                await ApiClient.setUserActive(id);
+                ROLE.toast('Account status updated.', 'success');
+                await load();
+            } catch (error) {
+                ROLE.toast(error.message || 'Could not update this account.', 'error');
+                toggle.disabled = false;
+            }
+        });
+
+        document.getElementById('closeUserModal').addEventListener('click', function () {
+            document.getElementById('userModal').hidden = true;
+        });
+        document.getElementById('dismissUserModal').addEventListener('click', function () {
+            document.getElementById('userModal').hidden = true;
+        });
+        document.getElementById('userModal').addEventListener('click', function (event) {
+            if (event.target === this) this.hidden = true;
+        });
+
+        await load();
+    }, { once: true });
+})();
+</script>
 </body>
 </html>

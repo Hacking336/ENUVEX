@@ -3,466 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employer Dashboard - Job & Skills Matching System</title>
+    <title>Employer Dashboard — ENUVEX</title>
+    <link rel="icon" type="image/png" href="../assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --ink: #0b2545;
-            --ink-soft: #22374b;
-            --body: #55677a;
-            --green: #2e9e41;
-            --green-dark: #237d33;
-            --green-tint: rgba(46, 158, 65, 0.1);
-            --page-bg: #f3f7fa;
-            --line: #e4ebf1;
-            --radius: 16px;
-            --shadow-sm: 0 2px 8px rgba(11, 37, 69, 0.05);
-            --shadow-lg: 0 22px 50px rgba(11, 37, 69, 0.16);
-            --font-head: 'Poppins', 'Segoe UI', system-ui, sans-serif;
-            --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
-        }
-        * { box-sizing: border-box; }
-        body {
-            font-family: var(--font-body);
-            color: var(--body);
-            background: #fff;
-            -webkit-font-smoothing: antialiased;
-        }
-        a { text-decoration: none; color: inherit; }
-        h1, h2, h3 { font-family: var(--font-head); color: var(--ink); margin: 0; }
-        .landing a { text-decoration: none; color: inherit; }
-        .btn-ghost, .btn-solid {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-family: var(--font-head);
-            font-size: 14.5px;
-            font-weight: 600;
-            transition: all 0.16s ease;
-            white-space: nowrap;
-        }
-        .btn-ghost {
-            color: var(--green);
-            border: 1.5px solid rgba(46, 158, 65, 0.55);
-            background: #fff;
-        }
-        .btn-ghost:hover { background: #f2f9f3; border-color: var(--green); }
-        .btn-solid {
-            color: #fff;
-            background: var(--green);
-            border: 1.5px solid var(--green);
-        }
-        .btn-solid:hover { background: var(--green-dark); border-color: var(--green-dark); }
-    </style>
-</head>
-<body>
-    <div class="app-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">
-                    <div class="sidebar-logo-icon">
-                        <i class="fas fa-building"></i>
-                    </div>
-                    <span>Employer</span>
-                </div>
-            </div>
-
-            <nav class="sidebar-nav" id="sidebarNav">
-                <!-- Injected by layout.js -->
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="sidebar-user" onclick="window.location.href='profile.html'">
-                    <div class="sidebar-user-avatar">JE</div>
-                    <div class="sidebar-user-info">
-                        <div class="sidebar-user-name">Juan's Eatery</div>
-                        <div class="sidebar-user-role">Employer</div>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Sidebar Overlay -->
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Top Header -->
-            <header class="top-header">
-                <div class="top-header-content">
-                    <div class="top-header-left">
-                        <button class="mobile-menu-btn" id="mobileMenuBtn">
-                            <i class="fas fa-bars"></i>
-                        </button>
-                        <h1 class="top-header-title">Dashboard</h1>
-                    </div>
-                    <div class="top-header-right">
-                        <button class="header-btn" id="notificationBtn">
-                            <i class="fas fa-bell"></i>
-                            <span class="badge">5</span>
-                        </button>
-                        <button class="header-btn" id="userMenuBtn">
-                            <i class="fas fa-user-circle"></i>
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Page Content -->
-            <main class="page-content">
-                <!-- Hero Section -->
-                <section class="hero-section mb-4">
-                    <div class="container hero-inner">
-                        <div class="hero-copy">
-                            <p class="eyebrow">Find Your Next Opportunity</p>
-                            <h1>Search. Apply.<br><span class="accent">Grow.</span></h1>
-                            <p class="lead">ENUVEX connects skilled professionals with the right employers.</p>
-
-            <ul class="hero-features">
-                <li><span class="feature-icon"><i class="fas fa-magnifying-glass"></i></span> Discover Top Jobs</li>
-                <li><span class="feature-icon"><i class="fas fa-bolt"></i></span> Apply in Minutes</li>
-                <li><span class="feature-icon"><i class="fas fa-chart-line"></i></span> Grow Your Career</li>
-            </ul>
-                        </div>
-
-        <form class="search-card" id="heroSearch" role="search">
-            <label class="search-field" for="jobQuery">
-                <i class="fas fa-magnifying-glass"></i>
-                <span class="visually-hidden">Search jobs</span>
-                <input type="search" id="jobQuery" name="q" placeholder="Search for job title, skills, or companies...">
-            </label>
-        </form>
-                    </div>
-                </section>
-
-                <!-- Stats Cards -->
-                <div class="dashboard-stats mb-4">
-                    <div class="stat-card fade-in">
-                        <div class="stat-icon purple">
-                            <i class="fas fa-briefcase"></i>
-                        </div>
-                        <div>
-                            <div class="stat-value">6</div>
-                            <div class="stat-label">Active Jobs</div>
-                        </div>
-                    </div>
-                    <div class="stat-card fade-in" style="animation-delay: 0.1s;">
-                        <div class="stat-icon blue">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div>
-                            <div class="stat-value">58</div>
-                            <div class="stat-label">Total Applicants</div>
-                        </div>
-                    </div>
-                    <div class="stat-card fade-in" style="animation-delay: 0.2s;">
-                        <div class="stat-icon orange">
-                            <i class="fas fa-star-half-alt"></i>
-                        </div>
-                        <div>
-                            <div class="stat-value">14</div>
-                            <div class="stat-label">Shortlisted</div>
-                        </div>
-                    </div>
-                    <div class="stat-card fade-in" style="animation-delay: 0.3s;">
-                        <div class="stat-icon green">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div>
-                            <div class="stat-value">5</div>
-                            <div class="stat-label">Hired</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Actions -->
-                <section class="mb-4">
-                    <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 1rem;">Quick Actions</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                        <a href="post-job.html" class="btn btn-outline" style="padding: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center;">
-                            <i class="fas fa-plus-circle" style="font-size: 1.5rem; color: var(--primary-color);"></i>
-                            <span style="font-weight: 600;">Post New Job</span>
-                            <small style="color: var(--gray-500);">Create a new job opening</small>
-                        </a>
-                        <a href="applicants.html" class="btn btn-outline" style="padding: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center;">
-                            <i class="fas fa-user-search" style="font-size: 1.5rem; color: var(--warning-color);"></i>
-                            <span style="font-weight: 600;">Review Applicants</span>
-                            <small style="color: var(--gray-500);">14 pending reviews</small>
-                        </a>
-                        <a href="jobs.html" class="btn btn-outline" style="padding: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center;">
-                            <i class="fas fa-video" style="font-size: 1.5rem; color: #7e57c2;"></i>
-                            <span style="font-weight: 600;">Schedule Interviews</span>
-                            <small style="color: var(--gray-500);">3 to schedule</small>
-                        </a>
-                        <a href="reports.html" class="btn btn-outline" style="padding: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center;">
-                            <i class="fas fa-chart-bar" style="font-size: 1.5rem; color: #2a9d8f;"></i>
-                            <span style="font-weight: 600;">View Reports</span>
-                            <small style="color: var(--gray-500);">Hiring analytics</small>
-                        </a>
-                    </div>
-                </section>
-
-                <!-- Recent Applications -->
-                <section class="mb-4">
-                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                        <h3 style="font-size: 1.15rem; font-weight: 600;">Recent Applications</h3>
-                        <a href="applicants.html" class="btn btn-sm btn-outline">View All</a>
-                    </div>
-                    <div id="recentApplicationsContainer">
-                        <!-- Rendered by JS -->
-                    </div>
-                </section>
-
-                <!-- Active Jobs -->
-                <section class="mb-4">
-                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                        <h3 style="font-size: 1.15rem; font-weight: 600;">My Active Jobs</h3>
-                        <a href="jobs.html" class="btn btn-sm btn-outline">Manage All</a>
-                    </div>
-                    <div id="activeJobsContainer">
-                        <!-- Rendered by JS -->
-                    </div>
-                </section>
-
-                <!-- System Scope -->
-                <section class="system-scope fade-in">
-                    <h3><i class="fas fa-map-marked-alt" style="margin-right: 0.5rem; color: var(--primary-color);"></i> System Scope</h3>
-                    <p style="color: var(--gray-600); margin-bottom: 1rem;">The Job & Skills Matching System covers the whole municipalities of Camarines Norte.</p>
-                    <div class="municipality-grid">
-                        <div class="municipality-card">
-                            <h4><i class="fas fa-seedling" style="margin-right: 0.35rem; color: var(--warning-color);"></i> Basud</h4>
-                            <p>Agriculture, trading, small businesses, services</p>
-                        </div>
-                        <div class="municipality-card">
-                            <h4><i class="fas fa-store" style="margin-right: 0.35rem; color: var(--primary-color);"></i> Daet</h4>
-                            <p>Commercial center, retail, offices, services, tourism</p>
-                        </div>
-                        <div class="municipality-card">
-                            <h4><i class="fas fa-fish" style="margin-right: 0.35rem; color: var(--accent-color);"></i> Vinzons</h4>
-                            <p>Fisheries, trading, transportation, services</p>
-                        </div>
-                        <div class="municipality-card">
-                            <h4><i class="fas fa-industry" style="margin-right: 0.35rem; color: #7e57c2;"></i> Labo</h4>
-                            <p>Agriculture, manufacturing, education, public services</p>
-                        </div>
-                    </div>
-                </section>
-            </main>
-        </div>
-    </div>
-
-    <!-- Bottom Navigation (Mobile) -->
-    <nav class="bottom-nav" id="bottomNav">
-        <!-- Injected by layout.js -->
-    </nav>
-
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
-
-    <script src="../assets/js/main.js"></script>
-    <script src="../assets/js/layout.js"></script>
+    <link rel="stylesheet" href="../job-seeker/enuvex-app.css">
+    <link rel="stylesheet" href="../assets/css/enuvex-role.css">
     <script>
-        // Employer Dashboard Data & Rendering
-        const recentApplications = [
-            {
-                id: 1,
-                name: 'Maria Santos',
-                position: 'Restaurant Crew',
-                location: 'Daet',
-                distance: '1.8 km',
-                match: 88,
-                skills: ['Customer Service', 'Food Preparation', 'Teamwork'],
-                avatar: 'MS',
-                status: 'under-review'
-            },
-            {
-                id: 2,
-                name: 'John Dela Cruz',
-                position: 'Pharmacy Assistant',
-                location: 'Daet',
-                distance: '2.1 km',
-                match: 82,
-                skills: ['Customer Service', 'Medicine Knowledge', 'Inventory'],
-                avatar: 'JD',
-                status: 'shortlisted'
-            },
-            {
-                id: 3,
-                name: 'Ana Reyes',
-                position: 'Sales Associate',
-                location: 'Basud',
-                distance: '12.5 km',
-                match: 78,
-                skills: ['Sales', 'Customer Service', 'POS'],
-                avatar: 'AR',
-                status: 'under-review'
-            },
-            {
-                id: 4,
-                name: 'Carlos Mendoza',
-                position: 'Driver / Delivery',
-                location: 'Daet',
-                distance: '3.2 km',
-                match: 75,
-                skills: ['Driving', 'Navigation', 'Time Management'],
-                avatar: 'CM',
-                status: 'interview'
-            },
-            {
-                id: 5,
-                name: 'Luis Garcia',
-                position: 'Construction Worker',
-                location: 'Labo',
-                distance: '25.3 km',
-                match: 72,
-                skills: ['Construction', 'Manual Labor', 'Safety'],
-                avatar: 'LG',
-                status: 'under-review'
-            }
-        ];
-
-        const activeJobs = [
-            {
-                id: 1,
-                title: 'Restaurant Crew',
-                location: 'Daet, Camarines Norte',
-                applicants: 12,
-                shortlisted: 3,
-                status: 'Active',
-                posted: '2 days ago',
-                icon: 'fa-utensils',
-                iconClass: 'alt'
-            },
-            {
-                id: 2,
-                title: 'Pharmacy Assistant',
-                location: 'Daet, Camarines Norte',
-                applicants: 8,
-                shortlisted: 2,
-                status: 'Active',
-                posted: '5 days ago',
-                icon: 'fa-pills',
-                iconClass: 'third'
-            },
-            {
-                id: 3,
-                title: 'Sales Associate',
-                location: 'Basud, Camarines Norte',
-                applicants: 15,
-                shortlisted: 4,
-                status: 'Active',
-                posted: '1 week ago',
-                icon: 'fa-shopping-cart',
-                iconClass: 'fourth'
-            },
-            {
-                id: 4,
-                title: 'Driver / Delivery',
-                location: 'Daet, Camarines Norte',
-                applicants: 6,
-                shortlisted: 2,
-                status: 'Active',
-                posted: '3 days ago',
-                icon: 'fa-truck',
-                iconClass: ''
-            },
-            {
-                id: 5,
-                title: 'Construction Worker',
-                location: 'Labo, Camarines Norte',
-                applicants: 22,
-                shortlisted: 5,
-                status: 'Active',
-                posted: '1 week ago',
-                icon: 'fa-hard-hat',
-                iconClass: 'alt'
-            },
-            {
-                id: 6,
-                title: 'Admin Staff',
-                location: 'Vinzons, Camarines Norte',
-                applicants: 9,
-                shortlisted: 1,
-                status: 'Active',
-                posted: '4 days ago',
-                icon: 'fa-file-alt',
-                iconClass: 'third'
-            }
-        ];
-
-        function renderRecentApplications() {
-            const container = document.getElementById('recentApplicationsContainer');
-            if (!container) return;
-
-            container.innerHTML = recentApplications.map(app => `
-                <div class="applicant-card fade-in" onclick="window.location.href='applicant-profile.html?id=${app.id}'">
-                    <div class="applicant-avatar" style="background: linear-gradient(135deg, ${app.match >= 80 ? '#2a9d8f' : app.match >= 60 ? 'var(--warning-color)' : 'var(--primary-color)'}, ${app.match >= 80 ? '#264653' : app.match >= 60 ? '#e76f51' : 'var(--secondary-color)'});">
-                        ${app.avatar}
-                    </div>
-                    <div class="applicant-info">
-                        <h4 class="applicant-name">${app.name}</h4>
-                        <p class="applicant-position">${app.position}</p>
-                        <p class="applicant-location"><i class="fas fa-map-marker-alt" style="margin-right: 0.25rem;"></i> ${app.location} • ${app.distance}</p>
-                    </div>
-                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
-                        <div class="match-circle ${app.match >= 80 ? 'high' : app.match >= 60 ? 'medium' : 'low'}" style="width: 48px; height: 48px; font-size: 0.95rem;">${app.match}%</div>
-                        <span class="status-badge status-${app.status}">${app.status.replace('-', ' ')}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function renderActiveJobs() {
-            const container = document.getElementById('activeJobsContainer');
-            if (!container) return;
-
-            container.innerHTML = activeJobs.map(job => `
-                <div class="card job-card fade-in" onclick="window.location.href='job-details.html?id=${job.id}'">
-                    <div class="job-card-icon ${job.iconClass || ''}">
-                        <i class="fas ${job.icon}"></i>
-                    </div>
-                    <div class="job-card-info">
-                        <div class="job-card-title">${job.title}</div>
-                        <div class="job-card-company">Juan's Eatery</div>
-                        <div class="job-card-meta">
-                            <span><i class="fas fa-map-marker-alt"></i> ${job.location}</span>
-                            <span><i class="fas fa-users"></i> ${job.applicants} Applicants</span>
-                            <span><i class="fas fa-star-half-alt"></i> ${job.shortlisted} Shortlisted</span>
-                        </div>
-                        <div class="job-card-tags">
-                            <span class="job-tag primary">${job.status}</span>
-                            <span class="job-tag">${job.posted}</span>
-                        </div>
-                    </div>
-                    <div class="job-card-actions">
-                        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); window.location.href='edit-job.html?id=${job.id}'"><i class="fas fa-edit"></i> Edit</button>
-                        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); window.location.href='applicants.html?jobId=${job.id}'"><i class="fas fa-users"></i> View Applicants</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Render on load
-        document.addEventListener('DOMContentLoaded', function() {
-            renderRecentApplications();
-            renderActiveJobs();
-        });
-
-        // Ensure user type is stored for proper sidebar detection
-        localStorage.setItem('userType', 'EMPLOYER');
-        localStorage.setItem('userName', "Juan's Eatery");
-
-        // Hero search form
-        document.getElementById('heroSearch')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const query = document.getElementById('jobQuery')?.value || '';
-            if (query.trim()) {
-                window.location.href = 'jobs.html?q=' + encodeURIComponent(query);
-            }
-        });
+        window.ENUVEX_PAGE = {
+            active: 'dashboard',
+            title: 'Employer Dashboard',
+            subtitle: 'Your hiring activity at a glance'
+        };
     </script>
+</head>
+<body data-role="employer">
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="page-head">
+                <div>
+                    <h2>Hiring overview</h2>
+                    <p>Live counts from your own job posts and applications.</p>
+                </div>
+                <div class="page-head-actions">
+                    <a class="btn-solid" href="post-job.html"><i class="fas fa-circle-plus"></i> Post a Job</a>
+                    <a class="btn-ghost" href="applicants.html"><i class="fas fa-user-check"></i> Review Applicants</a>
+                </div>
+            </div>
+
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load your dashboard.</span>
+            </div>
+
+            <section class="metrics cols-5" aria-label="Employer metrics">
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-briefcase"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricTotal">—</div>
+                        <div class="metric-label">Total Job Posts</div>
+                        <div class="metric-desc">Every post you created</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-circle-play"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricActive">—</div>
+                        <div class="metric-label">Active Job Posts</div>
+                        <div class="metric-desc">Visible to job seekers</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-users"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricApplicants">—</div>
+                        <div class="metric-label">Total Applicants</div>
+                        <div class="metric-desc">Applications received</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-hourglass-half"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricPending">—</div>
+                        <div class="metric-label">Pending Review</div>
+                        <div class="metric-desc">Applied or under review</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-circle-check"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricHired">—</div>
+                        <div class="metric-label">Hired Candidates</div>
+                        <div class="metric-desc">Accepted applications</div>
+                    </div>
+                </article>
+            </section>
+
+            <div class="split" style="margin-top: 20px;">
+                <section class="card panel" aria-labelledby="jobsTitle">
+                    <div class="panel-head">
+                        <h3 id="jobsTitle"><i class="fas fa-briefcase"></i> Your job posts</h3>
+                        <a class="link-all" href="jobs.html">View all</a>
+                    </div>
+                    <div class="list-rows" id="jobRows">
+                        <div class="loading">Loading your job posts…</div>
+                    </div>
+                </section>
+
+                <section class="card panel" aria-labelledby="appTitle">
+                    <div class="panel-head">
+                        <h3 id="appTitle"><i class="fas fa-user-check"></i> Recent applicants</h3>
+                        <a class="link-all" href="applicants.html">View all</a>
+                    </div>
+                    <div class="list-rows" id="applicantRows">
+                        <div class="loading">Loading applicants…</div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/role-app.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    function showError(message) {
+        var box = document.getElementById('pageError');
+        var text = document.getElementById('pageErrorText');
+        if (!box || !text) return;
+        text.textContent = message;
+        box.hidden = false;
+    }
+
+    function isActive(job) {
+        return job.active !== undefined ? !!job.active : !!job.isActive;
+    }
+
+    function jobRow(job, counts) {
+        var applicants = counts[job.id] || 0;
+        return `<div class="list-row">
+            <span class="list-icon"><i class="fas ${ROLE.categoryIcon(job.jobCategory)}"></i></span>
+            <div class="list-body">
+                <h4><a href="post-job.html?id=${encodeURIComponent(job.id)}">${ROLE.esc(job.jobTitle)}</a></h4>
+                <div class="list-meta">
+                    <span><i class="fas fa-location-dot"></i>${ROLE.esc(ROLE.municipalityLabel(job.municipality))}${job.barangay ? ', ' + ROLE.esc(job.barangay) : ''}</span>
+                    <span><i class="fas fa-users"></i>${applicants} applicant${applicants === 1 ? '' : 's'}</span>
+                    <span><i class="fas fa-calendar"></i>${ROLE.esc(ROLE.dateLabel(job.createdAt))}</span>
+                </div>
+            </div>
+            <div class="list-side">
+                <span class="status ${isActive(job) ? 'status-accepted' : 'status-rejected'}">${isActive(job) ? 'Active' : 'Inactive'}</span>
+                <a class="btn-soft btn-sm" href="applicants.html?jobId=${encodeURIComponent(job.id)}">Applicants</a>
+            </div>
+        </div>`;
+    }
+
+    async function boot() {
+        var data = await ROLE.loadEmployerData();
+        if (data.error) showError(data.error);
+
+        var jobs = data.jobs.slice().sort(function (a, b) {
+            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        });
+        var applicants = data.applicants;
+
+        var counts = {};
+        applicants.forEach(function (applicant) {
+            counts[applicant.jobId] = (counts[applicant.jobId] || 0) + 1;
+        });
+
+        document.getElementById('metricTotal').textContent = jobs.length;
+        document.getElementById('metricActive').textContent = jobs.filter(isActive).length;
+        document.getElementById('metricApplicants').textContent = applicants.length;
+        document.getElementById('metricPending').textContent = applicants.filter(function (applicant) {
+            var status = String(applicant.applicationStatus || '').toUpperCase();
+            return status === 'APPLIED' || status === 'UNDER_REVIEW';
+        }).length;
+        document.getElementById('metricHired').textContent = applicants.filter(function (applicant) {
+            return String(applicant.applicationStatus || '').toUpperCase() === 'ACCEPTED';
+        }).length;
+
+        var jobRows = document.getElementById('jobRows');
+        if (!jobs.length) {
+            jobRows.innerHTML = `<div class="empty">
+                <i class="fas fa-briefcase"></i>
+                <strong>No job posts yet</strong>
+                <p>Create your first post and it will appear here.</p>
+                <a class="btn-solid btn-sm" href="post-job.html">Post a job</a>
+            </div>`;
+        } else {
+            jobRows.innerHTML = jobs.slice(0, 5).map(function (job) { return jobRow(job, counts); }).join('');
+        }
+
+        var applicantRows = document.getElementById('applicantRows');
+        if (!applicants.length) {
+            applicantRows.innerHTML = `<div class="empty">
+                <i class="fas fa-user-check"></i>
+                <strong>No applicants yet</strong>
+                <p>Applications to your active posts will show up here.</p>
+            </div>`;
+        } else {
+            applicantRows.innerHTML = applicants.slice()
+                .sort(function (a, b) { return new Date(b.appliedAt || 0) - new Date(a.appliedAt || 0); })
+                .slice(0, 5)
+                .map(ROLE.applicantRow)
+                .join('');
+        }
+    }
+
+    document.addEventListener('enuvex:ready', boot, { once: true });
+})();
+</script>
 </body>
 </html>

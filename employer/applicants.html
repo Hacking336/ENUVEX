@@ -3,482 +3,298 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Applicants - Job & Skills Matching System</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <title>Applicants — ENUVEX</title>
+    <link rel="icon" type="image/png" href="../assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-    <div class="app-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">
-                    <div class="sidebar-logo-icon">
-                        <i class="fas fa-building"></i>
-                    </div>
-                    <span>Employer</span>
-                </div>
-            </div>
-
-            <nav class="sidebar-nav" id="sidebarNav">
-                <!-- Injected by layout.js -->
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="sidebar-user" onclick="window.location.href='profile.html'">
-                    <div class="sidebar-user-avatar">JE</div>
-                    <div class="sidebar-user-info">
-                        <div class="sidebar-user-name">Juan's Eatery</div>
-                        <div class="sidebar-user-role">Employer</div>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Sidebar Overlay -->
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Top Header -->
-            <header class="top-header">
-                <div class="top-header-content">
-                    <div class="top-header-left">
-                        <button class="mobile-menu-btn" id="mobileMenuBtn">
-                            <i class="fas fa-bars"></i>
-                        </button>
-                        <h1 class="top-header-title">Applicants</h1>
-                    </div>
-                    <div class="top-header-right">
-                        <button class="header-btn" id="notificationBtn">
-                            <i class="fas fa-bell"></i>
-                            <span class="badge">5</span>
-                        </button>
-                        <button class="header-btn" id="userMenuBtn">
-                            <i class="fas fa-user-circle"></i>
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Page Content -->
-            <main class="page-content">
-                <!-- Page Nav -->
-                <nav class="page-nav">
-                    <a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
-                    <span style="color: var(--gray-300);">/</span>
-                    <span class="current">Applicants</span>
-                </nav>
-
-                <!-- Job Selector (if multiple jobs) -->
-                <div class="card fade-in mb-4">
-                    <div class="card-body">
-                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
-                            <label style="font-weight: 600; color: var(--gray-600);">Filter by Job:</label>
-                            <select class="form-control form-control-select" id="jobFilter" style="width: auto; min-width: 250px;">
-                                <option value="all">All Active Jobs</option>
-                                <option value="1">Restaurant Crew</option>
-                                <option value="2">Pharmacy Assistant</option>
-                                <option value="3">Sales Associate</option>
-                                <option value="4">Driver / Delivery</option>
-                                <option value="5">Construction Worker</option>
-                                <option value="6">Admin Staff</option>
-                            </select>
-                            <label style="font-weight: 600; color: var(--gray-600);">Sort by:</label>
-                            <select class="form-control form-control-select" id="sortFilter" style="width: auto; min-width: 180px;">
-                                <option value="match">Best Match</option>
-                                <option value="date">Newest First</option>
-                                <option value="experience">Most Experience</option>
-                                <option value="distance">Nearest First</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tabs -->
-                <div class="tab-nav" id="applicantTabs">
-                    <button class="tab-btn active" data-tab="all">All <span class="badge" style="background: var(--gray-200); color: var(--gray-600); font-size: 0.7rem; margin-left: 0.35rem;">24</span></button>
-                    <button class="tab-btn" data-tab="shortlisted">Shortlisted <span class="badge" style="background: rgba(248,150,30,0.1); color: var(--warning-color); font-size: 0.7rem; margin-left: 0.35rem;">14</span></button>
-                    <button class="tab-btn" data-tab="interview">Interview <span class="badge" style="background: rgba(126,87,194,0.1); color: #7e57c2; font-size: 0.7rem; margin-left: 0.35rem;">5</span></button>
-                    <button class="tab-btn" data-tab="rejected">Rejected <span class="badge" style="background: rgba(249,65,68,0.1); color: var(--danger-color); font-size: 0.7rem; margin-left: 0.35rem;">5</span></button>
-                </div>
-
-                <!-- Applicants List -->
-                <div id="applicantsContainer">
-                    <!-- Rendered by JS -->
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <!-- Bottom Navigation (Mobile) -->
-    <nav class="bottom-nav" id="bottomNav">
-        <!-- Injected by layout.js -->
-    </nav>
-
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
-
-    <script src="../assets/js/main.js"></script>
-    <script src="../assets/js/layout.js"></script>
+    <link rel="stylesheet" href="../job-seeker/enuvex-app.css">
+    <link rel="stylesheet" href="../assets/css/enuvex-role.css">
     <script>
-        // Applicants Data
-        const applicantsData = [
-            {
-                id: 1,
-                name: 'Maria Santos',
-                position: 'Restaurant Crew',
-                jobId: 1,
-                location: 'Daet',
-                distance: '1.8 km',
-                match: 88,
-                skills: ['Customer Service', 'Food Preparation', 'Teamwork', 'POS Systems'],
-                experience: '1 year',
-                education: 'High School Graduate',
-                certifications: ['Food Safety Training'],
-                availability: 'Immediately',
-                employmentPreference: 'Full-time',
-                expectedSalary: '₱12,000 - ₱15,000',
-                avatar: 'MS',
-                status: 'under-review'
-            },
-            {
-                id: 2,
-                name: 'John Dela Cruz',
-                position: 'Pharmacy Assistant',
-                jobId: 2,
-                location: 'Daet',
-                distance: '2.1 km',
-                match: 82,
-                skills: ['Customer Service', 'Medicine Knowledge', 'Inventory Management'],
-                experience: '2 years',
-                education: 'College Graduate (Pharmacy)',
-                certifications: ['Pharmacy License'],
-                availability: 'Within 1 week',
-                employmentPreference: 'Full-time',
-                expectedSalary: '₱10,000 - ₱13,000',
-                avatar: 'JD',
-                status: 'shortlisted'
-            },
-            {
-                id: 3,
-                name: 'Ana Reyes',
-                position: 'Sales Associate',
-                jobId: 3,
-                location: 'Basud',
-                distance: '12.5 km',
-                match: 78,
-                skills: ['Sales', 'Customer Service', 'POS Systems', 'Inventory'],
-                experience: '3 years',
-                education: 'High School Graduate',
-                certifications: ['Customer Service Excellence'],
-                availability: 'Immediately',
-                employmentPreference: 'Full-time',
-                expectedSalary: '₱8,500 - ₱10,000',
-                avatar: 'AR',
-                status: 'under-review'
-            },
-            {
-                id: 4,
-                name: 'Carlos Mendoza',
-                position: 'Driver / Delivery',
-                jobId: 4,
-                location: 'Daet',
-                distance: '3.2 km',
-                match: 75,
-                skills: ['Driving', 'Navigation', 'Time Management', 'Vehicle Maintenance'],
-                experience: '5 years',
-                education: 'High School Graduate',
-                certifications: ['Professional Driver\'s License'],
-                availability: 'Within 2 weeks',
-                employmentPreference: 'Full-time',
-                expectedSalary: '₱9,000 - ₱11,000',
-                avatar: 'CM',
-                status: 'interview'
-            },
-            {
-                id: 5,
-                name: 'Luis Garcia',
-                position: 'Construction Worker',
-                jobId: 5,
-                location: 'Labo',
-                distance: '25.3 km',
-                match: 72,
-                skills: ['Construction', 'Manual Labor', 'Safety Protocols', 'Equipment Operation'],
-                experience: '8 years',
-                education: 'High School Graduate',
-                certifications: ['OSH Training', 'Heavy Equipment Operator'],
-                availability: 'Immediately',
-                employmentPreference: 'Full-time',
-                expectedSalary: '₱350/day',
-                avatar: 'LG',
-                status: 'under-review'
-            },
-            {
-                id: 6,
-                name: 'Sofia Torres',
-                position: 'Admin Staff',
-                jobId: 6,
-                location: 'Vinzons',
-                distance: '18.7 km',
-                match: 70,
-                skills: ['Office Administration', 'Document Management', 'MS Office', 'Communication'],
-                experience: '2 years',
-                education: 'College Graduate (Business Admin)',
-                certifications: ['MS Office Specialist'],
-                availability: 'Within 1 month',
-                employmentPreference: 'Full-time',
-                expectedSalary: '₱11,000 - ₱13,000',
-                avatar: 'ST',
-                status: 'rejected'
-            },
-            {
-                id: 7,
-                name: 'Pedro Santos',
-                position: 'Restaurant Crew',
-                jobId: 1,
-                location: 'Daet',
-                distance: '4.2 km',
-                match: 68,
-                skills: ['Food Preparation', 'Kitchen Operations', 'Cleanliness'],
-                experience: '6 months',
-                education: 'High School Graduate',
-                certifications: [],
-                availability: 'Within 2 weeks',
-                employmentPreference: 'Part-time',
-                expectedSalary: '₱8,000 - ₱10,000',
-                avatar: 'PS',
-                status: 'applied'
-            },
-            {
-                id: 8,
-                name: 'Carmen Lopez',
-                position: 'Pharmacy Assistant',
-                jobId: 2,
-                location: 'Daet',
-                distance: '5.8 km',
-                match: 65,
-                skills: ['Customer Service', 'Basic Pharmacy Knowledge'],
-                experience: '1 year',
-                education: 'Vocational Graduate',
-                certifications: ['Pharmacy Assistant Certificate'],
-                availability: 'Within 1 month',
-                employmentPreference: 'Part-time',
-                expectedSalary: '₱9,000 - ₱11,000',
-                avatar: 'CL',
-                status: 'applied'
-            },
-            {
-                id: 9,
-                name: 'Roberto Cruz',
-                position: 'Sales Associate',
-                jobId: 3,
-                location: 'Basud',
-                distance: '15.1 km',
-                match: 62,
-                skills: ['Sales', 'Product Knowledge', 'Customer Service'],
-                experience: '2 years',
-                education: 'High School Graduate',
-                certifications: [],
-                availability: 'Immediately',
-                employmentPreference: 'Full-time',
-                expectedSalary: '₱8,000 - ₱9,500',
-                avatar: 'RC',
-                status: 'shortlisted'
-            },
-            {
-                id: 10,
-                name: 'Elena Garcia',
-                position: 'Driver / Delivery',
-                jobId: 4,
-                location: 'Daet',
-                distance: '8.4 km',
-                match: 60,
-                skills: ['Driving', 'Route Planning', 'Customer Service'],
-                experience: '3 years',
-                education: 'High School Graduate',
-                certifications: ['Professional Driver\'s License'],
-                availability: 'Within 2 weeks',
-                employmentPreference: 'Full-time',
-                expectedSalary: '₱9,500 - ₱12,000',
-                avatar: 'EG',
-                status: 'rejected'
-            },
-            {
-                id: 11,
-                name: 'Miguel Santos',
-                position: 'Construction Worker',
-                jobId: 5,
-                location: 'Labo',
-                distance: '28.5 km',
-                match: 58,
-                skills: ['Construction', 'Masonry', 'Blueprint Reading'],
-                experience: '10 years',
-                education: 'Vocational Graduate',
-                certifications: ['TESDA NC II Masonry'],
-                availability: 'Immediately',
-                employmentPreference: 'Full-time',
-                expectedSalary: '₱400/day',
-                avatar: 'MS',
-                status: 'rejected'
-            },
-            {
-                id: 12,
-                name: 'Grace Fernandez',
-                position: 'Admin Staff',
-                jobId: 6,
-                location: 'Vinzons',
-                distance: '22.3 km',
-                match: 55,
-                skills: ['Data Entry', 'Filing', 'MS Office', 'Phone Etiquette'],
-                experience: '1 year',
-                education: 'College Graduate (Office Admin)',
-                certifications: [],
-                availability: 'Within 3 months',
-                employmentPreference: 'Full-time',
-                expectedSalary: '₱10,000 - ₱12,000',
-                avatar: 'GF',
-                status: 'applied'
-            }
-        ];
+        window.ENUVEX_PAGE = {
+            active: 'applicants',
+            title: 'Applicants',
+            subtitle: 'Review, shortlist, interview and hire'
+        };
+    </script>
+</head>
+<body data-role="employer">
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
 
-        let currentTab = 'all';
-        let currentSort = 'match';
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
 
-        function getStatusClass(status) {
-            const classes = {
-                'applied': 'status-applied',
-                'under-review': 'status-under-review',
-                'shortlisted': 'status-shortlisted',
-                'interview': 'status-interview',
-                'accepted': 'status-accepted',
-                'rejected': 'status-rejected'
-            };
-            return classes[status] || 'status-applied';
-        }
-
-        function getStatusLabel(status) {
-            const labels = {
-                'applied': 'Applied',
-                'under-review': 'Under Review',
-                'shortlisted': 'Shortlisted',
-                'interview': 'Interview',
-                'accepted': 'Accepted',
-                'rejected': 'Rejected'
-            };
-            return labels[status] || status;
-        }
-
-        function filterApplicants(tab) {
-            if (tab === 'all') return applicantsData;
-            return applicantsData.filter(app => app.status === tab);
-        }
-
-        function sortApplicants(apps, sortBy) {
-            const sorted = [...apps];
-            switch (sortBy) {
-                case 'match':
-                    return sorted.sort((a, b) => b.match - a.match);
-                case 'date':
-                    // Would need actual dates
-                    return sorted;
-                case 'experience':
-                    return sorted.sort((a, b) => {
-                        const expA = parseExperience(a.experience);
-                        const expB = parseExperience(b.experience);
-                        return expB - expA;
-                    });
-                case 'distance':
-                    return sorted.sort((a, b) => parseDistance(a.distance) - parseDistance(b.distance));
-                default:
-                    return sorted;
-            }
-        }
-
-        function parseExperience(exp) {
-            const match = exp.match(/(\d+)/);
-            return match ? parseInt(match[1]) : 0;
-        }
-
-        function parseDistance(dist) {
-            const match = dist.match(/([\d.]+)/);
-            return match ? parseFloat(match[1]) : 999;
-        }
-
-        function renderApplicants() {
-            const container = document.getElementById('applicantsContainer');
-            if (!container) return;
-
-            let filtered = filterApplicants(currentTab);
-            filtered = sortApplicants(filtered, currentSort);
-
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon"><i class="fas fa-users"></i></div>
-                        <h4>No applicants found</h4>
-                        <p>No applicants match the current filter</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = filtered.map(app => `
-                <div class="applicant-card fade-in" onclick="window.location.href='applicant-profile.html?id=${app.id}'">
-                    <div class="applicant-avatar" style="background: linear-gradient(135deg, ${app.match >= 80 ? '#2a9d8f' : app.match >= 60 ? 'var(--warning-color)' : 'var(--primary-color)'}, ${app.match >= 80 ? '#264653' : app.match >= 60 ? '#e76f51' : 'var(--secondary-color)'});">
-                        ${app.avatar}
-                    </div>
-                    <div class="applicant-info">
-                        <h4 class="applicant-name">${app.name}</h4>
-                        <p class="applicant-position">${app.position}</p>
-                        <p class="applicant-location"><i class="fas fa-map-marker-alt" style="margin-right: 0.25rem;"></i> ${app.location} • ${app.distance}</p>
-                        <div class="applicant-skills">
-                            ${app.skills.slice(0, 4).map(skill => `<span class="applicant-skill">${skill}</span>`).join('')}
-                            ${app.skills.length > 4 ? `<span class="applicant-skill">+${app.skills.length - 4} more</span>` : ''}
-                        </div>
-                    </div>
-                    <div class="applicant-actions">
-                        <div class="match-circle ${app.match >= 80 ? 'high' : app.match >= 60 ? 'medium' : 'low'}" style="width: 52px; height: 52px; font-size: 1rem;">${app.match}%</div>
-                        <div style="display: flex; flex-direction: column; gap: 0.35rem;">
-                            <span class="status-badge ${getStatusClass(app.status)}">${getStatusLabel(app.status)}</span>
-                        </div>
-                    </div>
+        <main class="content">
+            <div class="page-head">
+                <div>
+                    <h2>Applicants</h2>
+                    <p>Every application to your job posts, with the match score the system calculated.</p>
                 </div>
-            `).join('');
-        }
+                <div class="page-head-actions">
+                    <a class="btn-ghost" href="jobs.html"><i class="fas fa-briefcase"></i> Job posts</a>
+                </div>
+            </div>
 
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load applicants.</span>
+            </div>
 
-        // Tab switching
-        document.addEventListener('DOMContentLoaded', function() {
-            const tabs = document.querySelectorAll('.tab-btn');
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    tabs.forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                    currentTab = this.dataset.tab;
-                    renderApplicants();
-                });
-            });
+            <div class="card rv-toolbar">
+                <div class="form-field">
+                    <label for="jobFilter">Job post</label>
+                    <select id="jobFilter"><option value="ALL">All job posts</option></select>
+                </div>
+                <div class="form-field">
+                    <label for="sortFilter">Sort by</label>
+                    <select id="sortFilter">
+                        <option value="match">Best match</option>
+                        <option value="date">Newest application</option>
+                        <option value="name">Applicant name</option>
+                    </select>
+                </div>
+                <label class="field" for="applicantSearch">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <input type="search" id="applicantSearch" placeholder="Search name, skill, or barangay">
+                </label>
+                <span class="rv-spacer"></span>
+                <span class="muted" id="resultCount"></span>
+            </div>
 
-            // Sort filter
-            document.getElementById('sortFilter').addEventListener('change', function() {
-                currentSort = this.value;
-                renderApplicants();
-            });
+            <div class="tabs" id="statusTabs" role="tablist" aria-label="Filter applicants by status">
+                <button class="tab is-active" type="button" data-status="ALL" role="tab" aria-selected="true">All <span class="count" id="countAll">0</span></button>
+                <button class="tab" type="button" data-status="APPLIED" role="tab" aria-selected="false">Applied <span class="count" id="countApplied">0</span></button>
+                <button class="tab" type="button" data-status="UNDER_REVIEW" role="tab" aria-selected="false">Under review <span class="count" id="countReview">0</span></button>
+                <button class="tab" type="button" data-status="SHORTLISTED" role="tab" aria-selected="false">Shortlisted <span class="count" id="countShortlisted">0</span></button>
+                <button class="tab" type="button" data-status="INTERVIEW" role="tab" aria-selected="false">Interview <span class="count" id="countInterview">0</span></button>
+                <button class="tab" type="button" data-status="ACCEPTED" role="tab" aria-selected="false">Hired <span class="count" id="countAccepted">0</span></button>
+                <button class="tab" type="button" data-status="REJECTED" role="tab" aria-selected="false">Rejected <span class="count" id="countRejected">0</span></button>
+            </div>
 
-            // Job filter
-            document.getElementById('jobFilter').addEventListener('change', function() {
-                // Would filter by jobId in real app
-                renderApplicants();
-            });
+            <div class="card panel" style="padding: 0;">
+                <div class="list-rows" id="applicantRows">
+                    <div class="loading">Loading applicants…</div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
 
-            // Initial render
-            renderApplicants();
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/role-app.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var state = { jobs: [], applicants: [], status: 'ALL', jobId: 'ALL', sort: 'match', query: '' };
+
+    var ACTIONS = {
+        APPLIED: [
+            { status: 'UNDER_REVIEW', label: 'Start review', icon: 'fa-magnifying-glass', cls: 'btn-soft' },
+            { status: 'SHORTLISTED', label: 'Shortlist', icon: 'fa-star', cls: 'btn-ghost' },
+            { status: 'REJECTED', label: 'Reject', icon: 'fa-xmark', cls: 'btn-danger' }
+        ],
+        UNDER_REVIEW: [
+            { status: 'SHORTLISTED', label: 'Shortlist', icon: 'fa-star', cls: 'btn-ghost' },
+            { status: 'REJECTED', label: 'Reject', icon: 'fa-xmark', cls: 'btn-danger' }
+        ],
+        SHORTLISTED: [
+            { status: 'INTERVIEW', label: 'Interview', icon: 'fa-calendar-check', cls: 'btn-soft' },
+            { status: 'ACCEPTED', label: 'Hire', icon: 'fa-circle-check', cls: 'btn-solid' },
+            { status: 'REJECTED', label: 'Reject', icon: 'fa-xmark', cls: 'btn-danger' }
+        ],
+        INTERVIEW: [
+            { status: 'ACCEPTED', label: 'Hire', icon: 'fa-circle-check', cls: 'btn-solid' },
+            { status: 'REJECTED', label: 'Reject', icon: 'fa-xmark', cls: 'btn-danger' }
+        ],
+        ACCEPTED: [
+            { status: 'SHORTLISTED', label: 'Reopen', icon: 'fa-rotate-left', cls: 'btn-soft' }
+        ],
+        REJECTED: [
+            { status: 'UNDER_REVIEW', label: 'Reconsider', icon: 'fa-rotate-left', cls: 'btn-soft' }
+        ]
+    };
+
+    function showError(message) {
+        var box = document.getElementById('pageError');
+        var text = document.getElementById('pageErrorText');
+        if (!box || !text) return;
+        text.textContent = message;
+        box.hidden = false;
+    }
+
+    function actionsFor(applicant) {
+        var status = String(applicant.applicationStatus || 'APPLIED').toUpperCase();
+        return (ACTIONS[status] || ACTIONS.APPLIED).map(function (action) {
+            return `<button class="${action.cls} btn-sm" type="button"
+                data-app="${encodeURIComponent(applicant.applicationId)}"
+                data-next="${action.status}">
+                <i class="fas ${action.icon}"></i> ${action.label}</button>`;
+        }).join('');
+    }
+
+    function row(applicant) {
+        var name = applicant.fullName || 'Applicant';
+        var match = Number(applicant.matchPercentage);
+        var matchCls = !isFinite(match) ? 'low' : match >= 75 ? '' : match >= 55 ? 'mid' : 'low';
+        var status = ROLE.statusMeta(applicant.applicationStatus);
+        var skills = String(applicant.skills || '').split(',').map(function (skill) {
+            return skill.trim();
+        }).filter(Boolean);
+
+        return `<div class="list-row">
+            <span class="avatar">${ROLE.esc(ROLE.initials(name))}</span>
+            <div class="list-body">
+                <h4><a href="applicant-profile.html?applicationId=${encodeURIComponent(applicant.applicationId || '')}">${ROLE.esc(name)}</a></h4>
+                <div class="list-meta">
+                    <span><i class="fas fa-briefcase"></i>${ROLE.esc(applicant.jobTitle || '—')}</span>
+                    <span><i class="fas fa-location-dot"></i>${ROLE.esc(ROLE.municipalityLabel(applicant.location) || 'Not set')}${applicant.barangay ? ', ' + ROLE.esc(applicant.barangay) : ''}</span>
+                    <span><i class="fas fa-calendar"></i>Applied ${ROLE.esc(ROLE.dateLabel(applicant.appliedAt))}</span>
+                    ${skills.length ? `<span><i class="fas fa-tags"></i>${ROLE.esc(skills.slice(0, 3).join(', '))}</span>` : ''}
+                </div>
+            </div>
+            <div class="list-side">
+                ${isFinite(match) ? `<span class="match-pill ${matchCls}">${Math.round(match)}%</span>` : ''}
+                <span class="status ${status.cls}">${ROLE.esc(status.label)}</span>
+                ${actionsFor(applicant)}
+                <a class="btn-soft btn-sm" href="applicant-profile.html?applicationId=${encodeURIComponent(applicant.applicationId || '')}">View profile</a>
+            </div>
+        </div>`;
+    }
+
+    function visible() {
+        var list = state.applicants.filter(function (applicant) {
+            if (state.status !== 'ALL' && String(applicant.applicationStatus || '').toUpperCase() !== state.status) return false;
+            if (state.jobId !== 'ALL' && String(applicant.jobId) !== String(state.jobId)) return false;
+            if (!state.query) return true;
+            var haystack = [applicant.fullName, applicant.skills, applicant.barangay, applicant.jobTitle]
+                .filter(Boolean).join(' ').toLowerCase();
+            return haystack.indexOf(state.query) !== -1;
         });
 
-        // Ensure user type is stored for proper sidebar detection
-        localStorage.setItem('userType', 'EMPLOYER');
-    </script>
-    <script src="../assets/js/layout.js"></script>
+        return list.sort(function (a, b) {
+            if (state.sort === 'name') return String(a.fullName || '').localeCompare(String(b.fullName || ''));
+            if (state.sort === 'date') return new Date(b.appliedAt || 0) - new Date(a.appliedAt || 0);
+            return (Number(b.matchPercentage) || 0) - (Number(a.matchPercentage) || 0);
+        });
+    }
+
+    function render() {
+        var counts = { ALL: state.applicants.length };
+        state.applicants.forEach(function (applicant) {
+            var status = String(applicant.applicationStatus || 'APPLIED').toUpperCase();
+            counts[status] = (counts[status] || 0) + 1;
+        });
+        document.getElementById('countAll').textContent = counts.ALL;
+        document.getElementById('countApplied').textContent = counts.APPLIED || 0;
+        document.getElementById('countReview').textContent = counts.UNDER_REVIEW || 0;
+        document.getElementById('countShortlisted').textContent = counts.SHORTLISTED || 0;
+        document.getElementById('countInterview').textContent = counts.INTERVIEW || 0;
+        document.getElementById('countAccepted').textContent = counts.ACCEPTED || 0;
+        document.getElementById('countRejected').textContent = counts.REJECTED || 0;
+
+        var list = visible();
+        document.getElementById('resultCount').textContent =
+            list.length + ' of ' + state.applicants.length + ' application' + (state.applicants.length === 1 ? '' : 's');
+
+        var container = document.getElementById('applicantRows');
+        if (!state.applicants.length) {
+            container.innerHTML = `<div class="empty">
+                <i class="fas fa-user-check"></i>
+                <strong>No applicants yet</strong>
+                <p>Applications to your job posts will appear here with their match score.</p>
+                <a class="btn-solid btn-sm" href="jobs.html">Review your job posts</a>
+            </div>`;
+            return;
+        }
+        if (!list.length) {
+            container.innerHTML = `<div class="empty">
+                <i class="fas fa-filter"></i>
+                <strong>No applicants match this filter</strong>
+                <p>Try another status, job post, or search term.</p>
+            </div>`;
+            return;
+        }
+        container.innerHTML = list.map(row).join('');
+    }
+
+    async function load() {
+        var data = await ROLE.loadEmployerData();
+        if (data.error) showError(data.error);
+        state.jobs = data.jobs;
+        state.applicants = data.applicants;
+        render();
+    }
+
+    function fillJobFilter() {
+        var select = document.getElementById('jobFilter');
+        state.jobs.forEach(function (job) {
+            var option = document.createElement('option');
+            option.value = job.id;
+            option.textContent = job.jobTitle;
+            select.appendChild(option);
+        });
+        if (state.jobId !== 'ALL') select.value = state.jobId;
+    }
+
+    document.addEventListener('enuvex:ready', async function () {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get('jobId')) state.jobId = params.get('jobId');
+
+        document.getElementById('jobFilter').addEventListener('change', function () {
+            state.jobId = this.value;
+            render();
+        });
+        document.getElementById('sortFilter').addEventListener('change', function () {
+            state.sort = this.value;
+            render();
+        });
+        document.getElementById('applicantSearch').addEventListener('input', function () {
+            state.query = this.value.trim().toLowerCase();
+            render();
+        });
+
+        var tabs = document.querySelectorAll('#statusTabs .tab');
+        tabs.forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                tabs.forEach(function (other) {
+                    other.classList.remove('is-active');
+                    other.setAttribute('aria-selected', 'false');
+                });
+                this.classList.add('is-active');
+                this.setAttribute('aria-selected', 'true');
+                state.status = this.getAttribute('data-status');
+                render();
+            });
+        });
+
+        document.getElementById('applicantRows').addEventListener('click', async function (event) {
+            var button = event.target.closest('[data-app]');
+            if (!button) return;
+            var applicationId = decodeURIComponent(button.getAttribute('data-app'));
+            var next = button.getAttribute('data-next');
+            button.disabled = true;
+            try {
+                await ApiClient.updateApplicationStatus(applicationId, next);
+                ROLE.toast('Applicant moved to ' + ROLE.statusMeta(next).label + '.', 'success');
+                await load();
+            } catch (error) {
+                ROLE.toast(error.message || 'Could not update this applicant.', 'error');
+                button.disabled = false;
+            }
+        });
+
+        await load();
+        fillJobFilter();
+        render();
+    }, { once: true });
+})();
+</script>
 </body>
 </html>

@@ -45,9 +45,39 @@ public class AdminController {
         return ResponseEntity.ok(userRepository.findAll());
     }
 
+    /**
+     * Employer rows for the verification screen. The account id is included
+     * because verify/deactivate act on the user, and the entity hides it.
+     */
     @GetMapping("/employers")
-    public ResponseEntity<List<EmployerProfile>> getAllEmployers() {
-        return ResponseEntity.ok(employerRepository.findAll());
+    public ResponseEntity<List<AdminEmployerDto>> getAllEmployers() {
+        List<AdminEmployerDto> employers = employerRepository.findAll().stream()
+            .map(this::mapEmployer)
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(employers);
+    }
+
+    private AdminEmployerDto mapEmployer(EmployerProfile employer) {
+        AdminEmployerDto dto = new AdminEmployerDto();
+        User user = employer.getUser();
+        if (user != null) {
+            dto.setUserId(user.getId());
+            dto.setEmail(user.getEmail());
+            dto.setVerified(user.isVerified());
+            dto.setActive(user.isActive());
+        }
+        dto.setProfileId(employer.getId());
+        dto.setBusinessName(employer.getBusinessName());
+        dto.setEmployerName(employer.getEmployerName());
+        dto.setContactNumber(employer.getContactNumber());
+        dto.setBusinessType(employer.getBusinessType());
+        dto.setMunicipality(employer.getMunicipality());
+        dto.setBarangay(employer.getBarangay());
+        dto.setBusinessAddress(employer.getBusinessAddress());
+        dto.setBusinessDescription(employer.getBusinessDescription());
+        dto.setLogo(employer.getLogo());
+        dto.setCreatedAt(employer.getCreatedAt());
+        return dto;
     }
 
     @PutMapping("/employers/{id}/verify")
@@ -67,11 +97,29 @@ public class AdminController {
     }
 
     @GetMapping("/job-posts")
-    public ResponseEntity<Page<JobPost>> getAllJobPosts(
+    public ResponseEntity<Page<AdminJobPostDto>> getAllJobPosts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return ResponseEntity.ok(jobPostRepository.findAll(pageable));
+        return ResponseEntity.ok(jobPostRepository.findAll(pageable).map(this::mapJobPost));
+    }
+
+    private AdminJobPostDto mapJobPost(JobPost job) {
+        AdminJobPostDto dto = new AdminJobPostDto();
+        dto.setId(job.getId());
+        dto.setJobTitle(job.getJobTitle());
+        dto.setCategory(job.getJobCategory());
+        dto.setEmploymentType(job.getEmploymentType());
+        dto.setMunicipality(job.getMunicipality());
+        dto.setBarangay(job.getBarangay());
+        dto.setSalaryMin(job.getSalaryMin());
+        dto.setSalaryMax(job.getSalaryMax());
+        dto.setAvailablePositions(job.getAvailablePositions());
+        dto.setActive(job.isActive());
+        dto.setCreatedAt(job.getCreatedAt());
+        dto.setEmployerName(job.getEmployer() != null ? job.getEmployer().getBusinessName() : null);
+        dto.setApplicantCount(applicationRepository.findByJobPostId(job.getId()).size());
+        return dto;
     }
 
     @DeleteMapping("/job-posts/{id}")

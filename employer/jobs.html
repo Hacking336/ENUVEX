@@ -3,345 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job Management - Job & Skills Matching System</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <title>My Job Posts — ENUVEX</title>
+    <link rel="icon" type="image/png" href="../assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-    <div class="app-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">
-                    <div class="sidebar-logo-icon">
-                        <i class="fas fa-building"></i>
-                    </div>
-                    <span>Employer</span>
-                </div>
-            </div>
-
-            <nav class="sidebar-nav" id="sidebarNav">
-                <!-- Injected by layout.js -->
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="sidebar-user" onclick="window.location.href='profile.html'">
-                    <div class="sidebar-user-avatar">JE</div>
-                    <div class="sidebar-user-info">
-                        <div class="sidebar-user-name">Juan's Eatery</div>
-                        <div class="sidebar-user-role">Employer</div>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Sidebar Overlay -->
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Top Header -->
-            <header class="top-header">
-                <div class="top-header-content">
-                    <div class="top-header-left">
-                        <button class="mobile-menu-btn" id="mobileMenuBtn">
-                            <i class="fas fa-bars"></i>
-                        </button>
-                        <h1 class="top-header-title">My Jobs</h1>
-                    </div>
-                    <div class="top-header-right">
-                        <button class="header-btn" id="notificationBtn">
-                            <i class="fas fa-bell"></i>
-                            <span class="badge">5</span>
-                        </button>
-                        <button class="header-btn" id="userMenuBtn">
-                            <i class="fas fa-user-circle"></i>
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Page Content -->
-            <main class="page-content">
-                <!-- Page Nav -->
-                <nav class="page-nav">
-                    <a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
-                    <span style="color: var(--gray-300);">/</span>
-                    <span class="current">My Jobs</span>
-                </nav>
-
-                <!-- Tabs -->
-                <div class="tab-nav" id="jobTabs">
-                    <button class="tab-btn active" data-tab="active">Active <span class="badge" style="background: rgba(42,157,143,0.1); color: #2a9d8f; font-size: 0.7rem; margin-left: 0.35rem;">6</span></button>
-                    <button class="tab-btn" data-tab="draft">Draft <span class="badge" style="background: var(--gray-200); color: var(--gray-600); font-size: 0.7rem; margin-left: 0.35rem;">2</span></button>
-                    <button class="tab-btn" data-tab="closed">Closed <span class="badge" style="background: var(--gray-200); color: var(--gray-600); font-size: 0.7rem; margin-left: 0.35rem;">3</span></button>
-                </div>
-
-                <!-- Add Job Button -->
-                <div class="d-flex justify-content-end mb-4">
-                    <a href="post-job.html" class="btn btn-primary" style="background: linear-gradient(135deg, #7e57c2, #b39ddb);">
-                        <i class="fas fa-plus" style="margin-right: 0.5rem;"></i> Post New Job
-                    </a>
-                </div>
-
-                <!-- Jobs Container -->
-                <div id="jobsContainer">
-                    <!-- Rendered by JS -->
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <!-- Bottom Navigation (Mobile) -->
-    <nav class="bottom-nav" id="bottomNav">
-        <!-- Injected by layout.js -->
-    </nav>
-
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
-
-    <script src="../assets/js/main.js"></script>
-    <script src="../assets/js/layout.js"></script>
+    <link rel="stylesheet" href="../job-seeker/enuvex-app.css">
+    <link rel="stylesheet" href="../assets/css/enuvex-role.css">
     <script>
-        // Jobs Data
-        const jobsData = {
-            active: [
-                {
-                    id: 1,
-                    title: 'Restaurant Crew',
-                    location: 'Daet, Camarines Norte',
-                    applicants: 12,
-                    shortlisted: 3,
-                    status: 'Active',
-                    posted: '2 days ago',
-                    icon: 'fa-utensils',
-                    iconClass: 'alt',
-                    views: 156
-                },
-                {
-                    id: 2,
-                    title: 'Pharmacy Assistant',
-                    location: 'Daet, Camarines Norte',
-                    applicants: 8,
-                    shortlisted: 2,
-                    status: 'Active',
-                    posted: '5 days ago',
-                    icon: 'fa-pills',
-                    iconClass: 'third',
-                    views: 89
-                },
-                {
-                    id: 3,
-                    title: 'Sales Associate',
-                    location: 'Basud, Camarines Norte',
-                    applicants: 15,
-                    shortlisted: 4,
-                    status: 'Active',
-                    posted: '1 week ago',
-                    icon: 'fa-shopping-cart',
-                    iconClass: 'fourth',
-                    views: 203
-                },
-                {
-                    id: 4,
-                    title: 'Driver / Delivery',
-                    location: 'Daet, Camarines Norte',
-                    applicants: 6,
-                    shortlisted: 2,
-                    status: 'Active',
-                    posted: '3 days ago',
-                    icon: 'fa-truck',
-                    iconClass: '',
-                    views: 67
-                },
-                {
-                    id: 5,
-                    title: 'Construction Worker',
-                    location: 'Labo, Camarines Norte',
-                    applicants: 22,
-                    shortlisted: 5,
-                    status: 'Active',
-                    posted: '1 week ago',
-                    icon: 'fa-hard-hat',
-                    iconClass: 'alt',
-                    views: 178
-                },
-                {
-                    id: 6,
-                    title: 'Admin Staff',
-                    location: 'Vinzons, Camarines Norte',
-                    applicants: 9,
-                    shortlisted: 1,
-                    status: 'Active',
-                    posted: '4 days ago',
-                    icon: 'fa-file-alt',
-                    iconClass: 'third',
-                    views: 94
-                }
-            ],
-            draft: [
-                {
-                    id: 7,
-                    title: 'Kitchen Helper',
-                    location: 'Vinzons, Camarines Norte',
-                    applicants: 0,
-                    shortlisted: 0,
-                    status: 'Draft',
-                    posted: 'Draft saved 2 days ago',
-                    icon: 'fa-utensils',
-                    iconClass: 'alt',
-                    views: 0
-                },
-                {
-                    id: 8,
-                    title: 'Warehouse Assistant',
-                    location: 'Basud, Camarines Norte',
-                    applicants: 0,
-                    shortlisted: 0,
-                    status: 'Draft',
-                    posted: 'Draft saved 1 week ago',
-                    icon: 'fa-boxes',
-                    iconClass: '',
-                    views: 0
-                }
-            ],
-            closed: [
-                {
-                    id: 9,
-                    title: 'Cashier',
-                    location: 'Daet, Camarines Norte',
-                    applicants: 18,
-                    shortlisted: 5,
-                    hired: 2,
-                    status: 'Closed',
-                    posted: 'Closed 2 weeks ago',
-                    icon: 'fa-cash-register',
-                    iconClass: '',
-                    views: 234
-                },
-                {
-                    id: 10,
-                    title: 'Security Guard',
-                    location: 'Daet, Camarines Norte',
-                    applicants: 14,
-                    shortlisted: 3,
-                    hired: 1,
-                    status: 'Closed',
-                    posted: 'Closed 1 month ago',
-                    icon: 'fa-shield-alt',
-                    iconClass: 'third',
-                    views: 167
-                },
-                {
-                    id: 11,
-                    title: 'Teacher / Tutor',
-                    location: 'Vinzons, Camarines Norte',
-                    applicants: 7,
-                    shortlisted: 2,
-                    hired: 1,
-                    status: 'Closed',
-                    posted: 'Closed 3 weeks ago',
-                    icon: 'fa-chalkboard-teacher',
-                    iconClass: 'fourth',
-                    views: 89
-                }
-            ]
+        window.ENUVEX_PAGE = {
+            active: 'jobs',
+            title: 'My Job Posts',
+            subtitle: 'Manage every opening you have published'
         };
+    </script>
+</head>
+<body data-role="employer">
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
 
-        let currentTab = 'active';
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
 
-        function getStatusClass(status) {
-            const classes = {
-                'Active': 'status-accepted',
-                'Draft': 'status-applied',
-                'Closed': 'status-rejected'
-            };
-            return classes[status] || 'status-applied';
+        <main class="content">
+            <div class="page-head">
+                <div>
+                    <h2>Job posts</h2>
+                    <p>Edit a post, open its applicants, pause it, or remove it.</p>
+                </div>
+                <div class="page-head-actions">
+                    <a class="btn-solid" href="post-job.html"><i class="fas fa-circle-plus"></i> Post a Job</a>
+                </div>
+            </div>
+
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load your job posts.</span>
+            </div>
+
+            <div class="card rv-toolbar">
+                <label class="field" for="jobSearch">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <input type="search" id="jobSearch" placeholder="Search by title, skills, or barangay">
+                </label>
+                <div class="form-field">
+                    <label for="statusFilter">Status</label>
+                    <select id="statusFilter">
+                        <option value="ALL">All statuses</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="INACTIVE">Inactive</option>
+                    </select>
+                </div>
+                <span class="rv-spacer"></span>
+                <span class="muted" id="resultCount"></span>
+            </div>
+
+            <div class="card panel" style="padding: 0;">
+                <div class="list-rows" id="jobRows">
+                    <div class="loading">Loading your job posts…</div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/role-app.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var state = { jobs: [], counts: {}, query: '', status: 'ALL' };
+
+    function showError(message) {
+        var box = document.getElementById('pageError');
+        var text = document.getElementById('pageErrorText');
+        if (!box || !text) return;
+        text.textContent = message;
+        box.hidden = false;
+    }
+
+    function isActive(job) {
+        return job.active !== undefined ? !!job.active : !!job.isActive;
+    }
+
+    function row(job) {
+        var applicants = state.counts[job.id] || 0;
+        return `<div class="list-row">
+            <span class="list-icon"><i class="fas ${ROLE.categoryIcon(job.jobCategory)}"></i></span>
+            <div class="list-body">
+                <h4><a href="post-job.html?id=${encodeURIComponent(job.id)}">${ROLE.esc(job.jobTitle)}</a></h4>
+                <div class="list-meta">
+                    <span><i class="fas fa-tag"></i>${ROLE.esc(ROLE.categoryLabel(job.jobCategory))}</span>
+                    <span><i class="fas fa-clock"></i>${ROLE.esc(ROLE.typeLabel(job.employmentType) || 'Type not set')}</span>
+                    <span><i class="fas fa-location-dot"></i>${ROLE.esc(ROLE.municipalityLabel(job.municipality))}${job.barangay ? ', ' + ROLE.esc(job.barangay) : ''}</span>
+                    <span><i class="fas fa-money-bill-wave"></i>${ROLE.esc(ROLE.salaryLabel(job))}</span>
+                    <span><i class="fas fa-users"></i>${applicants} applicant${applicants === 1 ? '' : 's'}</span>
+                    <span><i class="fas fa-calendar"></i>Posted ${ROLE.esc(ROLE.dateLabel(job.createdAt))}</span>
+                </div>
+            </div>
+            <div class="list-side">
+                <span class="status ${isActive(job) ? 'status-accepted' : 'status-rejected'}">${isActive(job) ? 'Active' : 'Inactive'}</span>
+                <a class="btn-soft btn-sm" href="applicants.html?jobId=${encodeURIComponent(job.id)}"><i class="fas fa-users"></i> Applicants</a>
+                <a class="btn-ghost btn-sm" href="post-job.html?id=${encodeURIComponent(job.id)}"><i class="fas fa-pen"></i> Edit</a>
+                <button class="btn-soft btn-sm" type="button" data-toggle="${encodeURIComponent(job.id)}" data-active="${isActive(job) ? '1' : '0'}">
+                    <i class="fas ${isActive(job) ? 'fa-pause' : 'fa-play'}"></i> ${isActive(job) ? 'Pause' : 'Activate'}
+                </button>
+                <button class="btn-danger btn-sm" type="button" data-delete="${encodeURIComponent(job.id)}"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>`;
+    }
+
+    function matches(job) {
+        if (state.status === 'ACTIVE' && !isActive(job)) return false;
+        if (state.status === 'INACTIVE' && isActive(job)) return false;
+        if (!state.query) return true;
+        var haystack = [job.jobTitle, job.jobCategory, job.barangay, job.requiredSkills, job.jobLocation]
+            .filter(Boolean).join(' ').toLowerCase();
+        return haystack.indexOf(state.query) !== -1;
+    }
+
+    function render() {
+        var container = document.getElementById('jobRows');
+        var visible = state.jobs.filter(matches);
+        document.getElementById('resultCount').textContent =
+            visible.length + ' of ' + state.jobs.length + ' post' + (state.jobs.length === 1 ? '' : 's');
+
+        if (!state.jobs.length) {
+            container.innerHTML = `<div class="empty">
+                <i class="fas fa-briefcase"></i>
+                <strong>No job posts yet</strong>
+                <p>Publish your first opening so job seekers can apply.</p>
+                <a class="btn-solid btn-sm" href="post-job.html">Post a job</a>
+            </div>`;
+            return;
         }
 
-        function renderJobs() {
-            const container = document.getElementById('jobsContainer');
-            if (!container) return;
+        if (!visible.length) {
+            container.innerHTML = `<div class="empty">
+                <i class="fas fa-magnifying-glass"></i>
+                <strong>No posts match this filter</strong>
+                <p>Try a different search term or status.</p>
+            </div>`;
+            return;
+        }
 
-            const jobs = jobsData[currentTab] || [];
+        container.innerHTML = visible.map(row).join('');
+    }
 
-            if (jobs.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon"><i class="fas fa-briefcase"></i></div>
-                        <h4>No jobs found</h4>
-                        <p>No ${currentTab} jobs at the moment</p>
-                        ${currentTab !== 'active' ? '<a href="post-job.html" class="btn btn-primary mt-3"><i class="fas fa-plus"></i> Post a Job</a>' : ''}
-                    </div>
-                `;
+    async function load() {
+        var data = await ROLE.loadEmployerData();
+        if (data.error) showError(data.error);
+        state.jobs = data.jobs.slice().sort(function (a, b) {
+            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        });
+        state.counts = {};
+        data.applicants.forEach(function (applicant) {
+            state.counts[applicant.jobId] = (state.counts[applicant.jobId] || 0) + 1;
+        });
+        render();
+    }
+
+    function wire() {
+        var search = document.getElementById('jobSearch');
+        search.addEventListener('input', function () {
+            state.query = this.value.trim().toLowerCase();
+            render();
+        });
+
+        document.getElementById('statusFilter').addEventListener('change', function () {
+            state.status = this.value;
+            render();
+        });
+
+        document.getElementById('jobRows').addEventListener('click', async function (event) {
+            var toggle = event.target.closest('[data-toggle]');
+            var remove = event.target.closest('[data-delete]');
+
+            if (toggle) {
+                var id = decodeURIComponent(toggle.getAttribute('data-toggle'));
+                var activate = toggle.getAttribute('data-active') === '0';
+                toggle.disabled = true;
+                try {
+                    // The entity getter is isActive(), so Jackson names the
+                    // property "active"; both keys are sent so the pause cannot
+                    // be silently ignored.
+                    await ApiClient.updateJob(id, { active: activate, isActive: activate });
+                    ROLE.toast(activate ? 'Job post activated.' : 'Job post paused.', 'success');
+                    await load();
+                } catch (error) {
+                    ROLE.toast(error.message || 'Could not update this job post.', 'error');
+                    toggle.disabled = false;
+                }
                 return;
             }
 
-            container.innerHTML = jobs.map(job => `
-                <div class="card job-card fade-in">
-                    <div class="job-card-icon ${job.iconClass || ''}">
-                        <i class="fas ${job.icon}"></i>
-                    </div>
-                    <div class="job-card-info">
-                        <div class="job-card-title">${job.title}</div>
-                        <div class="job-card-company">Juan's Eatery</div>
-                        <div class="job-card-meta">
-                            <span><i class="fas fa-map-marker-alt"></i> ${job.location}</span>
-                            <span><i class="fas fa-users"></i> ${job.applicants} Applicants</span>
-                            ${job.shortlisted !== undefined ? `<span><i class="fas fa-star-half-alt"></i> ${job.shortlisted} Shortlisted</span>` : ''}
-                            ${job.hired !== undefined ? `<span><i class="fas fa-check-circle"></i> ${job.hired} Hired</span>` : ''}
-                            <span><i class="fas fa-eye"></i> ${job.views} Views</span>
-                        </div>
-                        <div class="job-card-tags">
-                            <span class="job-tag ${getStatusClass(job.status).replace('status-', '')}">${job.status}</span>
-                            <span class="job-tag">${job.posted}</span>
-                        </div>
-                    </div>
-                    <div class="job-card-actions">
-                        ${currentTab === 'active' ? `
-                            <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); window.location.href='applicants.html?jobId=${job.id}'"><i class="fas fa-users"></i> Applicants</button>
-                            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); window.location.href='edit-job.html?id=${job.id}'"><i class="fas fa-edit"></i> Edit</button>
-                        ` : currentTab === 'draft' ? `
-                            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); window.location.href='post-job.html?edit=${job.id}'"><i class="fas fa-edit"></i> Complete & Publish</button>
-                            <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); deleteDraft(${job.id})"><i class="fas fa-trash"></i> Delete</button>
-                        ` : `
-                            <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); window.location.href='applicants.html?jobId=${job.id}'"><i class="fas fa-users"></i> View Results</button>
-                            <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); repostJob(${job.id})"><i class="fas fa-redo"></i> Repost</button>
-                        `}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Tab switching
-        document.addEventListener('DOMContentLoaded', function() {
-            const tabs = document.querySelectorAll('.tab-btn');
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    tabs.forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                    currentTab = this.dataset.tab;
-                    renderJobs();
-                });
-            });
-
-            // Initial render
-            renderJobs();
-        });
-
-        function deleteDraft(jobId) {
-            if (confirm('Are you sure you want to delete this draft?')) {
-                showToast('Draft deleted', 'success');
+            if (remove) {
+                var jobId = decodeURIComponent(remove.getAttribute('data-delete'));
+                if (!window.confirm('Delete this job post permanently? Applications stay in the database but the post is removed.')) return;
+                remove.disabled = true;
+                try {
+                    await ApiClient.deleteJob(jobId);
+                    ROLE.toast('Job post deleted.', 'success');
+                    await load();
+                } catch (error) {
+                    ROLE.toast(error.message || 'Could not delete this job post.', 'error');
+                    remove.disabled = false;
+                }
             }
-        }
+        });
+    }
 
-        function repostJob(jobId) {
-            showToast('Job reposted as new listing!', 'success');
+    document.addEventListener('enuvex:ready', function () {
+        var params = new URLSearchParams(window.location.search);
+        var query = params.get('q');
+        if (query) {
+            document.getElementById('jobSearch').value = query;
+            state.query = query.toLowerCase();
         }
-
-        // Ensure user type is stored for proper sidebar detection
-        localStorage.setItem('userType', 'EMPLOYER');
-    </script>
-    <script src="../assets/js/layout.js"></script>
+        wire();
+        load();
+    }, { once: true });
+})();
+</script>
 </body>
 </html>

@@ -3,352 +3,354 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post a Job - Job & Skills Matching System</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <title>Post a Job — ENUVEX</title>
+    <link rel="icon" type="image/png" href="../assets/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-    <div class="app-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">
-                    <div class="sidebar-logo-icon">
-                        <i class="fas fa-building"></i>
-                    </div>
-                    <span>Employer</span>
-                </div>
-            </div>
-
-            <nav class="sidebar-nav" id="sidebarNav">
-                <!-- Injected by layout.js -->
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="sidebar-user" onclick="window.location.href='profile.html'">
-                    <div class="sidebar-user-avatar">JE</div>
-                    <div class="sidebar-user-info">
-                        <div class="sidebar-user-name">Juan's Eatery</div>
-                        <div class="sidebar-user-role">Employer</div>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Sidebar Overlay -->
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Top Header -->
-            <header class="top-header">
-                <div class="top-header-content">
-                    <div class="top-header-left">
-                        <button class="mobile-menu-btn" id="mobileMenuBtn">
-                            <i class="fas fa-bars"></i>
-                        </button>
-                        <h1 class="top-header-title">Post a Job</h1>
-                    </div>
-                    <div class="top-header-right">
-                        <button class="header-btn" id="notificationBtn">
-                            <i class="fas fa-bell"></i>
-                            <span class="badge">5</span>
-                        </button>
-                        <button class="header-btn" id="userMenuBtn">
-                            <i class="fas fa-user-circle"></i>
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Page Content -->
-            <main class="page-content">
-                <!-- Page Nav -->
-                <nav class="page-nav">
-                    <a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
-                    <span style="color: var(--gray-300);">/</span>
-                    <span class="current">Post a Job</span>
-                </nav>
-
-                <form class="validate" id="postJobForm">
-                    <!-- Basic Information -->
-                    <div class="card fade-in mb-4">
-                        <div class="card-header">
-                            <h3><i class="fas fa-info-circle" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Basic Information</h3>
-                        </div>
-                        <div class="card-body">
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
-                                <div class="form-group">
-                                    <label for="positionTitle">Position Title <span style="color: var(--danger-color);">*</span></label>
-                                    <input type="text" class="form-control" id="positionTitle" placeholder="e.g., Restaurant Crew, Sales Associate" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="jobCategory">Job Category <span style="color: var(--danger-color);">*</span></label>
-                                    <select class="form-control form-control-select" id="jobCategory" required>
-                                        <option value="">Select Category</option>
-                                        <option value="Retail / Store">Retail / Store</option>
-                                        <option value="Sales">Sales</option>
-                                        <option value="Food Service / Restaurant">Food Service / Restaurant</option>
-                                        <option value="Hospitality / Tourism">Hospitality / Tourism</option>
-                                        <option value="Office / Administration">Office / Administration</option>
-                                        <option value="Accounting / Finance">Accounting / Finance</option>
-                                        <option value="Healthcare">Healthcare</option>
-                                        <option value="Education / Tutoring">Education / Tutoring</option>
-                                        <option value="Construction / Skilled Trades">Construction / Skilled Trades</option>
-                                        <option value="Agriculture">Agriculture</option>
-                                        <option value="Fisheries">Fisheries</option>
-                                        <option value="Manufacturing">Manufacturing</option>
-                                        <option value="Logistics / Delivery">Logistics / Delivery</option>
-                                        <option value="Transportation">Transportation</option>
-                                        <option value="Automotive / Mechanical">Automotive / Mechanical</option>
-                                        <option value="Customer Service">Customer Service</option>
-                                        <option value="Security">Security</option>
-                                        <option value="General Labor">General Labor</option>
-                                        <option value="IT / Technology">IT / Technology</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Job Description -->
-                    <div class="card fade-in mb-4">
-                        <div class="card-header">
-                            <h3><i class="fas fa-file-alt" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Job Description</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label for="jobDescription">Job Description <span style="color: var(--danger-color);">*</span></label>
-                                <textarea class="form-control" id="jobDescription" rows="4" placeholder="Describe the role, company culture, and what makes this position unique..." required></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="responsibilities">Key Responsibilities <span style="color: var(--danger-color);">*</span></label>
-                                <textarea class="form-control" id="responsibilities" rows="4" placeholder="List the main duties and responsibilities (one per line)..." required></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Location -->
-                    <div class="card fade-in mb-4">
-                        <div class="card-header">
-                            <h3><i class="fas fa-map-marker-alt" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Workplace Location</h3>
-                        </div>
-                        <div class="card-body">
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
-                                <div class="form-group">
-                                    <label for="municipality">Municipality <span style="color: var(--danger-color);">*</span></label>
-                                    <select class="form-control form-control-select" id="municipality" required>
-                                        <option value="">Select Municipality</option>
-                                        <option value="Basud">Basud</option>
-                                        <option value="Daet">Daet</option>
-                                        <option value="Vinzons">Vinzons</option>
-                                        <option value="Labo">Labo</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="barangay">Barangay <span style="color: var(--danger-color);">*</span></label>
-                                    <input type="text" class="form-control" id="barangay" placeholder="e.g., Bagasbas, Centro, Poblacion" required>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="exactLocation">Exact Address <span style="color: var(--danger-color);">*</span></label>
-                                <input type="text" class="form-control" id="exactLocation" placeholder="e.g., 123 Main Street, Near Public Market" required>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Compensation & Employment Details -->
-                    <div class="card fade-in mb-4">
-                        <div class="card-header">
-                            <h3><i class="fas fa-won-sign" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Compensation & Employment Details</h3>
-                        </div>
-                        <div class="card-body">
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
-                                <div class="form-group">
-                                    <label for="salaryMin">Minimum Salary <span style="color: var(--danger-color);">*</span></label>
-                                    <input type="number" class="form-control" id="salaryMin" placeholder="e.g., 12000" min="0" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="salaryMax">Maximum Salary</label>
-                                    <input type="number" class="form-control" id="salaryMax" placeholder="e.g., 15000" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label for="salaryPeriod">Salary Period</label>
-                                    <select class="form-control form-control-select" id="salaryPeriod">
-                                        <option value="monthly">Per Month</option>
-                                        <option value="daily">Per Day</option>
-                                        <option value="hourly">Per Hour</option>
-                                        <option value="project">Per Project</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="salaryNegotiable" class="form-check-label">
-                                        <input type="checkbox" class="form-check-input" id="salaryNegotiable"> Salary is negotiable
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
-                                <div class="form-group">
-                                    <label for="employmentType">Employment Type <span style="color: var(--danger-color);">*</span></label>
-                                    <select class="form-control form-control-select" id="employmentType" required>
-                                        <option value="">Select Type</option>
-                                        <option value="Full-time">Full-time</option>
-                                        <option value="Part-time">Part-time</option>
-                                        <option value="Contract">Contract</option>
-                                        <option value="Temporary">Temporary</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="workSchedule">Work Schedule <span style="color: var(--danger-color);">*</span></label>
-                                    <select class="form-control form-control-select" id="workSchedule" required>
-                                        <option value="">Select Schedule</option>
-                                        <option value="On-site">On-site</option>
-                                        <option value="Remote">Remote</option>
-                                        <option value="Hybrid">Hybrid</option>
-                                        <option value="Shift">Shift Work</option>
-                                        <option value="Flexible">Flexible</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="availablePositions">Available Positions <span style="color: var(--danger-color);">*</span></label>
-                                <input type="number" class="form-control" id="availablePositions" placeholder="Number of openings" min="1" value="1" required>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Requirements -->
-                    <div class="card fade-in mb-4">
-                        <div class="card-header">
-                            <h3><i class="fas fa-clipboard-check" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Requirements</h3>
-                        </div>
-                        <div class="card-body">
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
-                                <div class="form-group">
-                                    <label for="requiredSkills">Required Skills <span style="color: var(--danger-color);">*</span></label>
-                                    <input type="text" class="form-control" id="requiredSkills" placeholder="e.g., Customer Service, Cashier, Food Safety" required>
-                                    <small style="color: var(--gray-500); font-size: 0.75rem;">Comma-separated</small>
-                                </div>
-                                <div class="form-group">
-                                    <label for="educationRequirement">Education Requirement</label>
-                                    <select class="form-control form-control-select" id="educationRequirement">
-                                        <option value="">Any</option>
-                                        <option value="Elementary">Elementary</option>
-                                        <option value="High School">High School</option>
-                                        <option value="Vocational">Vocational</option>
-                                        <option value="College">College</option>
-                                        <option value="Post Graduate">Post Graduate</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="experienceRequirement">Experience Requirement</label>
-                                    <select class="form-control form-control-select" id="experienceRequirement">
-                                        <option value="">Any</option>
-                                        <option value="No Experience">No Experience</option>
-                                        <option value="1-2 Years">1-2 Years</option>
-                                        <option value="3-5 Years">3-5 Years</option>
-                                        <option value="5+ Years">5+ Years</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="certifications">Required Certifications</label>
-                                <input type="text" class="form-control" id="certifications" placeholder="e.g., Food Handler's Certificate, NC II">
-                                <small style="color: var(--gray-500); font-size: 0.75rem;">Comma-separated (optional)</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Benefits (Optional) -->
-                    <div class="card fade-in mb-4">
-                        <div class="card-header">
-                            <h3><i class="fas fa-gift" style="margin-right: 0.5rem; color: var(--primary-color);"></i> Benefits (Optional)</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label>Benefits Offered</label>
-                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem;">
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="benefits" value="13th Month Pay">
-                                        <span class="form-check-label">13th Month Pay</span>
-                                    </label>
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="benefits" value="SSS/PhilHealth/Pag-IBIG">
-                                        <span class="form-check-label">SSS/PhilHealth/Pag-IBIG</span>
-                                    </label>
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="benefits" value="Meal Allowance">
-                                        <span class="form-check-label">Meal Allowance</span>
-                                    </label>
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="benefits" value="Transport Allowance">
-                                        <span class="form-check-label">Transport Allowance</span>
-                                    </label>
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="benefits" value="Training">
-                                        <span class="form-check-label">Training & Development</span>
-                                    </label>
-                                    <label class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="benefits" value="Uniform">
-                                        <span class="form-check-label">Uniform Provided</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="card fade-in">
-                        <div class="card-body" style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
-                            <button type="button" class="btn btn-outline" onclick="saveDraft()"><i class="fas fa-save" style="margin-right: 0.5rem;"></i> Save as Draft</button>
-                            <button type="button" class="btn btn-outline" onclick="previewJob()"><i class="fas fa-eye" style="margin-right: 0.5rem;"></i> Preview</button>
-                            <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #7e57c2, #b39ddb);">
-                                <i class="fas fa-paper-plane" style="margin-right: 0.5rem;"></i> Publish Job
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </main>
-        </div>
-    </div>
-
-    <!-- Bottom Navigation (Mobile) -->
-    <nav class="bottom-nav" id="bottomNav">
-        <!-- Injected by layout.js -->
-    </nav>
-
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
-
-    <script src="../assets/js/main.js"></script>
-    <script src="../assets/js/layout.js"></script>
+    <link rel="stylesheet" href="../job-seeker/enuvex-app.css">
+    <link rel="stylesheet" href="../assets/css/enuvex-role.css">
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Form submission
-            document.getElementById('postJobForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                // In a real app, this would submit to the backend
-                showToast('Job posted successfully!', 'success');
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1500);
-            });
-        });
-
-        function saveDraft() {
-            showToast('Draft saved!', 'info');
-        }
-
-        function previewJob() {
-            showToast('Preview feature coming soon!', 'info');
-        }
-
-        // Ensure user type is stored for proper sidebar detection
-        localStorage.setItem('userType', 'EMPLOYER');
+        window.ENUVEX_PAGE = {
+            active: 'post-job',
+            title: 'Post a Job',
+            subtitle: 'Create a complete opening in one pass'
+        };
     </script>
+</head>
+<body data-role="employer">
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="page-head">
+                <div>
+                    <h2 id="formTitle">New job post</h2>
+                    <p id="formSubtitle">Fields marked with an asterisk are required by the matching system.</p>
+                </div>
+                <div class="page-head-actions">
+                    <a class="btn-ghost" href="jobs.html"><i class="fas fa-arrow-left"></i> Back to job posts</a>
+                </div>
+            </div>
+
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not save this job post.</span>
+            </div>
+
+            <form id="jobForm" novalidate>
+                <section class="card panel" style="margin-bottom: 18px;">
+                    <div class="panel-head">
+                        <h3><i class="fas fa-circle-info"></i> Basic information</h3>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-field span-2">
+                            <label for="jobTitle">Position title *</label>
+                            <input type="text" id="jobTitle" maxlength="120" placeholder="e.g. Restaurant Crew" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="jobCategory">Job category *</label>
+                            <select id="jobCategory" required>
+                                <option value="">Select a category</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="employmentType">Employment type</label>
+                            <select id="employmentType">
+                                <option value="">Not specified</option>
+                                <option value="FULL_TIME">Full-time</option>
+                                <option value="PART_TIME">Part-time</option>
+                                <option value="CONTRACT">Contract</option>
+                                <option value="TEMPORARY">Temporary</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="workSchedule">Work schedule</label>
+                            <select id="workSchedule">
+                                <option value="">Not specified</option>
+                                <option value="MORNING">Morning</option>
+                                <option value="AFTERNOON">Afternoon</option>
+                                <option value="EVENING">Evening</option>
+                                <option value="NIGHT">Night</option>
+                                <option value="WEEKEND">Weekend</option>
+                                <option value="FLEXIBLE">Flexible</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="availablePositions">Available positions</label>
+                            <input type="number" id="availablePositions" min="1" step="1" value="1">
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card panel" style="margin-bottom: 18px;">
+                    <div class="panel-head">
+                        <h3><i class="fas fa-file-lines"></i> Role details</h3>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-field span-2">
+                            <label for="jobDescription">Job description *</label>
+                            <textarea id="jobDescription" placeholder="What the role is, who it suits, and what the work involves." required></textarea>
+                        </div>
+                        <div class="form-field span-2">
+                            <label for="responsibilities">Key responsibilities *</label>
+                            <textarea id="responsibilities" placeholder="One responsibility per line." required></textarea>
+                        </div>
+                        <div class="form-field span-2">
+                            <label for="requiredSkills">Required skills</label>
+                            <input type="text" id="requiredSkills" placeholder="Comma separated, e.g. Customer Service, Cashier, Inventory">
+                            <p class="form-note">These skills drive the match percentage shown to applicants.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card panel" style="margin-bottom: 18px;">
+                    <div class="panel-head">
+                        <h3><i class="fas fa-location-dot"></i> Workplace</h3>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label for="municipality">Municipality *</label>
+                            <select id="municipality" required>
+                                <option value="">Select a municipality</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="barangay">Barangay</label>
+                            <input type="text" id="barangay" placeholder="e.g. Bagasbas">
+                        </div>
+                        <div class="form-field span-2">
+                            <label for="jobLocation">Exact address or landmark</label>
+                            <input type="text" id="jobLocation" placeholder="e.g. 123 Main Street, near the public market">
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card panel" style="margin-bottom: 18px;">
+                    <div class="panel-head">
+                        <h3><i class="fas fa-coins"></i> Compensation and requirements</h3>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label for="salaryMin">Minimum salary (₱)</label>
+                            <input type="number" id="salaryMin" min="0" step="1" placeholder="e.g. 12000">
+                        </div>
+                        <div class="form-field">
+                            <label for="salaryMax">Maximum salary (₱)</label>
+                            <input type="number" id="salaryMax" min="0" step="1" placeholder="e.g. 15000">
+                        </div>
+                        <div class="form-field">
+                            <label for="educationRequirement">Education requirement</label>
+                            <select id="educationRequirement">
+                                <option value="">Any</option>
+                                <option value="ELEMENTARY_GRADUATE">Elementary graduate</option>
+                                <option value="HIGH_SCHOOL_GRADUATE">High school graduate</option>
+                                <option value="VOCATIONAL_TECHNICAL">Vocational / technical</option>
+                                <option value="COLLEGE_GRADUATE">College graduate</option>
+                                <option value="POST_GRADUATE">Post graduate</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="experienceRequirement">Experience requirement</label>
+                            <input type="text" id="experienceRequirement" placeholder="e.g. 1-2 years, or none">
+                        </div>
+                        <div class="form-field span-2">
+                            <label for="certifications">Preferred certifications</label>
+                            <input type="text" id="certifications" placeholder="Comma separated, e.g. Food Safety Training, NC II">
+                        </div>
+                    </div>
+                </section>
+
+                <div class="card panel" style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+                    <a class="btn-soft" href="jobs.html">Cancel</a>
+                    <button class="btn-solid" type="submit" id="submitBtn"><i class="fas fa-paper-plane"></i> Publish job</button>
+                </div>
+            </form>
+        </main>
+    </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/role-app.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var CATEGORY_OPTIONS = {
+        RETAIL_STORE: 'Retail / Store', SALES: 'Sales',
+        FOOD_SERVICE_RESTAURANT: 'Food Service / Restaurant',
+        HOSPITALITY_TOURISM: 'Hospitality / Tourism',
+        OFFICE_ADMINISTRATION: 'Office / Administration',
+        ACCOUNTING_FINANCE: 'Accounting / Finance', HEALTHCARE: 'Healthcare',
+        EDUCATION_TUTORING: 'Education / Tutoring',
+        CONSTRUCTION_SKILLED_TRADES: 'Construction / Skilled Trades',
+        AGRICULTURE: 'Agriculture', FISHERIES: 'Fisheries', MANUFACTURING: 'Manufacturing',
+        LOGISTICS_DELIVERY: 'Logistics / Delivery', TRANSPORTATION: 'Transportation',
+        AUTOMOTIVE_MECHANICAL: 'Automotive / Mechanical', CUSTOMER_SERVICE: 'Customer Service',
+        SECURITY: 'Security', GENERAL_LABOR: 'General Labor',
+        IT_TECHNOLOGY: 'IT / Technology', OTHER: 'Other'
+    };
+
+    var editingId = null;
+
+    function field(id) { return document.getElementById(id); }
+
+    function showError(message) {
+        var box = field('pageError');
+        var text = field('pageErrorText');
+        if (!box || !text) return;
+        text.textContent = message;
+        box.hidden = false;
+    }
+
+    function hideError() {
+        var box = field('pageError');
+        if (box) box.hidden = true;
+    }
+
+    function fillCategories() {
+        var select = field('jobCategory');
+        Object.keys(CATEGORY_OPTIONS).forEach(function (value) {
+            var option = document.createElement('option');
+            option.value = value;
+            option.textContent = CATEGORY_OPTIONS[value];
+            select.appendChild(option);
+        });
+    }
+
+    async function fillMunicipalities() {
+        var select = field('municipality');
+        var result = await ROLE.safe(ApiClient.request('/municipalities'));
+        var values = ROLE.failed(result) || !Array.isArray(result)
+            ? ['BASUD', 'DAET', 'VINZONS', 'LABO']
+            : result;
+        values.forEach(function (value) {
+            var option = document.createElement('option');
+            option.value = value;
+            option.textContent = ROLE.municipalityLabel(value);
+            select.appendChild(option);
+        });
+    }
+
+    function payload() {
+        var data = {
+            jobTitle: field('jobTitle').value.trim(),
+            jobCategory: field('jobCategory').value || null,
+            jobDescription: field('jobDescription').value.trim(),
+            responsibilities: field('responsibilities').value.trim(),
+            requiredSkills: field('requiredSkills').value.trim() || null,
+            barangay: field('barangay').value.trim() || null,
+            jobLocation: field('jobLocation').value.trim() || null,
+            experienceRequirement: field('experienceRequirement').value.trim() || null,
+            certifications: field('certifications').value.trim() || null,
+            employmentType: field('employmentType').value || null,
+            workSchedule: field('workSchedule').value || null,
+            educationRequirement: field('educationRequirement').value || null,
+            municipality: field('municipality').value || null,
+            availablePositions: Number(field('availablePositions').value || 1),
+            isActive: true
+        };
+
+        var min = field('salaryMin').value.trim();
+        var max = field('salaryMax').value.trim();
+        if (min) data.salaryMin = Number(min);
+        if (max) data.salaryMax = Number(max);
+
+        return data;
+    }
+
+    function validate(data) {
+        if (!data.jobTitle) return 'Enter a position title.';
+        if (!data.jobCategory) return 'Select a job category.';
+        if (!data.jobDescription) return 'Enter a job description.';
+        if (!data.responsibilities) return 'Enter the key responsibilities.';
+        if (!data.municipality) return 'Select a municipality.';
+        if (data.availablePositions < 1) return 'Available positions must be at least 1.';
+        return null;
+    }
+
+    async function loadForEdit(id) {
+        var result = await ROLE.safe(ApiClient.getMyJobs());
+        if (ROLE.failed(result) || !Array.isArray(result)) {
+            showError(ROLE.failed(result) ? result.__error : 'Could not load this job post.');
+            return;
+        }
+        var job = result.filter(function (item) { return String(item.id) === String(id); })[0];
+        if (!job) {
+            showError('That job post could not be found on your account.');
+            return;
+        }
+
+        document.getElementById('formTitle').textContent = 'Edit job post';
+        document.getElementById('formSubtitle').textContent = 'Changes are saved to the same post applicants already see.';
+        document.getElementById('submitBtn').innerHTML = '<i class="fas fa-floppy-disk"></i> Save changes';
+
+        field('jobTitle').value = job.jobTitle || '';
+        field('jobCategory').value = job.jobCategory || '';
+        field('employmentType').value = job.employmentType || '';
+        field('workSchedule').value = job.workSchedule || '';
+        field('availablePositions').value = job.availablePositions || 1;
+        field('jobDescription').value = job.jobDescription || '';
+        field('responsibilities').value = job.responsibilities || '';
+        field('requiredSkills').value = job.requiredSkills || '';
+        field('municipality').value = job.municipality || '';
+        field('barangay').value = job.barangay || '';
+        field('jobLocation').value = job.jobLocation || '';
+        field('salaryMin').value = job.salaryMin == null ? '' : job.salaryMin;
+        field('salaryMax').value = job.salaryMax == null ? '' : job.salaryMax;
+        field('educationRequirement').value = job.educationRequirement || '';
+        field('experienceRequirement').value = job.experienceRequirement || '';
+        field('certifications').value = job.certifications || '';
+    }
+
+    document.addEventListener('enuvex:ready', async function () {
+        fillCategories();
+        await fillMunicipalities();
+
+        var params = new URLSearchParams(window.location.search);
+        var id = params.get('id');
+        if (id) {
+            editingId = id;
+            await loadForEdit(id);
+        }
+
+        document.getElementById('jobForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            hideError();
+
+            var data = payload();
+            var problem = validate(data);
+            if (problem) {
+                showError(problem);
+                return;
+            }
+
+            var submit = field('submitBtn');
+            submit.disabled = true;
+            try {
+                if (editingId) {
+                    await ApiClient.updateJob(editingId, data);
+                    ROLE.toast('Job post updated.', 'success');
+                } else {
+                    await ApiClient.postJob(data);
+                    ROLE.toast('Job post published.', 'success');
+                }
+                window.location.href = 'jobs.html';
+            } catch (error) {
+                showError(error.message || 'Could not save this job post.');
+                submit.disabled = false;
+            }
+        });
+    }, { once: true });
+})();
+</script>
 </body>
 </html>

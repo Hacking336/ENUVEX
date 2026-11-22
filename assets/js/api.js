@@ -13,13 +13,17 @@ const ApiClient = {
     refreshToken: null,
     userType: null,
 
-    setAuth(token, refreshToken, userType) {
+    setAuth(token, refreshToken, userType, fullName, userId) {
         this.token = token;
         this.refreshToken = refreshToken;
         this.userType = userType;
         localStorage.setItem('jsm_token', token);
         localStorage.setItem('jsm_refresh', refreshToken);
         localStorage.setItem('jsm_user_type', userType);
+        // Kept so a console that has no profile endpoint (admin) can still show
+        // the real signed-in account instead of a placeholder.
+        if (fullName) localStorage.setItem('jsm_full_name', fullName);
+        if (userId !== undefined && userId !== null) localStorage.setItem('jsm_user_id', String(userId));
     },
 
     clearAuth() {
@@ -29,6 +33,8 @@ const ApiClient = {
         localStorage.removeItem('jsm_token');
         localStorage.removeItem('jsm_refresh');
         localStorage.removeItem('jsm_user_type');
+        localStorage.removeItem('jsm_full_name');
+        localStorage.removeItem('jsm_user_id');
     },
 
     loadAuth() {
@@ -84,7 +90,7 @@ const ApiClient = {
             method: 'POST',
             body: JSON.stringify({ email, password })
         });
-        this.setAuth(data.token, data.refreshToken, data.userType);
+        this.setAuth(data.token, data.refreshToken, data.userType, data.fullName, data.userId);
         return data;
     },
 
@@ -109,7 +115,7 @@ const ApiClient = {
         if (!response.ok) {
             throw new Error(data.message || data.error || `Registration failed (${response.status})`);
         }
-        this.setAuth(data.token, data.refreshToken, data.userType);
+        this.setAuth(data.token, data.refreshToken, data.userType, data.fullName, data.userId);
         return data;
     },
 
@@ -231,6 +237,79 @@ const ApiClient = {
 
     async getAdminApplications() {
         return this.request('/admin/applications');
+    },
+
+    /* ---------- employer console ------------------------------------- */
+
+    /** Multipart update: the backend reads "profile" plus an optional "logo". */
+    async updateEmployerProfile(payload, logoFile) {
+        const formData = new FormData();
+        formData.append('profile', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+        if (logoFile) formData.append('logo', logoFile);
+
+        const response = await fetch(`${API_BASE_URL}/employers/profile`, {
+            method: 'PUT',
+            headers: this.token ? { Authorization: `Bearer ${this.token}` } : {},
+            body: formData
+        });
+
+        const raw = await response.text();
+        let data = null;
+        if (raw) {
+            try { data = JSON.parse(raw); } catch (e) { data = null; }
+        }
+
+        if (response.status === 401) {
+            this.clearAuth();
+            window.location.href = '/login.html';
+            throw new Error('Your session expired. Please log in again.');
+        }
+        if (!response.ok) {
+            const message = (data && (data.message || data.error)) || `Could not save the company profile (${response.status})`;
+            throw new Error(message);
+        }
+        return data;
+    },
+
+    async updateJob(jobId, jobData) {
+        return this.request(`/employers/jobs/${encodeURIComponent(jobId)}`, {
+            method: 'PUT',
+            body: JSON.stringify(jobData)
+        });
+    },
+
+    async deleteJob(jobId) {
+        return this.request(`/employers/jobs/${encodeURIComponent(jobId)}`, { method: 'DELETE' });
+    },
+
+    async getEmployerProfile() {
+        return this.request('/employers/profile');
+    },
+
+    /* ---------- admin console ---------------------------------------- */
+
+    async getAdminEmployers() {
+        return this.request('/admin/employers');
+    },
+
+    async verifyEmployer(userId) {
+        return this.request(`/admin/employers/${encodeURIComponent(userId)}/verify`, { method: 'PUT' });
+    },
+
+    async setUserActive(userId) {
+        return this.request(`/admin/users/${encodeURIComponent(userId)}/deactivate`, { method: 'PUT' });
+    },
+
+    async deleteAdminJobPost(jobId) {
+        return this.request(`/admin/job-posts/${encodeURIComponent(jobId)}`, { method: 'DELETE' });
+    },
+
+    async getAdminReports() {
+        return this.request('/admin/reports');
+    },
+
+    async getAdminCategories() {
+        return this.request('/admin/categories');
     }
 };
 

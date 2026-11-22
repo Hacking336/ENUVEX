@@ -4,6 +4,7 @@ import com.jobskills.config.CustomUserDetails;
 import com.jobskills.dto.*;
 import com.jobskills.model.*;
 import com.jobskills.model.enums.ApplicationStatus;
+import com.jobskills.repository.UserRepository;
 import com.jobskills.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,16 +25,45 @@ public class EmployerController {
     private final UserService userService;
     private final JobService jobService;
     private final ApplicationService applicationService;
+    private final UserRepository userRepository;
 
+    /**
+     * The company profile plus the account email and verification state, which
+     * the employer entity itself does not expose.
+     */
     @GetMapping("/profile")
-    public ResponseEntity<EmployerProfile> getProfile(Authentication authentication) {
-        return ResponseEntity.ok(userService.getEmployerProfile(extractUserId(authentication)));
+    public ResponseEntity<EmployerProfileDto> getProfile(Authentication authentication) {
+        Long userId = extractUserId(authentication);
+        EmployerProfile profile = userService.getEmployerProfile(userId);
+        EmployerProfileDto dto = new EmployerProfileDto();
+        dto.setId(profile.getId());
+        dto.setBusinessName(profile.getBusinessName());
+        dto.setEmployerName(profile.getEmployerName());
+        dto.setContactNumber(profile.getContactNumber());
+        dto.setBusinessType(profile.getBusinessType());
+        dto.setMunicipality(profile.getMunicipality());
+        dto.setBarangay(profile.getBarangay());
+        dto.setBusinessAddress(profile.getBusinessAddress());
+        dto.setBusinessDescription(profile.getBusinessDescription());
+        dto.setLogo(profile.getLogo());
+        dto.setCreatedAt(profile.getCreatedAt());
+        userRepository.findById(userId).ifPresent(user -> {
+            dto.setEmail(user.getEmail());
+            dto.setVerified(user.isVerified());
+            dto.setActive(user.isActive());
+        });
+        return ResponseEntity.ok(dto);
     }
 
+    /**
+     * Updates only the company fields. The registration bean is reused, but its
+     * @Valid rules (a required email and password) do not apply to an update:
+     * UserService ignores both and validates each field it actually writes.
+     */
     @PutMapping("/profile")
     public ResponseEntity<EmployerProfile> updateProfile(
             Authentication authentication,
-            @Valid @RequestPart("profile") RegisterRequest request,
+            @RequestPart("profile") RegisterRequest request,
             @RequestPart(value = "logo", required = false) MultipartFile logo) {
         return ResponseEntity.ok(userService.updateEmployerProfile(extractUserId(authentication), request, logo));
     }

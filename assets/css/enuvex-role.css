@@ -1,0 +1,367 @@
+/* ==========================================================================
+   ENUVEX — Employer & Admin role layer
+   Loaded after ../job-seeker/enuvex-app.css, which owns the tokens, the shell,
+   cards, metrics, tabs, buttons, status pills, chips, forms and toasts.
+   This file only adds what the employer and admin consoles need on top:
+   data tables, charts, verification cards, modals and role-specific layouts.
+   Nothing here redefines a token or restyles a job seeker component.
+   ========================================================================== */
+
+/* ---------- Page header --------------------------------------------------- */
+
+.page-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.page-head h2 {
+    font-family: var(--font-head);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    color: var(--ink);
+    margin: 0;
+}
+
+.page-head p {
+    margin: 6px 0 0;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--muted-text);
+    max-width: 720px;
+}
+
+.page-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ---------- Toolbar ------------------------------------------------------ */
+
+.rv-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+}
+
+.rv-toolbar .field { flex: 0 1 320px; }
+
+.rv-toolbar .form-field {
+    flex: 0 1 220px;
+}
+
+.rv-toolbar .form-field label { display: none; }
+
+.rv-toolbar .form-field input,
+.rv-toolbar .form-field select {
+    height: 44px;
+    padding: 0 12px;
+    background: #F8FBFC;
+}
+
+.rv-spacer { flex: 1 1 auto; }
+
+/* ---------- Data tables -------------------------------------------------- */
+
+.table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: var(--radius);
+    background: var(--white);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-sm);
+}
+
+.data-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+}
+
+.data-table thead th {
+    padding: 13px 16px;
+    text-align: left;
+    font-family: var(--font-head);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #7D8FA0;
+    background: #F8FBFC;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+}
+
+.data-table tbody td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #EEF3F7;
+    vertical-align: middle;
+}
+
+.data-table tbody tr:last-child td { border-bottom: 0; }
+.data-table tbody tr:hover { background: #FAFCFD; }
+
+.data-table .num { width: 46px; color: #9AAAB8; font-variant-numeric: tabular-nums; }
+
+.cell-main { display: block; font-weight: 600; color: var(--ink); }
+.cell-sub { display: block; margin-top: 3px; font-size: 12px; color: var(--muted-text); }
+
+.cell-person { display: flex; align-items: center; gap: 11px; min-width: 0; }
+
+.row-actions {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+
+/* ---------- Soft badges (verification / account state) ------------------- */
+
+.badge-ok,
+.badge-wait,
+.badge-off,
+.badge-neutral {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.badge-ok { background: #E7F6E9; color: #1E7C33; }
+.badge-wait { background: var(--amber-soft); color: var(--amber); }
+.badge-off { background: var(--danger-soft); color: #A63A2C; }
+.badge-neutral { background: var(--navy-soft); color: #2C4D74; }
+
+/* ---------- Metric rows -------------------------------------------------- */
+
+.metrics.cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.metrics.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+/* ---------- Bar charts (admin reports) ---------------------------------- */
+
+.bar-list { display: flex; flex-direction: column; gap: 14px; }
+
+.bar-row { display: grid; grid-template-columns: 132px 1fr 54px; align-items: center; gap: 12px; }
+
+.bar-name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bar-track { height: 9px; border-radius: 999px; background: #EEF3F7; overflow: hidden; }
+
+.bar-fill {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #46B95E, var(--green));
+    transition: width 0.5s ease;
+}
+
+.bar-fill.navy { background: linear-gradient(90deg, #3E6189, var(--ink)); }
+
+.bar-value {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Key/value summaries ----------------------------------------- */
+
+.kv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px 22px;
+}
+
+.kv span { display: block; font-size: 11.5px; font-weight: 600; color: var(--muted-text); }
+.kv strong { display: block; margin-top: 3px; font-size: 13.5px; font-weight: 600; color: var(--ink-soft); }
+
+/* ---------- Verification / moderation cards ----------------------------- */
+
+.stack { display: flex; flex-direction: column; gap: 12px; }
+
+.verify-card {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 16px 18px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+}
+
+.verify-card h4 { margin: 0; font-family: var(--font-head); font-size: 14px; color: var(--ink); }
+.verify-card p { margin: 4px 0 0; font-size: 12.5px; color: var(--muted-text); line-height: 1.55; }
+.verify-card .row-actions { flex: 0 0 auto; }
+
+/* ---------- Two column working layouts ---------------------------------- */
+
+.split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+}
+
+.split.narrow { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); }
+
+/* ---------- List rows (job posts, applicants) --------------------------- */
+
+.list-rows { display: flex; flex-direction: column; }
+
+.list-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 15px 18px;
+    border-bottom: 1px solid #EEF3F7;
+}
+
+.list-row:last-child { border-bottom: 0; }
+.list-row:hover { background: #FAFCFD; }
+
+.list-icon {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--green-tint);
+    color: var(--green-dark);
+    font-size: 15px;
+}
+
+.list-body { flex: 1 1 auto; min-width: 0; }
+.list-body h4 { margin: 0; font-family: var(--font-head); font-size: 14px; font-weight: 700; color: var(--ink); }
+.list-body h4 a { color: inherit; }
+.list-body h4 a:hover { color: var(--green-dark); }
+.list-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 5px; font-size: 12px; color: var(--muted-text); }
+.list-meta i { margin-right: 4px; color: #9AAAB8; font-size: 11px; }
+
+.list-side {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+/* ---------- Match ring --------------------------------------------------- */
+
+.match-pill {
+    display: inline-grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    font-family: var(--font-head);
+    font-size: 13px;
+    font-weight: 700;
+    background: var(--green-tint);
+    color: var(--green-dark);
+    border: 2px solid #CFE4D5;
+}
+
+.match-pill.mid { background: var(--amber-soft); color: var(--amber); border-color: #F1DFC0; }
+.match-pill.low { background: var(--navy-soft); color: #2C4D74; border-color: #DCE6F0; }
+
+/* ---------- Modal -------------------------------------------------------- */
+
+.modal-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 14px 22px 20px;
+}
+
+.modal-close {
+    margin-left: auto;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--white);
+    color: var(--muted-text);
+    cursor: pointer;
+}
+
+.modal-close:hover { background: #F3F7FA; color: var(--ink); }
+
+/* ---------- Form helpers ------------------------------------------------ */
+
+.form-row-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 16px; }
+.form-note { margin: 8px 0 0; font-size: 12px; color: var(--muted-text); line-height: 1.55; }
+
+.form-field input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--green);
+}
+
+.check-row { display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--ink-soft); }
+
+/* ---------- Detail blocks ----------------------------------------------- */
+
+.block-title {
+    margin: 0 0 10px;
+    font-family: var(--font-head);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #7D8FA0;
+}
+
+.tag-list { display: flex; flex-wrap: wrap; gap: 7px; }
+
+/* ---------- Responsive -------------------------------------------------- */
+
+@media (max-width: 1180px) {
+    .metrics.cols-5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .split, .split.narrow { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 900px) {
+    .metrics.cols-5, .metrics.cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .form-row-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 620px) {
+    .metrics.cols-5, .metrics.cols-3 { grid-template-columns: minmax(0, 1fr); }
+    .form-row-3, .form-grid { grid-template-columns: minmax(0, 1fr); }
+    .page-head { align-items: flex-start; }
+    .bar-row { grid-template-columns: 96px 1fr 44px; gap: 8px; }
+    .list-row { flex-wrap: wrap; }
+    .list-side { width: 100%; justify-content: flex-start; }
+    .rv-toolbar .field, .rv-toolbar .form-field { flex: 1 1 100%; }
+}
