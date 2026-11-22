@@ -1,0 +1,61 @@
+name: Build Android app
+
+# Builds the Capacitor Android project into an installable debug APK. The
+# artefact is attached to the run, so the app can be side-loaded without
+# Android Studio on hand: Actions -> the newest run -> Artifacts.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'mobile/**'
+      - 'assets/**'
+      - 'job-seeker/**'
+      - 'employer/**'
+      - 'admin/**'
+      - '*.html'
+      - '.github/workflows/android.yml'
+
+jobs:
+  debug-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install the SDK packages the project compiles against
+        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Install Capacitor dependencies
+        working-directory: mobile
+        run: npm ci
+
+      # Rebuilds www/ from the shared ENUVEX pages so the APK can never ship a
+      # stale copy of the site, then copies it into the Android project.
+      - name: Sync the web pages into the Android project
+        working-directory: mobile
+        run: npm run sync:android
+
+      - name: Build the debug APK
+        working-directory: mobile/android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: enuvex-debug-apk
+          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
