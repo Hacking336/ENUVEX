@@ -11,18 +11,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --ink: #0b2545;
-            --ink-soft: #22374b;
+            --ink: #102b4c;
+            --ink-soft: #26384a;
             --body: #55677a;
-            --green: #2e9e41;
-            --green-dark: #237d33;
+            --green: #2fa247;
+            --green-dark: #25853a;
             --green-tint: #eaf5ec;
             --page-bg: #f5f8fa;
             --white: #ffffff;
-            --line: #e4ebf1;
+            --line: #e3eaf0;
+            --muted-text: #64748b;
             --radius: 16px;
-            --shadow-sm: 0 2px 8px rgba(11, 37, 69, 0.05);
-            --shadow-md: 0 10px 26px rgba(11, 37, 69, 0.08);
+            --shadow-sm: 0 2px 8px rgba(16, 43, 76, 0.05);
+            --shadow-md: 0 10px 26px rgba(16, 43, 76, 0.08);
             --font-head: 'Poppins', 'Segoe UI', system-ui, sans-serif;
             --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
             --sidebar-w: 264px;
@@ -182,7 +183,7 @@
             display: grid;
             place-items: center;
             overflow: hidden;
-            background: linear-gradient(135deg, #59bd68, var(--green));
+            background: linear-gradient(135deg, #45b45c, var(--green));
             color: #fff;
             font-family: var(--font-head);
             font-size: 14px;
@@ -223,6 +224,41 @@
         }
         .side-logout:hover { background: #fdf3f2; color: #c0392b; }
 
+        .icon-btn.collapse-btn { display: none; }
+
+        @media (min-width: 1025px) {
+            .icon-btn.collapse-btn { display: grid; }
+            body.nav-collapsed .sidebar { flex: 0 0 84px; width: 84px; padding-left: 10px; padding-right: 10px; }
+            body.nav-collapsed .side-brand { justify-content: center; padding-left: 0; padding-right: 0; }
+            body.nav-collapsed .side-brand-text,
+            body.nav-collapsed .side-label,
+            body.nav-collapsed .side-link > span,
+            body.nav-collapsed .side-user-text { display: none; }
+            body.nav-collapsed .side-link { justify-content: center; padding: 11px 0; }
+            body.nav-collapsed .side-link i { width: 32px; height: 32px; font-size: 14px; }
+            body.nav-collapsed .side-link.active::before { left: -10px; }
+            body.nav-collapsed .side-user { justify-content: center; padding: 9px 0; }
+            body.nav-collapsed .side-logout { justify-content: center; padding: 10px 0; }
+            body.nav-collapsed .side-logout > span { display: none; }
+        }
+
+        .search-go {
+            flex: 0 0 auto;
+            height: 34px;
+            padding: 0 15px;
+            border: 0;
+            border-radius: 9px;
+            background: var(--green);
+            color: #fff;
+            font-family: var(--font-head);
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.16s ease;
+        }
+        .search-go:hover { background: var(--green-dark); }
+        .top-search { padding-right: 5px; }
+
         .side-overlay {
             display: none;
             position: fixed;
@@ -247,7 +283,7 @@
             padding: 12px 28px;
             background: var(--white);
             border-bottom: 1px solid var(--line);
-            box-shadow: 0 1px 0 var(--line), 0 6px 20px rgba(11, 37, 69, 0.03);
+            box-shadow: 0 1px 0 var(--line), 0 6px 20px rgba(16, 43, 76, 0.03);
         }
 
         .icon-btn {
@@ -441,7 +477,10 @@
             padding: 26px 30px;
             border: 1px solid var(--line);
             border-radius: 20px;
-            background: linear-gradient(150deg, #eef5fb 0%, #f7fafc 58%, #eef3f7 100%);
+            background:
+                radial-gradient(120% 150% at 90% 0%, rgba(47, 162, 71, 0.14) 0%, rgba(47, 162, 71, 0) 52%),
+                radial-gradient(110% 130% at 100% 100%, rgba(47, 162, 71, 0.1) 0%, rgba(47, 162, 71, 0) 46%),
+                linear-gradient(135deg, #ffffff 0%, #f3faf4 56%, #e7f4ea 100%);
         }
         .welcome-copy { position: relative; z-index: 2; max-width: 560px; }
         .welcome .eyebrow {
@@ -460,31 +499,45 @@
             letter-spacing: -0.6px;
         }
         .welcome h2 .accent { color: var(--green); }
-        .welcome p { margin: 10px 0 16px; font-size: 14.5px; line-height: 1.6; color: #4c6274; max-width: 430px; }
+        .welcome-copy p { margin: 10px 0 16px; font-size: 14.5px; line-height: 1.6; color: #4c6274; max-width: 430px; }
         .welcome .btn-solid { padding: 10px 20px; font-size: 13.5px; }
 
-        .welcome-media {
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 42%;
-            z-index: 0;
-        }
-        .welcome-media img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: 58% center;
-            filter: saturate(1.14) contrast(1.06);
-        }
-        .welcome-media::before {
+        .welcome::before {
             content: '';
             position: absolute;
-            inset: 0;
-            z-index: 1;
-            background: linear-gradient(90deg, #f2f8fb 0%, rgba(244, 248, 251, 0.82) 16%, rgba(244, 248, 251, 0.1) 58%, rgba(244, 248, 251, 0) 100%);
+            top: -132px;
+            right: -104px;
+            width: 380px;
+            height: 380px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 38% 38%, rgba(47, 162, 71, 0.16) 0%, rgba(47, 162, 71, 0.04) 58%, rgba(47, 162, 71, 0) 72%);
+            pointer-events: none;
         }
+        .welcome::after {
+            content: '';
+            position: absolute;
+            right: 128px;
+            bottom: -176px;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 1px solid rgba(47, 162, 71, 0.16);
+            background: rgba(47, 162, 71, 0.04);
+            pointer-events: none;
+        }
+        .welcome-inner { position: relative; z-index: 2; width: 100%; }
+
+        .welcome-completion {
+            position: relative;
+            z-index: 2;
+            margin-top: 20px;
+            padding: 15px 18px;
+            border: 1px solid #dbe9de;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 1px 2px rgba(16, 43, 76, 0.04);
+        }
+        .welcome-completion .completion { padding: 0; }
 
         /* Buttons */
 
@@ -517,7 +570,7 @@
 
         /* Profile completion */
 
-        .completion { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 26px; padding: 18px 22px; }
+        .completion { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; padding: 18px 22px; }
         .completion-main { flex: 1 1 260px; min-width: 0; }
         .completion-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
         .completion-head h3 { font-size: 15px; font-weight: 700; }
@@ -533,10 +586,10 @@
             display: block;
             height: 100%;
             border-radius: 999px;
-            background: linear-gradient(90deg, #4cc05a, var(--green));
+            background: linear-gradient(90deg, #46b95e, var(--green));
             transition: width 0.5s ease;
         }
-        .completion p { margin: 0; font-size: 12.5px; color: #7a8b9b; }
+        .completion p { margin: 0; font-size: 12.5px; color: #64748b; }
 
         /* Stats */
 
@@ -544,20 +597,20 @@
 
         .stat {
             display: flex;
-            align-items: center;
-            gap: 14px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
             padding: 18px;
             background: var(--white);
             border: 1px solid var(--line);
             border-radius: 14px;
             box-shadow: var(--shadow-sm);
-            min-height: 92px;
         }
         .stat-icon {
             flex: 0 0 auto;
             width: 46px;
             height: 46px;
-            border-radius: 50%;
+            border-radius: 13px;
             display: grid;
             place-items: center;
             background: var(--green-tint);
@@ -566,12 +619,13 @@
         }
         .stat-value {
             font-family: var(--font-head);
-            font-size: 25px;
+            font-size: 27px;
             font-weight: 700;
             line-height: 1.1;
             color: var(--ink);
         }
-        .stat-label { margin-top: 3px; font-size: 12.5px; color: #6b7c8c; line-height: 1.3; }
+        .stat-label { margin-top: 3px; font-size: 13px; font-weight: 600; color: var(--ink-soft); line-height: 1.3; }
+        .stat-desc { margin-top: 3px; font-size: 11.5px; color: #7d8fa0; line-height: 1.35; }
 
         /* Search toolbar */
 
@@ -667,23 +721,26 @@
 
         /* Job cards */
 
-        .job-list { display: flex; flex-direction: column; gap: 12px; }
+        .job-panel {
+            background: var(--white);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+        .job-panel .empty { border: 0; border-radius: 0; }
+        .job-list { display: flex; flex-direction: column; gap: 0; }
 
         .job {
             display: flex;
             gap: 16px;
-            padding: 18px;
+            padding: 18px 20px;
             background: var(--white);
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            box-shadow: var(--shadow-sm);
-            transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+            border-bottom: 1px solid var(--line);
+            transition: background 0.16s ease;
         }
-        .job:hover {
-            border-color: #cfe4d5;
-            box-shadow: 0 12px 26px rgba(11, 37, 69, 0.08);
-            transform: translateY(-2px);
-        }
+        .job:last-child { border-bottom: 0; }
+        .job:hover { background: #f8fcf9; }
         .job-icon {
             flex: 0 0 auto;
             width: 46px;
@@ -795,9 +852,8 @@
         }
         .app-row .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex: 0 0 auto; }
         .app-row span.lbl { display: inline-flex; align-items: center; gap: 8px; }
-        .app-row .dot.amber { background: #e8a33d; }
-        .app-row .dot.blue { background: #3b8fd4; }
-        .app-row .dot.red { background: #d9635f; }
+        .app-row .dot.navy { background: #2c4d74; }
+        .app-row .dot.gray { background: #9aa9b8; }
 
         .activity { display: flex; flex-direction: column; gap: 12px; }
         .activity-item { display: flex; gap: 10px; }
@@ -883,7 +939,7 @@
             .user-btn-name { display: none; }
             .user-btn { padding: 4px; border-radius: 50%; }
             .user-btn > i { display: none; }
-            .welcome-media { width: 55%; opacity: 0.55; }
+
             .content { padding: 18px 16px 96px; }
             .bottom-nav {
                 position: fixed;
@@ -914,7 +970,6 @@
 
         @media (max-width: 640px) {
             .welcome { padding: 22px; min-height: 0; }
-            .welcome-media { display: none; }
             .welcome p { max-width: none; }
             .stats { grid-template-columns: 1fr; }
             .job { flex-direction: column; }
@@ -938,8 +993,8 @@
             <svg viewBox="0 0 48 48" role="img" aria-hidden="true">
                 <defs>
                     <linearGradient id="markGreen" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stop-color="#4cc05a"/>
-                        <stop offset="100%" stop-color="#2e9e41"/>
+                        <stop offset="0%" stop-color="#45b45c"/>
+                        <stop offset="100%" stop-color="#2fa247"/>
                     </linearGradient>
                 </defs>
                 <path d="M19 12.5v-1.8A4.7 4.7 0 0 1 23.7 6h0.6a4.7 4.7 0 0 1 4.7 4.7v1.8"
@@ -960,19 +1015,19 @@
             <p class="side-label">Menu</p>
             <nav class="side-nav" aria-label="Dashboard">
                 <a class="side-link active" href="dashboard.html" aria-current="page">
-                    <i class="fas fa-house"></i> Dashboard
+                    <i class="fas fa-house"></i> <span>Dashboard</span>
                 </a>
                 <a class="side-link" href="jobs.html">
-                    <i class="fas fa-magnifying-glass"></i> Search Jobs
+                    <i class="fas fa-magnifying-glass"></i> <span>Search Jobs</span>
                 </a>
                 <a class="side-link" href="applications.html">
-                    <i class="fas fa-file-alt"></i> Applications
+                    <i class="fas fa-file-alt"></i> <span>Applications</span>
                 </a>
                 <a class="side-link" href="jobs.html">
-                    <i class="fas fa-bookmark"></i> Saved Jobs
+                    <i class="fas fa-bookmark"></i> <span>Saved Jobs</span>
                 </a>
                 <a class="side-link" href="profile.html">
-                    <i class="fas fa-user"></i> Profile
+                    <i class="fas fa-user"></i> <span>Profile</span>
                 </a>
             </nav>
         </div>
@@ -986,7 +1041,7 @@
                 </span>
             </a>
             <button class="side-logout" type="button" data-logout>
-                <i class="fas fa-right-from-bracket"></i> Log out
+                <i class="fas fa-right-from-bracket"></i> <span>Log out</span>
             </button>
         </div>
     </aside>
@@ -996,6 +1051,10 @@
     <!-- Main -->
     <div class="main">
         <header class="topbar">
+            <button class="icon-btn collapse-btn" id="collapseBtn" type="button" aria-label="Collapse sidebar" aria-expanded="true">
+                <i class="fas fa-bars-staggered"></i>
+            </button>
+
             <button class="icon-btn menu-btn" id="menuBtn" type="button" aria-label="Open navigation" aria-expanded="false">
                 <i class="fas fa-bars"></i>
             </button>
@@ -1009,6 +1068,7 @@
                 <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
                 <label class="visually-hidden" for="globalQuery">Search jobs</label>
                 <input type="search" id="globalQuery" name="q" placeholder="Search jobs, skills, or companies…">
+                <button class="search-go" type="submit">Search</button>
             </form>
 
             <div class="top-actions">
@@ -1052,32 +1112,32 @@
                 <div class="col-main">
                     <!-- Welcome -->
                     <section class="welcome">
-                        <div class="welcome-copy">
-                            <p class="eyebrow">Welcome back</p>
-                            <h2>Hello, <span id="welcomeName">Job Seeker</span>!<br><span class="accent">Find your next opportunity.</span></h2>
-                            <p>Discover jobs that match your skills, interests, and career goals.</p>
-                            <a class="btn-solid" href="jobs.html">
-                                Browse Jobs <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </div>
-                        <div class="welcome-media" aria-hidden="true">
-                            <img src="../assets/img/hero-professionals.jpg" alt="">
-                        </div>
-                    </section>
+                        <div class="welcome-inner">
+                            <div class="welcome-copy">
+                                <p class="eyebrow">Welcome back</p>
+                                <h2>Hello, <span class="accent" id="welcomeName">Job Seeker</span>!</h2>
+                                <p>Let's find the right job for you.</p>
+                                <a class="btn-solid" href="jobs.html">
+                                    Browse Jobs <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
 
-                    <!-- Profile completion -->
-                    <section class="card completion" aria-label="Profile completion">
-                        <div class="completion-main">
-                            <div class="completion-head">
-                                <h3>Profile Completion</h3>
-                                <strong id="completionValue">—</strong>
+                            <div class="welcome-completion">
+                                <section class="completion" aria-label="Profile completion">
+                                    <div class="completion-main">
+                                        <div class="completion-head">
+                                            <h3>Profile Completion</h3>
+                                            <strong id="completionValue">—</strong>
+                                        </div>
+                                        <div class="progress" role="progressbar" aria-label="Profile completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="completionBar">
+                                            <span id="completionFill" style="width: 0%"></span>
+                                        </div>
+                                        <p id="completionHint">A complete profile helps ENUVEX match you with better jobs.</p>
+                                    </div>
+                                    <a class="btn-solid btn-sm" href="profile.html">Complete Profile</a>
+                                </section>
                             </div>
-                            <div class="progress" role="progressbar" aria-label="Profile completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="completionBar">
-                                <span id="completionFill" style="width: 0%"></span>
-                            </div>
-                            <p id="completionHint">A complete profile helps ENUVEX match you with better jobs.</p>
                         </div>
-                        <a class="btn-solid" href="profile.html">Complete Profile</a>
                     </section>
 
                     <!-- KPI cards -->
@@ -1087,6 +1147,7 @@
                             <div>
                                 <div class="stat-value" id="kpiRecommended">—</div>
                                 <div class="stat-label">Recommended Jobs</div>
+                                <div class="stat-desc">Matched to your skills</div>
                             </div>
                         </article>
                         <article class="stat">
@@ -1094,6 +1155,7 @@
                             <div>
                                 <div class="stat-value" id="kpiNearby">—</div>
                                 <div class="stat-label">Nearby Jobs</div>
+                                <div class="stat-desc">In your municipality</div>
                             </div>
                         </article>
                         <article class="stat">
@@ -1101,6 +1163,7 @@
                             <div>
                                 <div class="stat-value" id="kpiNew">—</div>
                                 <div class="stat-label">New This Week</div>
+                                <div class="stat-desc">Posted in the last 7 days</div>
                             </div>
                         </article>
                         <article class="stat">
@@ -1108,6 +1171,7 @@
                             <div>
                                 <div class="stat-value" id="kpiSaved">—</div>
                                 <div class="stat-label">Saved Jobs</div>
+                                <div class="stat-desc">Jobs you bookmarked</div>
                             </div>
                         </article>
                     </section>
@@ -1150,8 +1214,10 @@
                             <h2 id="recommendedTitle">Recommended Jobs</h2>
                             <a class="link-all" href="jobs.html">View all <i class="fas fa-arrow-right"></i></a>
                         </div>
-                        <div class="job-list" id="recommendedJobs" aria-live="polite">
-                            <div class="loading">Loading recommended jobs…</div>
+                        <div class="job-panel">
+                            <div class="job-list" id="recommendedJobs" aria-live="polite">
+                                <div class="loading">Loading recommended jobs…</div>
+                            </div>
                         </div>
                     </section>
 
@@ -1161,8 +1227,10 @@
                             <h2 id="nearbyTitle">Nearby Jobs</h2>
                             <a class="link-all" href="jobs.html">View all <i class="fas fa-arrow-right"></i></a>
                         </div>
-                        <div class="job-list" id="nearbyJobs" aria-live="polite">
-                            <div class="loading">Loading nearby jobs…</div>
+                        <div class="job-panel">
+                            <div class="job-list" id="nearbyJobs" aria-live="polite">
+                                <div class="loading">Loading nearby jobs…</div>
+                            </div>
                         </div>
                     </section>
                 </div>
@@ -1178,7 +1246,7 @@
                             <p class="muted">No applications yet.</p>
                         </div>
                         <a class="link-all" style="margin-top: 14px;" href="applications.html">
-                            View applications <i class="fas fa-arrow-right"></i>
+                            View All <i class="fas fa-arrow-right"></i>
                         </a>
                     </section>
 
@@ -1198,9 +1266,10 @@
                             <i class="fas fa-lightbulb" aria-hidden="true"></i>
                         </div>
                         <ul class="tips">
-                            <li><i class="fas fa-circle-check"></i><span>Complete your skills and work experience so matches stay accurate.</span></li>
-                            <li><i class="fas fa-circle-check"></i><span>Apply to jobs with a high match percentage first — employers see the same score.</span></li>
+                            <li><i class="fas fa-circle-check"></i><span>Complete your profile so employers see your skills, experience, and availability.</span></li>
+                            <li><i class="fas fa-circle-check"></i><span>Apply to relevant opportunities with a high match percentage first.</span></li>
                             <li><i class="fas fa-circle-check"></i><span>Keep your preferred municipality updated to see nearby openings.</span></li>
+                            <li><i class="fas fa-circle-check"></i><span>Check for newly posted jobs — fresh listings appear every week.</span></li>
                         </ul>
                     </section>
                 </aside>
@@ -1225,15 +1294,6 @@
     'use strict';
 
     var JOB_ICONS = ['fa-briefcase', 'fa-store', 'fa-utensils', 'fa-cash-register', 'fa-truck', 'fa-pills', 'fa-building', 'fa-hard-hat'];
-    var STATUS_LABELS = {
-        APPLIED: 'Applied',
-        UNDER_REVIEW: 'Under review',
-        SHORTLISTED: 'Shortlisted',
-        INTERVIEW: 'Interview',
-        HIRED: 'Hired',
-        REJECTED: 'Rejected'
-    };
-    var STATUS_DOTS = { APPLIED: '', UNDER_REVIEW: 'blue', SHORTLISTED: '', INTERVIEW: 'amber', HIRED: '', REJECTED: 'red' };
 
     var state = {
         jobs: [],
@@ -1310,6 +1370,12 @@
         return new Date(then).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
     }
 
+    function postedLabel(value) {
+        var then = new Date(value).getTime();
+        if (!value || !isFinite(then)) return '';
+        return 'Posted ' + new Date(then).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+    }
+
     function toast(message, type) {
         var container = document.getElementById('toastContainer');
         if (!container) return;
@@ -1371,6 +1437,7 @@
             var skills = String(job.requiredSkills || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean).slice(0, 3);
             var type = typeLabel(job.employmentType);
             var match = Number(job.matchPercentage);
+            var posted = postedLabel(job.createdAt);
             var isSaved = state.saved.some(function (saved) { return saved.jobPostId === job.id || (saved.jobPost && saved.jobPost.id === job.id); });
 
             return '' +
@@ -1387,6 +1454,7 @@
                         '<div class="job-meta">' +
                             (location ? '<span><i class="fas fa-location-dot"></i>' + esc(location) + '</span>' : '') +
                             (salary ? '<span><i class="fas fa-peso-sign"></i>' + esc(salary) + '</span>' : '') +
+                            (posted ? '<span><i class="far fa-calendar"></i>' + esc(posted) + '</span>' : '') +
                         '</div>' +
                         (type || skills.length ? '<div class="job-tags">' +
                             (type ? '<span class="tag type">' + esc(type) + '</span>' : '') +
@@ -1428,28 +1496,29 @@
     function renderOverview(applications) {
         var container = document.getElementById('applicationOverview');
         var apps = applications || [];
+        var interview = 0;
+        var offered = 0;
+        var rejected = 0;
 
-        if (!apps.length) {
-            container.innerHTML = '<p class="muted">No applications yet. Jobs you apply to will appear here.</p>';
-            return;
-        }
-
-        var counts = { total: apps.length };
         apps.forEach(function (app) {
             var key = String(app.status || 'APPLIED').toUpperCase();
-            counts[key] = (counts[key] || 0) + 1;
+            if (key === 'INTERVIEW') interview += 1;
+            else if (key === 'HIRED') offered += 1;
+            else if (key === 'REJECTED') rejected += 1;
         });
 
-        var rows = [['Total applications', counts.total, '']];
-        ['UNDER_REVIEW', 'SHORTLISTED', 'INTERVIEW', 'REJECTED'].forEach(function (key) {
-            if (counts[key]) rows.push([STATUS_LABELS[key], counts[key], STATUS_DOTS[key]]);
-        });
+        var rows = [
+            ['Applied', apps.length, ''],
+            ['Interview', interview, 'navy'],
+            ['Offered', offered, ''],
+            ['Rejected', rejected, 'gray']
+        ];
 
         container.innerHTML = rows.map(function (row) {
             return '<div class="app-row"><span class="lbl">' +
-                (row[2] !== undefined ? '<span class="dot ' + row[2] + '"></span>' : '') +
+                '<span class="dot ' + row[2] + '"></span>' +
                 esc(row[0]) + '</span><b>' + row[1] + '</b></div>';
-        }).join('');
+        }).join('') + (apps.length ? '' : '<p class="muted" style="margin: 10px 2px 0;">No applications yet. Jobs you apply to will appear here.</p>');
     }
 
     function renderNotifications(notifications) {
@@ -1597,6 +1666,23 @@
         sidebar.addEventListener('click', function (event) {
             if (event.target.closest('a') && window.innerWidth <= 1024) closeSidebar();
         });
+
+        var collapseBtn = document.getElementById('collapseBtn');
+
+        function setCollapsed(collapsed) {
+            document.body.classList.toggle('nav-collapsed', collapsed);
+            collapseBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            collapseBtn.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+            try { localStorage.setItem('enuvex_nav_collapsed', collapsed ? '1' : '0'); } catch (e) { /* storage unavailable */ }
+        }
+
+        collapseBtn.addEventListener('click', function () {
+            setCollapsed(!document.body.classList.contains('nav-collapsed'));
+        });
+
+        try {
+            if (localStorage.getItem('enuvex_nav_collapsed') === '1') setCollapsed(true);
+        } catch (e) { /* storage unavailable */ }
 
         var bellBtn = document.getElementById('bellBtn');
         var bellDropdown = document.getElementById('bellDropdown');
