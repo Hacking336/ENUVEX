@@ -172,7 +172,15 @@
         window.location.href = 'register.html';
     });
 
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const authSub = document.querySelector('.auth-sub');
+
+    // The API can take up to a minute to wake from sleep. Start that now, while
+    // the person is still typing, instead of on the submit button.
+    if (window.ApiClient && ApiClient.warmUp) ApiClient.warmUp();
+
+    loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
 
         const name = document.getElementById('name').value.trim();
@@ -180,9 +188,24 @@
 
         // Use name as the login identifier; password is optional (required for non-admin)
         let loginPassword = password;
+        let signedIn = false;
+
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'Signing in\u2026';
+        if (authSub) {
+            authSub.textContent = 'Signing in\u2026';
+            authSub.classList.remove('is-error');
+        }
+
+        // A sleeping server answers slowly, not instantly. Say so after a few
+        // seconds so the button never looks dead.
+        const wakeNotice = setTimeout(() => {
+            if (authSub && !signedIn) authSub.textContent = 'Still starting the server \u2014 the first sign-in can take up to a minute.';
+        }, 5000);
 
         try {
             const data = await ApiClient.login(name, loginPassword);
+            signedIn = true;
 
             if (data.token) {
                 // ApiClient.setAuth already stores these with 'jsm_' prefix
@@ -192,7 +215,7 @@
                 localStorage.setItem('userType', data.userType.toUpperCase());
                 localStorage.setItem('userId', data.userId.toString());
 
-                const notice = document.querySelector('.auth-sub');
+                const notice = authSub;
                 if (notice) { notice.textContent = 'Login successful! Redirecting...'; }
 
                 // Redirect based on user type
@@ -221,6 +244,12 @@
             document.getElementById('name').classList.add('is-invalid');
             if (loginPassword) {
                 document.getElementById('password').classList.add('is-invalid');
+            }
+        } finally {
+            clearTimeout(wakeNotice);
+            if (!signedIn) {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
             }
         }
     });

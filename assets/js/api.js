@@ -8,6 +8,12 @@
 // Set to '/api' for same-origin (local development only).
 const API_BASE_URL = 'https://enuvex.onrender.com/api';
 
+// The API runs on a free Render instance that sleeps when idle, and the first
+// request after it sleeps waits through the container boot. That is slow but it
+// is not an error, so the wait is bounded rather than instant: the request is
+// only given up on after two minutes.
+const API_TIMEOUT_MS = 120000;
+
 const ApiClient = {
     token: null,
     refreshToken: null,
@@ -54,10 +60,25 @@ const ApiClient = {
             headers['Authorization'] = `Bearer ${this.token}`;
         }
 
-        const response = await fetch(`${API_BASE_URL}${url}`, {
-            ...options,
-            headers
-        });
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
+        let response;
+        try {
+            response = await fetch(`${API_BASE_URL}${url}`, {
+                ...options,
+                headers,
+                signal: controller.signal
+            });
+        } catch (error) {
+            // A rejected fetch used to leave the page silent, which looks like a
+            // dead button; say what happened instead.
+            throw new Error(error && error.name === 'AbortError'
+                ? 'The server took too long to answer. Please try again.'
+                : 'Cannot reach the ENUVEX server. Check your connection and try again.');
+        } finally {
+            clearTimeout(timer);
+        }
 
         // Read the body as text first: an error response may be empty or HTML,
         // and response.json() would then fail with a confusing syntax error.
@@ -83,6 +104,13 @@ const ApiClient = {
         }
 
         return data;
+    },
+
+    // Starts the sleeping instance waking while the user is still typing, so the
+    // sign-in click does not pay the whole cold-start cost. Failure is ignored:
+    // this is a hint, never a requirement for the page to work.
+    warmUp() {
+        fetch(`${API_BASE_URL}/health`, { method: 'GET', cache: 'no-store' }).catch(() => {});
     },
 
     async login(email, password) {
