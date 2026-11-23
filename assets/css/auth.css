@@ -307,3 +307,16 @@
 
     .auth-logo-mobile .auth-logo-text small { color: #5b6b7c; }
 }
+
+/* ---------- Mobile app safe areas ---------------------------------------- */
+
+/* Login and registration fill the screen behind the status bar in the app. */
+@supports (top: env(safe-area-inset-top, 0px)) {
+    body.auth-page {
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .auth-shell {
+        min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    }
+}

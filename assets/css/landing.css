@@ -815,3 +815,16 @@ body.landing {
 @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* ---------- Mobile app safe areas ---------------------------------------- */
+
+/* The sticky header must clear the status bar instead of hiding under it. */
+@supports (top: env(safe-area-inset-top, 0px)) {
+    body.landing {
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .site-header {
+        top: env(safe-area-inset-top, 0px);
+    }
+}

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Dashboard — ENUVEX</title>
     <link rel="icon" type="image/png" href="../assets/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -994,7 +994,25 @@
         @media (prefers-reduced-motion: reduce) {
             * { transition: none !important; }
         }
-    </style>
+    
+        /* Mobile app safe areas: the Android build draws edge to edge, so the
+           status bar and gesture bar would overlap the shell. env() is 0px in a
+           browser, leaving the web layout unchanged. */
+        @supports (top: env(safe-area-inset-top, 0px)) {
+            body {
+                padding-top: env(safe-area-inset-top, 0px);
+                padding-bottom: env(safe-area-inset-bottom, 0px);
+                padding-left: env(safe-area-inset-left, 0px);
+                padding-right: env(safe-area-inset-right, 0px);
+            }
+            .shell {
+                min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+            }
+            .sidebar,
+            .topbar { top: env(safe-area-inset-top, 0px); }
+            .sidebar { max-height: calc(100dvh - env(safe-area-inset-top, 0px)); }
+        }
+</style>
 </head>
 <body>
 <div class="shell">
