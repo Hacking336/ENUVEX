@@ -15,17 +15,20 @@ on:
 jobs:
   ping:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    # A free Render instance that has been asleep can take well over a minute to
+    # answer the first request, so the job needs a wider budget than the ping
+    # itself: three attempts of up to three minutes each.
+    timeout-minutes: 12
     steps:
       - name: Ping the health endpoint
         run: |
           for attempt in 1 2 3; do
-            if curl --fail --silent --show-error --max-time 90 https://enuvex.onrender.com/api/health; then
+            if curl --fail --silent --show-error --max-time 180 https://enuvex.onrender.com/api/health; then
               echo "API is awake."
               exit 0
             fi
             echo "Attempt ${attempt} failed; the instance may still be starting, retrying."
-            sleep 15
+            sleep 20
           done
           echo "The API did not answer." >&2
           exit 1
