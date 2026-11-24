@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="JSM">
+  <title>JSM</title>
+  <rect width="512" height="512" rx="112" ry="112" fill="#102B4C"/>
+  <g fill="none" stroke-width="46" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M150 168v112a34 34 0 0 1-68 0" stroke="#FFFFFF"/>
+    <path d="M296 204c-14-19-52-23-69-5-16 17-7 38 18 47 26 9 44 23 36 44-9 22-47 27-65 11"
+          transform="translate(238 246) scale(1 1.05) translate(-223 -248)" stroke="#FFFFFF"/>
+    <path d="M336 330V168l55 96 55-96v162" stroke="#2FA247"/>
+  </g>
+</svg>

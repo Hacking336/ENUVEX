@@ -520,6 +520,21 @@ body.landing {
     gap: 20px;
 }
 
+/* Shown instead of job cards when the live job table has no open posts. */
+.featured-empty {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 26px 22px;
+    color: #64748b;
+    font-size: 15px;
+    line-height: 1.6;
+    text-align: center;
+    background: #fff;
+    border: 1px dashed #cfdde8;
+    border-radius: var(--radius);
+}
+.featured-empty a { color: var(--green-dark); font-weight: 600; }
+
 .job-card {
     display: flex;
     flex-direction: column;

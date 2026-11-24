@@ -1,5 +1,6 @@
 package com.jobskills.dto;
 
+import com.jobskills.model.enums.EmploymentType;
 import com.jobskills.model.enums.JobCategory;
 import com.jobskills.model.enums.Municipality;
 import com.jobskills.model.enums.WorkSchedule;
@@ -13,7 +14,7 @@ public class JobSearchRequest {
     private String skills;
     private Double minSalary;
     private Double maxSalary;
-    private String employmentType;
+    private EmploymentType employmentType;
     private WorkSchedule workSchedule;
     private Double maxDistance;
     private String experience;

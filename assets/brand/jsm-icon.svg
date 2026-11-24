@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="JSM app icon">
+  <title>JSM app icon</title>
+  <rect width="512" height="512" rx="116" ry="116" fill="#102B4C"/>
+  <g transform="translate(0 11)" fill="none" stroke-width="30" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M141 172v108a30 30 0 0 1-60 0" stroke="#FFFFFF"/>
+    <path d="M296 200c-13-18-51-22-68-4-16 17-7 38 18 47 26 9 44 23 36 44-9 22-46 27-64 11"
+          transform="translate(237 244.5) scale(1 1.054) translate(-223 -248)" stroke="#FFFFFF"/>
+    <path d="M339 317V176l48 84 48-84v141" stroke="#2FA247"/>
+    <circle cx="387" cy="222" r="23" fill="#FFFFFF" stroke="none"/>
+  </g>
+</svg>

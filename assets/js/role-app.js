@@ -9,22 +9,9 @@
 (function () {
     'use strict';
 
-    var BRAND_MARK = `
-        <svg viewBox="0 0 48 48" role="img" aria-hidden="true">
-            <defs>
-                <linearGradient id="markGreenRole" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#45b45c"/>
-                    <stop offset="100%" stop-color="#2fa247"/>
-                </linearGradient>
-            </defs>
-            <path d="M19 12.5v-1.8A4.7 4.7 0 0 1 23.7 6h0.6a4.7 4.7 0 0 1 4.7 4.7v1.8"
-                  fill="none" stroke="url(#markGreenRole)" stroke-width="3.4" stroke-linecap="round"/>
-            <rect x="3" y="12.5" width="42" height="29" rx="6.5" fill="url(#markGreenRole)"/>
-            <circle cx="19" cy="25.5" r="3.6" fill="#ffffff"/>
-            <circle cx="29" cy="25.5" r="3.6" fill="#ffffff"/>
-            <path d="M12.4 35.4c0-3.6 3-6.5 6.6-6.5s6.6 2.9 6.6 6.5z" fill="#ffffff"/>
-            <path d="M22.4 35.4c0-3.6 3-6.5 6.6-6.5s6.6 2.9 6.6 6.5z" fill="#ffffff"/>
-        </svg>`;
+    // The mark is the one official app icon, so every console shows the same
+    // artwork instead of an inline redraw that can drift.
+    var BRAND_MARK = '<img src="../assets/brand/jsm-icon.svg" alt="" width="40" height="40">';
 
     var NAVS = {
         employer: [
@@ -114,7 +101,7 @@
         REJECTED: { label: 'Rejected', cls: 'status-rejected' }
     };
 
-    var API_ORIGIN = (window.API_BASE_URL || 'https://enuvex.onrender.com/api').replace(/\/api\/?$/, '');
+    var API_ORIGIN = (window.API_BASE_URL || '/api').replace(/\/api\/?$/, '');
 
     var state = {
         role: 'employer',
@@ -242,11 +229,11 @@
         var nav = NAVS[state.role];
 
         aside.innerHTML = `
-            <a class="side-brand" href="dashboard.html" aria-label="ENUVEX ${meta.label} dashboard">
+            <a class="side-brand" href="dashboard.html" aria-label="JSM ${meta.label} dashboard">
                 ${BRAND_MARK}
                 <span class="side-brand-text">
-                    <strong>ENUVEX</strong>
-                    <small>${meta.label}</small>
+                    <strong>JSM</strong>
+                    <small>Job &amp; Skills Matching</small>
                 </span>
             </a>
             <div>

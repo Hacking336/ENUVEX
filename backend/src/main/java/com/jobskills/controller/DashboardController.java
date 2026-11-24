@@ -22,7 +22,8 @@ public class DashboardController {
         Long userId = extractUserId(authentication);
         var stats = new DashboardStatsDto();
         stats.setTotalApplications(applicationService.getSeekerApplications(userId).size());
-        stats.setActiveJobPosts(1);
+        // Live count from the job table, not a placeholder.
+        stats.setActiveJobPosts(jobService.countActiveJobs());
         return ResponseEntity.ok(stats);
     }
 

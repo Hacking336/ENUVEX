@@ -30,10 +30,34 @@ public class JobService {
     private final MatchingEngine matchingEngine;
 
     @Transactional
-    public JobPost createJob(Long employerId, JobPost job) {
+    public JobPost createJob(Long employerId, JobPostRequest request) {
         EmployerProfile employer = employerRepository.findById(employerId)
             .orElseThrow(() -> new IllegalArgumentException("Employer not found"));
+
+        // Built here rather than deserialized straight from the body so the
+        // defaults are real values, not the zero values of a fresh entity.
+        JobPost job = new JobPost();
         job.setEmployer(employer);
+        job.setJobTitle(requireText(request.getJobTitle(), "Position title"));
+        job.setJobCategory(requireValue(request.getJobCategory(), "Job category"));
+        job.setJobDescription(requireText(request.getJobDescription(), "Job description"));
+        job.setResponsibilities(requireText(request.getResponsibilities(), "Key responsibilities"));
+        job.setRequiredSkills(blankToNull(request.getRequiredSkills()));
+        job.setEducationRequirement(request.getEducationRequirement());
+        job.setExperienceRequirement(blankToNull(request.getExperienceRequirement()));
+        job.setCertifications(blankToNull(request.getCertifications()));
+        job.setEmploymentType(request.getEmploymentType());
+        job.setWorkSchedule(request.getWorkSchedule());
+        job.setMunicipality(requireValue(request.getMunicipality(), "Municipality"));
+        job.setBarangay(blankToNull(request.getBarangay()));
+        job.setJobLocation(blankToNull(request.getJobLocation()));
+        applySalary(job, request);
+        job.setAvailablePositions(request.getAvailablePositions() == null || request.getAvailablePositions() < 1
+            ? 1 : request.getAvailablePositions());
+        // A new post is live unless the employer explicitly saves it paused;
+        // an inactive post never shows up in a seeker's search.
+        job.setActive(request.getActive() == null || request.getActive());
+
         return jobPostRepository.save(job);
     }
 
@@ -47,29 +71,37 @@ public class JobService {
      * anything in the request body.
      */
     @Transactional
-    public JobPost updateJob(Long id, Long employerId, JobPost jobDetails) {
+    public JobPost updateJob(Long id, Long employerId, JobPostRequest request) {
         JobPost job = getJobById(id);
         if (employerId == null || !job.getEmployer().getId().equals(employerId)) {
             throw new org.springframework.security.access.AccessDeniedException("This job belongs to another employer");
         }
 
-        if (jobDetails.getJobTitle() != null) job.setJobTitle(jobDetails.getJobTitle());
-        if (jobDetails.getJobCategory() != null) job.setJobCategory(jobDetails.getJobCategory());
-        if (jobDetails.getJobDescription() != null) job.setJobDescription(jobDetails.getJobDescription());
-        if (jobDetails.getResponsibilities() != null) job.setResponsibilities(jobDetails.getResponsibilities());
-        if (jobDetails.getRequiredSkills() != null) job.setRequiredSkills(jobDetails.getRequiredSkills());
-        if (jobDetails.getEducationRequirement() != null) job.setEducationRequirement(jobDetails.getEducationRequirement());
-        if (jobDetails.getExperienceRequirement() != null) job.setExperienceRequirement(jobDetails.getExperienceRequirement());
-        if (jobDetails.getCertifications() != null) job.setCertifications(jobDetails.getCertifications());
-        if (jobDetails.getSalaryMin() != null) job.setSalaryMin(jobDetails.getSalaryMin());
-        if (jobDetails.getSalaryMax() != null) job.setSalaryMax(jobDetails.getSalaryMax());
-        if (jobDetails.getEmploymentType() != null) job.setEmploymentType(jobDetails.getEmploymentType());
-        if (jobDetails.getWorkSchedule() != null) job.setWorkSchedule(jobDetails.getWorkSchedule());
-        if (jobDetails.getAvailablePositions() > 0) job.setAvailablePositions(jobDetails.getAvailablePositions());
-        if (jobDetails.getMunicipality() != null) job.setMunicipality(jobDetails.getMunicipality());
-        if (jobDetails.getBarangay() != null) job.setBarangay(jobDetails.getBarangay());
-        if (jobDetails.getJobLocation() != null) job.setJobLocation(jobDetails.getJobLocation());
-        job.setActive(jobDetails.isActive());
+        if (request.getJobTitle() != null) job.setJobTitle(requireText(request.getJobTitle(), "Position title"));
+        if (request.getJobCategory() != null) job.setJobCategory(request.getJobCategory());
+        if (request.getJobDescription() != null) job.setJobDescription(requireText(request.getJobDescription(), "Job description"));
+        if (request.getResponsibilities() != null) job.setResponsibilities(requireText(request.getResponsibilities(), "Key responsibilities"));
+        if (request.getRequiredSkills() != null) job.setRequiredSkills(blankToNull(request.getRequiredSkills()));
+        if (request.getEducationRequirement() != null) job.setEducationRequirement(request.getEducationRequirement());
+        if (request.getExperienceRequirement() != null) job.setExperienceRequirement(blankToNull(request.getExperienceRequirement()));
+        if (request.getCertifications() != null) job.setCertifications(blankToNull(request.getCertifications()));
+        if (request.getEmploymentType() != null) job.setEmploymentType(request.getEmploymentType());
+        if (request.getWorkSchedule() != null) job.setWorkSchedule(request.getWorkSchedule());
+        if (request.getMunicipality() != null) job.setMunicipality(request.getMunicipality());
+        if (request.getBarangay() != null) job.setBarangay(blankToNull(request.getBarangay()));
+        if (request.getJobLocation() != null) job.setJobLocation(blankToNull(request.getJobLocation()));
+        if (request.getSalaryMin() != null) job.setSalaryMin(request.getSalaryMin());
+        if (request.getSalaryMax() != null) job.setSalaryMax(request.getSalaryMax());
+        if (request.getAvailablePositions() != null) {
+            if (request.getAvailablePositions() < 1) {
+                throw new IllegalArgumentException("Available positions must be at least 1");
+            }
+            job.setAvailablePositions(request.getAvailablePositions());
+        }
+        // Only an explicit value changes the published state. This is what makes
+        // an edit that does not touch "active" keep a paused post paused and a
+        // live post live.
+        if (request.getActive() != null) job.setActive(request.getActive());
 
         return jobPostRepository.save(job);
     }
@@ -81,6 +113,10 @@ public class JobService {
             throw new org.springframework.security.access.AccessDeniedException("This job belongs to another employer");
         }
         jobPostRepository.delete(job);
+    }
+
+    public long countActiveJobs() {
+        return jobPostRepository.countByIsActiveTrue();
     }
 
     public List<JobPost> getJobsByEmployer(Long employerId) {
@@ -113,7 +149,7 @@ public class JobService {
             if (search.getMaxSalary() != null) {
                 predicates.add(cb.lessThanOrEqualTo(root.get("salaryMin"), search.getMaxSalary()));
             }
-            if (search.getEmploymentType() != null && !search.getEmploymentType().isEmpty()) {
+            if (search.getEmploymentType() != null) {
                 predicates.add(cb.equal(root.get("employmentType"), search.getEmploymentType()));
             }
             if (search.getWorkSchedule() != null) {
@@ -243,6 +279,34 @@ public class JobService {
             .build();
 
         return applicationRepository.save(application);
+    }
+
+    private void applySalary(JobPost job, JobPostRequest request) {
+        BigDecimal min = request.getSalaryMin();
+        BigDecimal max = request.getSalaryMax();
+        if (min != null && max != null && max.compareTo(min) < 0) {
+            throw new IllegalArgumentException("Maximum salary cannot be lower than minimum salary");
+        }
+        job.setSalaryMin(min);
+        job.setSalaryMax(max);
+    }
+
+    private String requireText(String value, String label) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(label + " is required");
+        }
+        return value.trim();
+    }
+
+    private <T> T requireValue(T value, String label) {
+        if (value == null) {
+            throw new IllegalArgumentException(label + " is required");
+        }
+        return value;
+    }
+
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 
     /** Resolves the seeker profile from the logged-in user id. */

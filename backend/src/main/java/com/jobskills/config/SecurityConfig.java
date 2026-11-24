@@ -3,6 +3,8 @@ package com.jobskills.config;
 import com.jobskills.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -20,8 +22,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import jakarta.servlet.http.HttpServletRequest;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
@@ -51,25 +55,71 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
+    // https://localhost and capacitor://localhost are the origins a Capacitor
+    // WebView reports on Android and iOS; without them the packaged apps cannot
+    // call the API. They are the app's own local shell, not a website.
+    private static final List<String> FIXED_ORIGINS = List.of(
+        "http://localhost:8080",
+        "http://127.0.0.1:8080",
+        "https://enuvex.onrender.com",
+        "https://jobskillmatching.com",
+        "https://www.jobskillmatching.com",
+        "https://localhost",
+        "capacitor://localhost",
+        "http://localhost");
+
+    /**
+     * Resolved per request instead of from a fixed list, because browsers send
+     * an Origin header on every POST/PUT/DELETE - even same-origin ones. A host
+     * that was not written into the list (the custom domain, a preview host, a
+     * new deployment URL) therefore got 403 "Invalid CORS request" on login,
+     * registration and posting a job, while GETs kept working.
+     *
+     * The origin the browser reports is accepted when it is the same host the
+     * browser used to reach us, so a deployment works on whatever hostname it is
+     * served from without opening the API to unrelated sites.
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        // https://localhost and capacitor://localhost are the origins a Capacitor
-        // WebView reports on Android and iOS; without them the packaged apps
-        // cannot call the API. They are the app's own local shell, not a site.
-        configuration.setAllowedOrigins(List.of(
-            "http://localhost:8080",
-            "http://127.0.0.1:8080",
-            "https://enuvex.onrender.com",
-            "https://localhost",
-            "capacitor://localhost",
-            "http://localhost"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+        return request -> {
+            CorsConfiguration configuration = new CorsConfiguration();
+            List<String> origins = new ArrayList<>(FIXED_ORIGINS);
+            String origin = request.getHeader(HttpHeaders.ORIGIN);
+            if (origin != null && isSameHost(origin, request)) {
+                origins.add(origin);
+            }
+            configuration.setAllowedOrigins(origins.stream().distinct().toList());
+            configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+            configuration.setAllowedHeaders(List.of("*"));
+            configuration.setAllowCredentials(true);
+            return configuration;
+        };
+    }
+
+    /** True when the request behind this Origin reached us on the same host name. */
+    private boolean isSameHost(String origin, HttpServletRequest request) {
+        String host = firstValue(request.getHeader("X-Forwarded-Host"));
+        if (host == null) {
+            host = firstValue(request.getHeader(HttpHeaders.HOST));
+        }
+        if (host == null) {
+            return false;
+        }
+        try {
+            String originHost = java.net.URI.create(origin).getHost();
+            String requestHost = java.net.URI.create("http://" + host).getHost();
+            return originHost != null && originHost.equalsIgnoreCase(requestHost);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    private String firstValue(String headerValue) {
+        if (headerValue == null || headerValue.isBlank()) {
+            return null;
+        }
+        String first = headerValue.split(",")[0].trim();
+        return first.isEmpty() ? null : first;
     }
 
     @Bean
@@ -93,6 +143,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/health").permitAll()
                 .requestMatchers("/api/municipalities", "/api/categories", "/api/business-types").permitAll()
+                // Read-only job browsing is public: JobController only exposes
+                // GETs here and they return active posts. Without this rule the
+                // job listing and job detail pages answered 401 to anyone not
+                // signed in, even though the controllers document them as public.
+                .requestMatchers(HttpMethod.GET, "/api/jobs", "/api/jobs/**").permitAll()
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()

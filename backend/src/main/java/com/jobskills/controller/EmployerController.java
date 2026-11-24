@@ -69,14 +69,14 @@ public class EmployerController {
     }
 
     @PostMapping("/jobs")
-    public ResponseEntity<JobPost> postJob(@RequestBody JobPost job, Authentication authentication) {
-        return ResponseEntity.status(201).body(jobService.createJob(extractEmployerId(authentication), job));
+    public ResponseEntity<JobPost> postJob(@RequestBody JobPostRequest request, Authentication authentication) {
+        return ResponseEntity.status(201).body(jobService.createJob(extractEmployerId(authentication), request));
     }
 
     @PutMapping("/jobs/{id}")
-    public ResponseEntity<JobPost> updateJob(@PathVariable Long id, @RequestBody JobPost job,
+    public ResponseEntity<JobPost> updateJob(@PathVariable Long id, @RequestBody JobPostRequest request,
                                              Authentication authentication) {
-        return ResponseEntity.ok(jobService.updateJob(id, extractEmployerId(authentication), job));
+        return ResponseEntity.ok(jobService.updateJob(id, extractEmployerId(authentication), request));
     }
 
     @DeleteMapping("/jobs/{id}")

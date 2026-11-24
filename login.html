@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Login — ENUVEX</title>
+    <title>Login — JSM</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/auth.css">
+    <link rel="stylesheet" href="assets/brand/brand.css">
     <style>
         :root {
             --ink: #0b2545;
@@ -60,32 +61,20 @@
         }
         .btn-solid:hover { background: var(--green-dark); border-color: var(--green-dark); }
     </style>
-    <link rel="icon" type="image/png" href="assets/logo.png">
+    <link rel="icon" type="image/svg+xml" href="assets/brand/jsm-favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/brand/jsm-icon-192.png">
+    <link rel="apple-touch-icon" href="assets/brand/jsm-icon-192.png">
 </head>
 <body class="login-page auth-page">
 
 <div class="auth-shell">
 
     <aside class="auth-aside">
-        <a class="auth-logo" href="index.html">
-            <svg class="auth-mark" viewBox="0 0 48 48" aria-hidden="true">
-                <defs>
-                    <linearGradient id="authGreen" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stop-color="#5ad569"/>
-                        <stop offset="100%" stop-color="#2e9e41"/>
-                    </linearGradient>
-                </defs>
-                <path d="M19 12.5v-1.8A4.7 4.7 0 0 1 23.7 6h0.6a4.7 4.7 0 0 1 4.7 4.7v1.8"
-                      fill="none" stroke="url(#authGreen)" stroke-width="3.4" stroke-linecap="round"/>
-                <rect x="3" y="12.5" width="42" height="29" rx="6.5" fill="url(#authGreen)"/>
-                <circle cx="19" cy="25.5" r="3.6" fill="#ffffff"/>
-                <circle cx="29" cy="25.5" r="3.6" fill="#ffffff"/>
-                <path d="M12.4 35.4c0-3.6 3-6.5 6.6-6.5s6.6 2.9 6.6 6.5z" fill="#ffffff"/>
-                <path d="M22.4 35.4c0-3.6 3-6.5 6.6-6.5s6.6 2.9 6.6 6.5z" fill="#ffffff"/>
-            </svg>
+        <a class="auth-logo" href="index.html" aria-label="JSM home">
+            <img class="auth-mark" src="assets/brand/jsm-icon.svg" alt="" width="46" height="46">
             <span class="auth-logo-text">
-                <strong>ENUVEX</strong>
-                <small>Job &amp; Skills Matching System</small>
+                <strong>JSM</strong>
+                <small>Job &amp; Skills Matching</small>
             </span>
         </a>
 
@@ -100,31 +89,23 @@
             </ul>
         </div>
 
-        <p class="auth-aside-foot">© 2026 ENUVEX — Job &amp; Skills Matching System</p>
+        <p class="auth-aside-foot">© 2026 JSM — Job &amp; Skills Matching</p>
     </aside>
 
     <main class="auth-main">
         <div class="auth-form-wrap">
-            <a class="auth-logo auth-logo-mobile" href="index.html">
-                <svg class="auth-mark" viewBox="0 0 48 48" aria-hidden="true">
-                    <rect x="3" y="12.5" width="42" height="29" rx="6.5" fill="#2e9e41"/>
-                    <path d="M19 12.5v-1.8A4.7 4.7 0 0 1 23.7 6h0.6a4.7 4.7 0 0 1 4.7 4.7v1.8"
-                          fill="none" stroke="#2e9e41" stroke-width="3.4" stroke-linecap="round"/>
-                    <circle cx="19" cy="25.5" r="3.6" fill="#ffffff"/>
-                    <circle cx="29" cy="25.5" r="3.6" fill="#ffffff"/>
-                    <path d="M12.4 35.4c0-3.6 3-6.5 6.6-6.5s6.6 2.9 6.6 6.5z" fill="#ffffff"/>
-                    <path d="M22.4 35.4c0-3.6 3-6.5 6.6-6.5s6.6 2.9 6.6 6.5z" fill="#ffffff"/>
-                </svg>
+            <a class="auth-logo auth-logo-mobile" href="index.html" aria-label="JSM home">
+                <img class="auth-mark" src="assets/brand/jsm-icon.svg" alt="" width="46" height="46">
                 <span class="auth-logo-text">
-                    <strong>ENUVEX</strong>
-                    <small>Job &amp; Skills Matching System</small>
+                    <strong>JSM</strong>
+                    <small>Job &amp; Skills Matching</small>
                 </span>
             </a>
 
             <a class="auth-back" href="index.html"><i class="fas fa-arrow-left"></i> Back to Home</a>
 
             <h2 class="auth-title">Welcome back</h2>
-            <p class="auth-sub">Sign in to your ENUVEX account to continue.</p>
+            <p class="auth-sub">Sign in to your JSM account to continue.</p>
 
             <form class="validate" id="loginForm">
                 <div class="form-group">
@@ -155,7 +136,7 @@
             </form>
 
             <p class="auth-alt">
-                New to ENUVEX?
+                New to JSM?
                 <button type="button" class="auth-link-btn" id="showRegisterChoice">Create an account</button>
             </p>
             <p class="auth-alt auth-alt-muted">Forgot your password? Ask your administrator to reset it.</p>

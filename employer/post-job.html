@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Post a Job — ENUVEX</title>
-    <link rel="icon" type="image/png" href="../assets/logo.png">
+    <title>Post a Job — JSM</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/brand/jsm-favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/brand/jsm-icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/brand/jsm-icon-192.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://enuvex.onrender.com" crossorigin>
@@ -201,6 +203,9 @@
     };
 
     var editingId = null;
+    // New posts publish live; an existing post keeps the state it already has
+    // unless the employer pauses or activates it from the job list.
+    var formActive = true;
 
     function field(id) { return document.getElementById(id); }
 
@@ -257,7 +262,7 @@
             educationRequirement: field('educationRequirement').value || null,
             municipality: field('municipality').value || null,
             availablePositions: Number(field('availablePositions').value || 1),
-            isActive: true
+            active: formActive
         };
 
         var min = field('salaryMin').value.trim();
@@ -289,6 +294,8 @@
             showError('That job post could not be found on your account.');
             return;
         }
+
+        formActive = job.active !== undefined ? !!job.active : !!job.isActive;
 
         document.getElementById('formTitle').textContent = 'Edit job post';
         document.getElementById('formSubtitle').textContent = 'Changes are saved to the same post applicants already see.';

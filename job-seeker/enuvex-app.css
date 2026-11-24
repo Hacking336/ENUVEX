@@ -100,7 +100,7 @@ img { max-width: 100%; }
     padding: 0 8px 18px;
     border-bottom: 1px solid var(--line);
 }
-.side-brand svg { display: block; width: 40px; height: 40px; flex: 0 0 auto; }
+.side-brand svg, .side-brand img { display: block; width: 40px; height: 40px; flex: 0 0 auto; }
 .side-brand-text { display: flex; flex-direction: column; line-height: 1; min-width: 0; }
 .side-brand-text strong {
     font-family: var(--font-head);

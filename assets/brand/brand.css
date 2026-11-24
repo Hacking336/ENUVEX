@@ -1,0 +1,123 @@
+/* ==========================================================================
+   JSM — brand layer
+   The official palette and the reusable brand lockup (icon + product name +
+   descriptor). Every page loads this one file, so the logo is never redrawn
+   per page: the artwork lives once in assets/brand/ and is referenced here.
+   Load after the page stylesheet so the tokens win over page-local colours.
+   ========================================================================== */
+
+:root {
+    --jsm-navy: #102B4C;
+    --jsm-green: #2FA247;
+    --jsm-green-dark: #25853A;
+    --jsm-green-soft: #EAF5EC;
+    --jsm-white: #FFFFFF;
+    --jsm-background: #F5F8FA;
+    --jsm-text: #26384A;
+    --jsm-muted: #64748B;
+    --jsm-border: #E3EAF0;
+}
+
+/* ---------- Lockup: mark + name + descriptor ----------------------------- */
+
+.jsm-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+    color: inherit;
+    text-decoration: none;
+}
+
+.jsm-brand__mark {
+    display: block;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 auto;
+}
+
+.jsm-brand__text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+    min-width: 0;
+}
+
+.jsm-brand__name {
+    font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    color: var(--jsm-navy);
+}
+
+.jsm-brand__tag {
+    margin-top: 5px;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--jsm-muted);
+}
+
+/* Size steps — keep the aspect ratio, only the mark box changes. */
+.jsm-brand--sm .jsm-brand__mark { width: 34px; height: 34px; }
+.jsm-brand--sm .jsm-brand__name { font-size: 17px; }
+.jsm-brand--lg .jsm-brand__mark { width: 56px; height: 56px; }
+.jsm-brand--lg .jsm-brand__name { font-size: 26px; }
+
+/* Dark backgrounds (footer bands, dark side panels). */
+.jsm-brand--light .jsm-brand__name { color: var(--jsm-white); }
+.jsm-brand--light .jsm-brand__tag { color: #9FB2C4; }
+
+/* The mark is a navy tile, so on a dark surface it needs a hairline edge to
+   stay readable. This is the same treatment as jsm-logo-light.svg. */
+.site-footer .brand-mark,
+.auth-aside .auth-mark,
+.jsm-brand--light .jsm-brand__mark {
+    border-radius: 10px;
+    box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.4);
+}
+
+/* ---------- Icon-only and horizontal lockup ------------------------------ */
+
+.jsm-icon {
+    display: block;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 auto;
+}
+
+.jsm-logo {
+    display: block;
+    width: auto;
+    height: 40px;
+    max-width: 100%;
+}
+
+/* ---------- Auth pages --------------------------------------------------- */
+
+.jsm-auth-mark {
+    display: block;
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 12px;
+}
+
+.jsm-auth-tag {
+    margin: 0 0 10px;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--jsm-green-dark);
+}
+
+/* ---------- Responsive --------------------------------------------------- */
+
+@media (max-width: 480px) {
+    .jsm-brand__mark { width: 38px; height: 38px; }
+    .jsm-brand__name { font-size: 19px; }
+    .jsm-brand__tag { display: none; }
+}

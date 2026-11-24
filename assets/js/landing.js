@@ -1,8 +1,8 @@
 /**
- * Landing page behaviour for ENUVEX (index.html).
+ * Landing page behaviour for JSM (index.html).
  *
- * The featured listings mirror the demo data used by job-seeker/jobs.html, so the
- * marketing page and the in-app job list stay consistent until real posts exist.
+ * The featured listings are read from the live job table, so the marketing page
+ * and the in-app job list always show the same openings.
  */
 (function () {
     'use strict';
@@ -39,48 +39,63 @@
 
     /* ---------- Featured jobs ---------- */
 
-    var sampleJobs = [
-        {
-            company: 'AgriTech Solutions',
-            icon: 'fa-leaf',
-            tone: '',
-            title: 'Agricultural Field Specialist',
-            location: 'Davao City, PH',
-            salary: '\u20B125,000 \u2013 \u20B135,000 / month',
-            type: 'Full-time',
-            mode: 'On-site'
-        },
-        {
-            company: 'GreenHarvest Farms',
-            icon: 'fa-seedling',
-            tone: 'tone-b',
-            title: 'Livestock Farm Technician',
-            location: 'Cagayan de Oro City, PH',
-            salary: '\u20B118,000 \u2013 \u20B125,000 / month',
-            type: 'Full-time',
-            mode: 'On-site'
-        },
-        {
-            company: 'EcoBuild Construction',
-            icon: 'fa-mountain-sun',
-            tone: 'tone-c',
-            title: 'Environmental Compliance Officer',
-            location: 'Quezon City, PH',
-            salary: '\u20B130,000 \u2013 \u20B145,000 / month',
-            type: 'Full-time',
-            mode: 'Hybrid'
-        },
-        {
-            company: 'Solaris Energy',
-            icon: 'fa-bolt',
-            tone: 'tone-d',
-            title: 'Renewable Energy Technician',
-            location: 'Iloilo City, PH',
-            salary: '\u20B120,000 \u2013 \u20B130,000 / month',
-            type: 'Full-time',
-            mode: 'On-site'
-        }
-    ];
+    // The cards are built from the live job table, newest first, so the landing
+    // page can never advertise a vacancy that does not exist. /api/jobs is a
+    // public read-only endpoint and only returns active posts.
+    var CATEGORY_ICONS = {
+        RETAIL_STORE: 'fa-store', SALES: 'fa-tags', FOOD_SERVICE_RESTAURANT: 'fa-utensils',
+        HOSPITALITY_TOURISM: 'fa-hotel', OFFICE_ADMINISTRATION: 'fa-folder-open',
+        ACCOUNTING_FINANCE: 'fa-calculator', HEALTHCARE: 'fa-pills',
+        EDUCATION_TUTORING: 'fa-chalkboard-user', CONSTRUCTION_SKILLED_TRADES: 'fa-hard-hat',
+        AGRICULTURE: 'fa-leaf', FISHERIES: 'fa-fish', MANUFACTURING: 'fa-industry',
+        LOGISTICS_DELIVERY: 'fa-truck-fast', TRANSPORTATION: 'fa-van-shuttle',
+        AUTOMOTIVE_MECHANICAL: 'fa-wrench', CUSTOMER_SERVICE: 'fa-headset',
+        SECURITY: 'fa-shield-halved', GENERAL_LABOR: 'fa-briefcase',
+        IT_TECHNOLOGY: 'fa-laptop-code', OTHER: 'fa-briefcase'
+    };
+
+    var TONES = ['', 'tone-b', 'tone-c', 'tone-d'];
+
+    var EMPLOYMENT_LABELS = {
+        FULL_TIME: 'Full-time', PART_TIME: 'Part-time', CONTRACT: 'Contract', TEMPORARY: 'Temporary'
+    };
+
+    var SCHEDULE_LABELS = {
+        MORNING: 'Morning', AFTERNOON: 'Afternoon', EVENING: 'Evening',
+        NIGHT: 'Night', WEEKEND: 'Weekend', FLEXIBLE: 'Flexible'
+    };
+
+    function peso(value) {
+        var n = Number(value);
+        return isFinite(n) && n > 0 ? '\u20B1' + n.toLocaleString('en-PH', { maximumFractionDigits: 0 }) : '';
+    }
+
+    function salaryText(job) {
+        var min = peso(job.salaryMin);
+        var max = peso(job.salaryMax);
+        if (min && max) { return min + ' \u2013 ' + max + ' / month'; }
+        if (min) { return 'From ' + min + ' / month'; }
+        if (max) { return 'Up to ' + max + ' / month'; }
+        return 'Salary not stated';
+    }
+
+    function place(job) {
+        var parts = [job.municipality ? titleCase(job.municipality) : '', job.barangay || ''].filter(Boolean);
+        return parts.length ? parts.join(', ') : 'Camarines Norte';
+    }
+
+    function fromApi(job, index) {
+        return {
+            company: job.companyName || 'Employer',
+            icon: CATEGORY_ICONS[String(job.category || '').toUpperCase()] || 'fa-briefcase',
+            tone: TONES[index % TONES.length],
+            title: job.jobTitle || 'Untitled role',
+            location: place(job),
+            salary: salaryText(job),
+            type: EMPLOYMENT_LABELS[String(job.employmentType || '').toUpperCase()] || 'Open position',
+            mode: SCHEDULE_LABELS[String(job.workSchedule || '').toUpperCase()] || titleCase(job.municipality || '')
+        };
+    }
 
     var grid = document.getElementById('featuredGrid');
 
@@ -158,9 +173,23 @@
     }
 
     if (grid) {
-        sampleJobs.forEach(function (job) {
-            grid.appendChild(buildCard(job));
-        });
+        fetch('/api/jobs?page=0&size=4&sortBy=createdAt&sortDir=DESC')
+            .then(function (response) { return response.ok ? response.json() : null; })
+            .then(function (page) {
+                var jobs = (page && page.content) || [];
+                grid.innerHTML = '';
+                if (!jobs.length) {
+                    grid.innerHTML = '<p class="featured-empty">No positions are open right now. '
+                        + '<a href="register.html">Create an account</a> and your profile is ready when local employers post.</p>';
+                    return;
+                }
+                jobs.slice(0, 4).forEach(function (job, index) {
+                    grid.appendChild(buildCard(fromApi(job, index)));
+                });
+            })
+            .catch(function () {
+                grid.innerHTML = '<p class="featured-empty">Featured jobs could not be loaded. Please refresh in a moment.</p>';
+            });
     }
 
     /* ---------- Locations dropdown ---------- */
@@ -210,8 +239,11 @@
             var query = document.getElementById('jobQuery').value.trim();
             var location = locationSelect ? locationSelect.value : '';
 
-            if (query) { params.set('skills', query); }
-            if (location) { params.set('municipality', location); }
+            // jobs.html reads the keyword as "q" and the municipality as the
+            // API enum value, so the landing search lands on a filtered list
+            // instead of an unfiltered one.
+            if (query) { params.set('q', query); }
+            if (location) { params.set('municipality', location.toUpperCase()); }
 
             window.location.href = 'job-seeker/jobs.html' + (params.toString() ? '?' + params.toString() : '');
         });

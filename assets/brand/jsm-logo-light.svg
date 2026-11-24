@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 296 128" width="296" height="128" role="img" aria-label="JSM — Job &amp; Skills Matching">
+  <title>JSM — Job &amp; Skills Matching</title>
+  <g>
+    <rect width="128" height="128" rx="30" ry="30" fill="#102B4C"/>
+    <rect x="1.5" y="1.5" width="125" height="125" rx="28.5" ry="28.5" fill="none" stroke="#2FA247" stroke-width="3"/>
+    <g transform="scale(0.25)" fill="none" stroke-width="30" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M141 172v108a30 30 0 0 1-60 0" stroke="#FFFFFF"/>
+      <path d="M296 200c-13-18-51-22-68-4-16 17-7 38 18 47 26 9 44 23 36 44-9 22-46 27-64 11"
+            transform="translate(237 244.5) scale(1 1.054) translate(-223 -248)" stroke="#FFFFFF"/>
+      <path d="M339 317V176l48 84 48-84v141" stroke="#2FA247"/>
+      <circle cx="387" cy="222" r="23" fill="#FFFFFF" stroke="none"/>
+    </g>
+  </g>
+  <g fill="none" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"
+     transform="translate(152 33) scale(0.3543) translate(-66 -157)">
+    <path d="M141 172v108a30 30 0 0 1-60 0" stroke="#FFFFFF"/>
+    <path d="M296 200c-13-18-51-22-68-4-16 17-7 38 18 47 26 9 44 23 36 44-9 22-46 27-64 11"
+          transform="translate(237 244.5) scale(1 1.054) translate(-223 -248)" stroke="#FFFFFF"/>
+    <path d="M339 317V176l48 84 48-84v141" stroke="#2FA247"/>
+  </g>
+</svg>

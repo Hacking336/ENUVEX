@@ -3,10 +3,19 @@
  * Connects the frontend UI to the Spring Boot backend
  */
 
-// API base URL: change to your Render backend URL for production.
-// When hosted on GitHub Pages, this points to the Render API.
-// Set to '/api' for same-origin (local development only).
-const API_BASE_URL = 'https://enuvex.onrender.com/api';
+// The Spring Boot backend serves both these pages and /api, so the API is
+// same-origin: one relative base works on localhost, on Render and on the
+// custom domain, and it never depends on a host being listed in CORS.
+// A page packaged inside the Android/iOS shell is not served by the backend,
+// so it keeps the deployed API address instead. Either case can be overridden
+// by setting window.JSM_API_BASE before this file loads.
+const JSM_REMOTE_API = 'https://enuvex.onrender.com/api';
+const JSM_PACKAGED_SHELL = !/^https?:$/.test(window.location.protocol)
+    || (window.location.hostname === 'localhost' && window.location.protocol === 'https:');
+const API_BASE_URL = window.JSM_API_BASE || (JSM_PACKAGED_SHELL ? JSM_REMOTE_API : '/api');
+
+// Exposed so the shared shells can resolve uploaded photo URLs.
+window.API_BASE_URL = API_BASE_URL;
 
 // The API runs on a free Render instance that sleeps when idle, and the first
 // request after it sleeps waits through the container boot. That is slow but it
@@ -75,7 +84,7 @@ const ApiClient = {
             // dead button; say what happened instead.
             throw new Error(error && error.name === 'AbortError'
                 ? 'The server took too long to answer. Please try again.'
-                : 'Cannot reach the ENUVEX server. Check your connection and try again.');
+                : 'Cannot reach the JSM server. Check your connection and try again.');
         } finally {
             clearTimeout(timer);
         }

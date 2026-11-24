@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Profile — ENUVEX</title>
-    <link rel="icon" type="image/png" href="../assets/logo.png">
+    <title>Profile — JSM</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/brand/jsm-favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/brand/jsm-icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/brand/jsm-icon-192.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -100,7 +102,7 @@
                                 <div class="progress" role="progressbar" aria-label="Profile completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="completionBar">
                                     <span id="completionFill" style="width: 0%"></span>
                                 </div>
-                                <p id="completionHint">A complete profile helps ENUVEX match you with better jobs.</p>
+                                <p id="completionHint">A complete profile helps JSM match you with better jobs.</p>
                             </div>
                         </div>
                     </section>
@@ -334,7 +336,7 @@
         var hint = document.getElementById('completionHint');
         if (pct >= 100) hint.textContent = 'Your profile is complete — employers can see everything they need.';
         else if (pct >= 70) hint.textContent = 'Almost there. Add the remaining details to improve your matches.';
-        else hint.textContent = 'A complete profile helps ENUVEX match you with better jobs.';
+        else hint.textContent = 'A complete profile helps JSM match you with better jobs.';
     }
 
     async function loadProfile() {

@@ -16,22 +16,8 @@
         { id: 'profile', href: 'profile.html', icon: 'fa-user', label: 'Profile', short: 'Profile', mobileIcon: 'fa-user' }
     ];
 
-    var BRAND_MARK = `
-        <svg viewBox="0 0 48 48" role="img" aria-hidden="true">
-            <defs>
-                <linearGradient id="markGreen" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#45b45c"/>
-                    <stop offset="100%" stop-color="#2fa247"/>
-                </linearGradient>
-            </defs>
-            <path d="M19 12.5v-1.8A4.7 4.7 0 0 1 23.7 6h0.6a4.7 4.7 0 0 1 4.7 4.7v1.8"
-                  fill="none" stroke="url(#markGreen)" stroke-width="3.4" stroke-linecap="round"/>
-            <rect x="3" y="12.5" width="42" height="29" rx="6.5" fill="url(#markGreen)"/>
-            <circle cx="19" cy="25.5" r="3.6" fill="#ffffff"/>
-            <circle cx="29" cy="25.5" r="3.6" fill="#ffffff"/>
-            <path d="M12.4 35.4c0-3.6 3-6.5 6.6-6.5s6.6 2.9 6.6 6.5z" fill="#ffffff"/>
-            <path d="M22.4 35.4c0-3.6 3-6.5 6.6-6.5s6.6 2.9 6.6 6.5z" fill="#ffffff"/>
-        </svg>`;
+    // One official icon file feeds every sidebar, so the mark cannot drift.
+    var BRAND_MARK = '<img src="../assets/brand/jsm-icon.svg" alt="" width="40" height="40">';
 
     var EMPLOYMENT_LABELS = {
         FULL_TIME: 'Full-time',
@@ -125,7 +111,7 @@
         MORE_THAN_3_MONTHS: 'More than 3 months'
     };
 
-    var API_ORIGIN = (window.API_BASE_URL || 'https://enuvex.onrender.com/api').replace(/\/api\/?$/, '');
+    var API_ORIGIN = (window.API_BASE_URL || '/api').replace(/\/api\/?$/, '');
 
     var state = {
         profile: null,
@@ -344,11 +330,11 @@
         if (!aside) return;
 
         aside.innerHTML = `
-            <a class="side-brand" href="dashboard.html" aria-label="ENUVEX dashboard">
+            <a class="side-brand" href="dashboard.html" aria-label="JSM dashboard">
                 ${BRAND_MARK}
                 <span class="side-brand-text">
-                    <strong>ENUVEX</strong>
-                    <small>Job &amp; Skills Matching System</small>
+                    <strong>JSM</strong>
+                    <small>Job &amp; Skills Matching</small>
                 </span>
             </a>
             <div>
@@ -391,7 +377,7 @@
 
             <div class="topbar-title">
                 <h1>${esc(config.title || 'Dashboard')}</h1>
-                <p>${esc(config.subtitle || 'Job & Skills Matching System')}</p>
+                <p>${esc(config.subtitle || 'Job & Skills Matching')}</p>
             </div>
 
             <form class="top-search" id="globalSearch" role="search">
