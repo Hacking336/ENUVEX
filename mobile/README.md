@@ -1,6 +1,6 @@
-# ENUVEX mobile apps (Capacitor)
+# JSM mobile apps (Capacitor)
 
-The Android and iOS apps are the existing ENUVEX pages packaged in a native
+The Android and iOS apps are the existing JSM pages packaged in a native
 WebView shell. The job seeker, employer and admin pages, the design system and
 `assets/js/api.js` are shared with the web build — there is no second copy of
 the UI to maintain.
@@ -59,6 +59,22 @@ must be deployed with that change before the packaged apps can sign in.
 
 ## Not included
 
-Push notifications, native plugins (camera, biometrics, geolocation), icons and
-store screenshots. Each of those is an additive plugin or asset; the shared web
-pages need no changes for them.
+Push notifications, native plugins (camera, biometrics, geolocation) and store
+screenshots. Each of those is an additive plugin or asset; the shared web pages
+need no changes for them.
+
+## App identity
+
+The launcher icon, adaptive-icon layers (navy background, JSM mark inside the
+64dp safe zone) and splash screens are the JSM brand from `assets/brand/`.
+`strings.xml` and `capacitor.config.json` set the launcher label to **JSM**; the
+application id stays `com.enuvex.app` so existing installs and the package
+history are preserved.
+
+Build a debug APK without Android Studio:
+
+```bash
+cd mobile
+npm install && npx cap sync android
+cd android && ./gradlew assembleDebug   # app/build/outputs/apk/debug/app-debug.apk
+```
