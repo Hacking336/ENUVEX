@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Employer Analytics — JSM</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/brand/jsm-favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/brand/jsm-icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/brand/jsm-icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://enuvex.onrender.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../job-seeker/enuvex-app.css">
+    <link rel="stylesheet" href="../assets/css/enuvex-role.css">
+    <script>
+        window.ENUVEX_PAGE = {
+            active: 'analytics',
+            title: 'Employer Analytics',
+            subtitle: 'Hiring insights from your job posts and applicants'
+        };
+    </script>
+</head>
+<body data-role="employer">
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="page-head">
+                <div>
+                    <h2>Analytics</h2>
+                    <p>Data-driven hiring insights from your job posts</p>
+                </div>
+                <div class="page-head-actions">
+                    <a class="btn-solid" href="post-job.html"><i class="fas fa-plus"></i> Post a Job</a>
+                    <a class="btn-ghost" href="jobs.html"><i class="fas fa-briefcase"></i> View Job Posts</a>
+                </div>
+            </div>
+
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load your analytics.</span>
+            </div>
+
+            <!-- Overview Cards Section -->
+            <section class="metrics cols-5" aria-label="Employer metrics">
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-briefcase"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricTotal">—</div>
+                        <div class="metric-label">Total Job Posts</div>
+                        <div class="metric-desc">Every post you created</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-circle-play"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricActive">—</div>
+                        <div class="metric-label">Active Job Posts</div>
+                        <div class="metric-desc">Visible to job seekers</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-users"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricApplicants">—</div>
+                        <div class="metric-label">Total Applicants</div>
+                        <div class="metric-desc">Applications received</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-user-plus"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricNew">—</div>
+                        <div class="metric-label">New Applicants</div>
+                        <div class="metric-desc">Not yet reviewed</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-hourglass-half"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricReviewing">—</div>
+                        <div class="metric-label">Awaiting Review</div>
+                        <div class="metric-desc">Currently in review</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricInterviews">—</div>
+                        <div class="metric-label">Interviews</div>
+                        <div class="metric-desc">Applicants invited</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-check-circle"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricAccepted">—</div>
+                        <div class="metric-label">Accepted</div>
+                        <div class="metric-desc">Offers accepted</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-times-circle"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricRejected">—</div>
+                        <div class="metric-label">Rejected</div>
+                        <div class="metric-desc">Offers rejected</div>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Job Performance Table Section -->
+            <section class="card panel" aria-label="Job performance" style="margin-top: 30px;">
+                <div class="panel-head">
+                    <h3><i class="fas fa-chart-bar"></i> Job Posting Performance</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Job Title</th>
+                                    <th>Municipality</th>
+                                    <th>Employment Type</th>
+                                    <th>Date Posted</th>
+                                    <th>Status</th>
+                                    <th>Total Applicants</th>
+                                    <th>New Applicants</th>
+                                    <th>Shortlisted</th>
+                                    <th>Interview</th>
+                                    <th>Accepted</th>
+                                    <th>Rejected</th>
+                                    <th>Avg Match</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jobPerformanceTable">
+                                <tr>
+                                    <td colspan="13" class="text-center">Loading job performance data…</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Applicant Funnel Section -->
+            <section class="card panel" aria-label="Applicant funnel" style="margin-top: 30px;">
+                <div class="panel-head">
+                    <h3><i class="fas fa-sort-numeric-down"></i> Applicant Funnel</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="funnel-container">
+                        <div class="funnel-stage">
+                            <div class="funnel-stage-label">Applications Received</div>
+                            <div class="funnel-stage-count" id="funnel-received">—</div>
+                        </div>
+                        <div class="funnel-stage">
+                            <div class="funnel-stage-label">Reviewing</div>
+                            <div class="funnel-stage-count" id="funnel-reviewing">—</div>
+                        </div>
+                        <div class="funnel-stage">
+                            <div class="funnel-stage-label">Shortlisted</div>
+                            <div class="funnel-stage-count" id="funnel-shortlisted">—</div>
+                        </div>
+                        <div class="funnel-stage">
+                            <div class="funnel-stage-label">Interview</div>
+                            <div class="funnel-stage-count" id="funnel-interviewed">—</div>
+                        </div>
+                        <div class="funnel-stage">
+                            <div class="funnel-stage-label">Accepted</div>
+                            <div class="funnel-stage-count" id="funnel-accepted">—</div>
+                        </div>
+                        <div class="funnel-stage">
+                            <div class="funnel-stage-label">Rejected</div>
+                            <div class="funnel-stage-count" id="funnel-rejected">—</div>
+                        </div>
+                    </div>
+                    <div class="funnel-conversion" style="margin-top: 20px;">
+                        <div>Conversion rates:</div>
+                        <div><span id="conv-received-to-reviewing">—</span> reviewing
+                        <span id="conv-reviewing-to-shortlisted">—</span> shortlisted
+                        <span id="conv-shortlisted-to-interview">—</span> interview
+                        <span id="conv-interview-to-offer">—</span> offer</div>
+                    </div>
+                    <div class="funnel-drop-off" style="margin-top: 20px; font-size: 0.9rem;">
+                        Drop-offs: <span id="drop-received">—</span> → <span id="drop-reviewing">—</span> → <span id="drop-shortlisted">—</span> → <span id="drop-interview">—</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Response Metrics Section -->
+            <section class="card panel" aria-label="Response metrics" style="margin-top: 30px;">
+                <div class="panel-head">
+                    <h3><i class="fas fa-clock"></i> Application Response Metrics</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value" id="timeToReviewAvg">—</div>
+                            <div class="metric-label">Time to First Review</div>
+                            <div class="metric-desc">Avg (in days)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="timeToReviewMedian">—</div>
+                            <div class="metric-label">Time to First Review (Median)</div>
+                            <div class="metric-desc">Median (in days)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="timeToShortlistAvg">—</div>
+                            <div class="metric-label">Time to Shortlist</div>
+                            <div class="metric-desc">Avg (in days)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="timeToShortlistMedian">—</div>
+                            <div class="metric-label">Time to Shortlist (Median)</div>
+                            <div class="metric-desc">Median (in days)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="timeToInterviewAvg">—</div>
+                            <div class="metric-label">Time to Interview</div>
+                            <div class="metric-desc">Avg (in days)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="timeToInterviewMedian">—</div>
+                            <div class="metric-label">Time to Interview (Median)</div>
+                            <div class="metric-desc">Median (in days)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="timeToDecisionAvg">—</div>
+                            <div class="metric-label">Time to Decision</div>
+                            <div class="metric-desc">Avg (in days)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="timeToDecisionMedian">—</div>
+                            <div class="metric-label">Time to Decision (Median)</div>
+                            <div class="metric-desc">Median (in days)</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; font-size: 0.9rem; color: #666;">
+                        Metrics computed from application status change timestamps. Unavailable if insufficient data.
+                    </div>
+                </div>
+            </section>
+
+            <!-- Matching Insights Section -->
+            <section class="card panel" aria-label="Matching insights" style="margin-top: 30px;">
+                <div class="panel-head">
+                    <h3><i class="fas fa-target"></i> Matching Insights</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="matching-summary">
+                        <div class="matching-stat">
+                            <div class="matching-value" id="avgMatchScore">—</div>
+                            <div class="matching-label">Average Match Score</div>
+                        </div>
+                        <div class="matching-stat">
+                            <div class="matching-value" id="highestMatch">—</div>
+                            <div class="matching-label">Highest Match</div>
+                        </div>
+                    </div>
+                    <div class="score-distribution" style="margin-top: 20px;">
+                        <div>Score distribution:</div>
+                        <div class="score-bars">
+                            <div class="bar-group">
+                                <div class="bar-label">Excellent (≥90%)</div>
+                                <div class="bar" title="90%+"><div class="bar-fill" style="width: 0%"></div></div>
+                                <span id="excellentCount">—</span></div>
+                            <div class="bar-group">
+                                <div class="bar-label">Strong (75-89%)</div>
+                                <div class="bar" title="75-89%"><div class="bar-fill" style="width: 0%"></div></div>
+                                <span id="strongCount">—</span></div>
+                            <div class="bar-group">
+                                <div class="bar-label">Good (60-74%)</div>
+                                <div class="bar" title="60-74%"><div class="bar-fill" style="width: 0%"></div></div>
+                                <span id="goodCount">—</span></div>
+                            <div class="bar-group">
+                                <div class="bar-label">Partial (40-59%)</div>
+                                <div class="bar" title="40-59%"><div class="bar-fill" style="width: 0%"></div></div>
+                                <span id="partialCount">—</span></div>
+                            <div class="bar-group">
+                                <div class="bar-label">Low (<40%)</div>
+                                <div class="bar" title="<40%"><div class="bar-fill" style="width: 0%"></div></div>
+                                <span id="lowCount">—</span></div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <div>Applicant match categories:</div>
+                        <div class="match-categories">
+                            <span class="category excellent">Excellent Match: <span id="excellentNum">—</span></span>
+                            <span class="category strong">Strong Match: <span id="strongNum">—</span></span>
+                            <span class="category good">Good Match: <span id="goodNum">—</span></span>
+                            <span class="category partial">Partial Match: <span id="partialNum">—</span></span>
+                            <span class="category low">Low Match: <span id="lowNum">—</span></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Skills Analysis Section -->
+            <section class="card panel" aria-label="Skills analysis" style="margin-top: 30px;">
+                <div class="panel-head">
+                    <h3><i class="fas fa-brain"></i> Skills Analysis</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Select a job posting to analyze applicant skills:</p>
+                    <div class="select-container">
+                        <select id="jobSelect" onchange="loadSkillsAnalysis(this.value)">
+                            <option value="">— Select a job —</option>
+                            <!-- Options loaded via JavaScript -->
+                        </select>
+                    </div>
+                    <div id="skillsAnalysisContent" class="skills-content">
+                        <p class="no-job-selected">Select a job posting above to see skills analysis.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Geographic Insights Section -->
+            <section class="card panel" aria-label="Geographic insights" style="margin-top: 30px;">
+                <div class="panel-head">
+                    <h3><i class="fas fa-map-marker-alt"></i> Geographic Applicant Insights</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="geo-summary">
+                        <div class="geo-stat">
+                            <div class="geo-value" id="geoTotalApplicants">—</div>
+                            <div class="geo-label">Total Applicants</div>
+                        </div>
+                        <div class="geo-stat">
+                            <div class="geo-value" id="geoBasud">—</div>
+                            <div class="geo-label">Basud</div>
+                        </div>
+                        <div class="geo-stat">
+                            <div class="geo-value" id="geoDaet">—</div>
+                            <div class="geo-label">Daet</div>
+                        </div>
+                        <div class="geo-stat">
+                            <div class="geo-value" id="geoVinzons">—</div>
+                            <div class="geo-label">Vinzons</div>
+                        </div>
+                        <div class="geo-stat">
+                            <div class="geo-value" id="geoLabo">—</div>
+                            <div class="geo-label">Labo</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <div>Applicants by municipality:</div>
+                        <div id="geoByMunicipality" class="geo-by-municipality">
+                            <p class="no-data">Loading…</p>
+                        </div>
+                        <div>Applicants by barangay: <span id="geoByBarangay">—</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recruitment Insights Section -->
+            <section class="card panel" aria-label="Recruitment insights" style="margin-top: 30px;">
+                <div class="panel-head">
+                    <h3><i class="fas fa-lightbulb"></i> Recruitment Insights</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="recruitmentInsights" class="insights-list">
+                        <p class="no-data">Loading insights…</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Date Filtering Section -->
+            <section class="card panel" aria-label="Date filtering" style="margin-top: 30px;">
+                <div class="panel-head">
+                    <h3><i class="fas fa-filter"></i> Date Filtering</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="date-filters">
+                        <button class="filter-btn active" data-filter="all">All time</button>
+                        <button class="filter-btn" data-filter="90d">Last 90 days</button>
+                        <button class="filter-btn" data-filter="30d">Last 30 days</button>
+                        <button class="filter-btn" data-filter="7d">Last 7 days</button>
+                        <button class="filter-btn" data-filter="this-month">This month</button>
+                        <button class="filter-btn" data-filter="prev-month">Previous month</button>
+                    </div>
+                    <div id="filteredMetrics" style="margin-top: 20px;"></div>
+                </div>
+            </section>
+
+            <!-- Export Section -->
+            <section class="card panel" aria-label="Export reports" style="margin-top: 30px;">
+                <div class="panel-head">
+                    <h3><i class="fas fa-download"></i> Export Report</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Export your analytics data as CSV:</p>
+                    <button class="btn-export" id="exportBtn">
+                        <i class="fas fa-download"></i> Export CSV
+                    </button>
+                    <p class="export-note">Exports data for the authenticated employer only.</p>
+                    <div id="exportStatus" style="margin-top: 10px; display: none;"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/role-app.js"></script>
+<script>
+/* Global state */
+var currentEmployerId = null;
+var allApplications = [];
+var allJobPosts = [];
+
+/* Wait for auth to load, then fetch analytics */
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if user is authenticated as employer
+    var userType = localStorage.getItem('jsm_user_type');
+    if (!userType || userType !== 'employer') {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // Get employer ID from user data
+    var userId = localStorage.getItem('jsm_user_id');
+    if (userId) {
+        currentEmployerId = parseInt(userId);
+        fetchAnalytics();
+    } else {
+        // Try to load from API
+        loadEmployerData();
+    }
+});
+
+/* Load employer data and populate job selector */
+function loadEmployerData() {
+    ROLE.loadEmployerData().then(function(data) {
+        if (data.error) {
+            showError(data.error);
+            return;
+        }
+        currentEmployerId = data.employerId;
+        fetchAnalytics();
+        populateJobSelector(data.jobs);
+    }).catch(function(err) {
+        showError('Failed to load employer data: ' + err.message);
+    });
+}
+
+/* Show error message */
+function showError(message) {
+    var box = document.getElementById('pageError');
+    var text = document.getElementById('pageErrorText');
+    if (box && text) {
+        text.textContent = message;
+        box.hidden = false;
+    }
+}
+
+/* Populate job selector for skills analysis */
+function populateJobSelector(jobs) {
+    var select = document.getElementById('jobSelect');
+    if (!select) return;
+
+    // Clear existing options (keep first placeholder)
+    select.innerHTML = '<option value="">— Select a job —</option>';
+
+    allJobPosts = jobs || [];
+
+    allJobPosts.forEach(function(job) {
+        var option = document.createElement('option');
+        option.value = job.id;
+        option.textContent = job.jobTitle + ' (' + (job.municipality ? job.municipality.name + ', ' : '') + (job.barangay || '') + ')';
+        select.appendChild(option);
+    });
+}
+
+/* Fetch all analytics data */
+function fetchAnalytics() {
+    if (!currentEmployerId) return;
+
+    // Fetch overview metrics
+    fetchOverview();
+
+    // Fetch funnel data
+    fetchFunnel();
+
+    // Fetch response metrics
+    fetchResponseMetrics();
+
+    // Fetch matching insights
+    fetchMatchingInsights();
+
+    // Fetch job performance data
+    fetchJobPerformance();
+
+    // Fetch geographic insights
+    fetchGeographicInsights();
+
+    // Fetch recruitment insights
+    fetchRecruitmentInsights();
+
+    // Load jobs for selector and performance table
+    fetchJobsForSelector();
+}
+
+/* Fetch overview metrics */
+function fetchOverview() {
+    if (!currentEmployerId) return;
+
+    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
+
+    fetch('/api/employers/analytics/overview?employerId=' + currentEmployerId + '&dateRange=' + dateRange)
+        .then(function(response) {
+            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
+            return response.json();
+        })
+        .then(function(dto) {
+            document.getElementById('metricTotal').textContent = dto.totalJobPosts || 0;
+            document.getElementById('metricActive').textContent = dto.activeJobPosts || 0;
+            document.getElementById('metricApplicants').textContent = dto.totalApplicants || 0;
+            document.getElementById('metricNew').textContent = dto.newApplicants || 0;
+            document.getElementById('metricReviewing').textContent = dto.applicantsUnderReview || 0;
+            document.getElementById('metricInterviews').textContent = dto.interviewedApplicants || 0;
+            document.getElementById('metricAccepted').textContent = dto.acceptedApplicants || 0;
+            document.getElementById('metricRejected').textContent = dto.rejectedApplicants || 0;
+            document.getElementById('metricUpcomingInterviews').textContent = dto.upcomingInterviews || 0;
+        })
+        .catch(function(err) {
+            console.error('Error fetching overview:', err);
+        });
+}
+
+/* Fetch funnel data */
+function fetchFunnel() {
+    if (!currentEmployerId) return;
+
+    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
+
+    fetch('/api/employers/analytics/funnel?employerId=' + currentEmployerId + '&dateRange=' + dateRange)
+        .then(function(response) {
+            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
+            return response.json();
+        })
+        .then(function(dto) {
+            document.getElementById('funnel-received').textContent = dto.applicationsReceived || 0;
+            document.getElementById('funnel-reviewing').textContent = dto.reviewing || 0;
+            document.getElementById('funnel-shortlisted').textContent = dto.shortlisted || 0;
+            document.getElementById('funnel-interviewed').textContent = dto.interviewed || 0;
+            document.getElementById('funnel-accepted').textContent = dto.accepted || 0;
+            document.getElementById('funnel-rejected').textContent = dto.rejected || 0;
+
+            // Conversion rates
+            var convReceived = dto.conversionRates?.[0] || 0;
+            var convReviewing = dto.conversionRates?.[1] || 0;
+            var convShortlisted = dto.conversionRates?.[2] || 0;
+            var convInterview = dto.conversionRates?.[3] || 0;
+
+            document.getElementById('conv-received-to-reviewing').textContent = convReceived.toFixed(1) + '%';
+            document.getElementById('conv-reviewing-to-shortlisted').textContent = convReviewing.toFixed(1) + '%';
+            document.getElementById('conv-shortlisted-to-interview').textContent = convShortlisted.toFixed(1) + '%';
+            document.getElementById('conv-interview-to-offer').textContent = convInterview.toFixed(1) + '%';
+
+            // Drop-offs
+            var appsReceived = dto.applicationsReceived || 0;
+            var reviewing = dto.reviewing || 0;
+            var shortlisted = dto.shortlisted || 0;
+            var interviewed = dto.interviewed || 0;
+            var accepted = dto.accepted || 0;
+            var rejected = dto.rejected || 0;
+
+            document.getElementById('drop-received').textContent = (appsReceived - reviewing);
+            document.getElementById('drop-reviewing').textContent = (reviewing - shortlisted);
+            document.getElementById('drop-shortlisted').textContent = (shortlisted - interviewed);
+            document.getElementById('drop-interview').textContent = (interviewed - accepted) + (interviewed - rejected);
+        })
+        .catch(function(err) {
+            console.error('Error fetching funnel:', err);
+        });
+}
+
+/* Fetch response metrics */
+function fetchResponseMetrics() {
+    if (!currentEmployerId) return;
+
+    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
+
+    fetch('/api/employers/analytics/metrics?employerId=' + currentEmployerId + '&dateRange=' + dateRange)
+        .then(function(response) {
+            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
+            return response.json();
+        })
+        .then(function(dto) {
+            // Time to review
+            if (dto.timeToReviewAvailable) {
+                document.getElementById('timeToReviewAvg').textContent = formatDays(dto.timeToReviewAvg);
+                document.getElementById('timeToReviewMedian').textContent = formatDays(dto.timeToReviewMedian);
+            }
+
+            // Time to shortlist
+            if (dto.timeToShortlistAvailable) {
+                document.getElementById('timeToShortlistAvg').textContent = formatDays(dto.timeToShortlistAvg);
+                document.getElementById('timeToShortlistMedian').textContent = formatDays(dto.timeToShortlistMedian);
+            }
+
+            // Time to interview
+            if (dto.timeToInterviewAvailable) {
+                document.getElementById('timeToInterviewAvg').textContent = formatDays(dto.timeToInterviewAvg);
+                document.getElementById('timeToInterviewMedian').textContent = formatDays(dto.timeToInterviewMedian);
+            }
+
+            // Time to decision
+            if (dto.timeToDecisionAvailable) {
+                document.getElementById('timeToDecisionAvg').textContent = formatDays(dto.timeToDecisionAvg);
+                document.getElementById('timeToDecisionMedian').textContent = formatDays(dto.timeToDecisionMedian);
+            }
+        })
+        .catch(function(err) {
+            console.error('Error fetching response metrics:', err);
+        });
+}
+
+/* Format days to human readable */
+function formatDays(days) {
+    if (days < 1) return '< 1 day';
+    var d = Math.floor(days);
+    var h = Math.floor((days % 1) * 24);
+    return d + ' day' + (d !== 1 ? 's' : '') + (h > 0 ? ' ' + h + ' hours' : '');
+}
+
+/* Fetch matching insights */
+function fetchMatchingInsights() {
+    if (!currentEmployerId) return;
+
+    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
+
+    fetch('/api/employers/analytics/matching?employerId=' + currentEmployerId + '&dateRange=' + dateRange)
+        .then(function(response) {
+            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
+            return response.json();
+        })
+        .then(function(dto) {
+            document.getElementById('avgMatchScore').textContent = Math.round(dto.averageMatchScore) + '%';
+            document.getElementById('highestMatch').textContent = Math.round(dto.highestMatch) + '%';
+
+            // Score distribution
+            var dist = dto.scoreDistribution || {};
+            var total = dto.excellentMatches + dto.strongMatches + dto.goodMatches + dto.partialMatches + dto.lowMatches || 1;
+
+            document.getElementById('excellentCount').textContent = dto.excellentMatches;
+            document.getElementById('strongCount').textContent = dto.strongMatches;
+            document.getElementById('goodCount').textContent = dto.goodMatches;
+            document.getElementById('partialCount').textContent = dto.partialMatches;
+            document.getElementById('lowCount').textContent = dto.lowMatches;
+
+            // Update bar widths
+            if (total > 0) {
+                document.querySelectorAll('.bar-fill').forEach(function(bar, i) {
+                    var percentages = [0.9, 0.75, 0.6, 0.4, 0];
+                    var pct = (dist[i] || 0) / total;
+                    bar.style.width = Math.round(pct * 100) + '%';
+                });
+            }
+
+            // Match categories
+            document.getElementById('excellentNum').textContent = dto.excellentMatches;
+            document.getElementById('strongNum').textContent = dto.strongMatches;
+            document.getElementById('goodNum').textContent = dto.goodMatches;
+            document.getElementById('partialNum').textContent = dto.partialMatches;
+            document.getElementById('lowNum').textContent = dto.lowMatches;
+        })
+        .catch(function(err) {
+            console.error('Error fetching matching insights:', err);
+        });
+}
+
+/* Fetch job performance data */
+function fetchJobPerformance() {
+    if (!currentEmployerId) return;
+
+    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
+
+    fetch('/api/employers/analytics/jobs?employerId=' + currentEmployerId + '&dateRange=' + dateRange)
+        .then(function(response) {
+            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
+            return response.json();
+        })
+        .then(function(dtos) {
+            var tbody = document.getElementById('jobPerformanceTable');
+            if (!dtos || dtos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="13" class="text-center">No job posts found.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = dtos.map(function(dto) {
+                return '<tr>' +
+                    '<td>' + (dto.jobTitle || '—') + '</td>' +
+                    '<td>' + (dto.municipality || '—') + '</td>' +
+                    '<td>' + (dto.employmentType || '—') + '</td>' +
+                    '<td>' + (dto.datePosted ? new Date(dto.datePosted).toLocaleDateString() : '—') + '</td>' +
+                    '<td>' + (dto.status || '—') + '</td>' +
+                    '<td>' + (dto.totalApplicants || 0) + '</td>' +
+                    '<td>' + (dto.newApplicants || 0) + '</td>' +
+                    '<td>' + (dto.shortlisted || 0) + '</td>' +
+                    '<td>' + (dto.interviewed || 0) + '</td>' +
+                    '<td>' + (dto.accepted || 0) + '</td>' +
+                    '<td>' + (dto.rejected || 0) + '</td>' +
+                    '<td>' + (dto.averageMatchScore !== undefined ? Math.round(dto.averageMatchScore) + '%' : '—') + '</td>' +
+                    '<td>' + (dto.actions || '—') + '</td>' +
+                '</tr>';
+            }).join('');
+        })
+        .catch(function(err) {
+            console.error('Error fetching job performance:', err);
+        });
+}
+
+/* Fetch geographic insights */
+function fetchGeographicInsights() {
+    if (!currentEmployerId) return;
+
+    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
+
+    fetch('/api/employers/analytics/geography?employerId=' + currentEmployerId + '&dateRange=' + dateRange)
+        .then(function(response) {
+            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
+            return response.json();
+        })
+        .then(function(dto) {
+            document.getElementById('geoTotalApplicants').textContent = dto.totalApplicants || 0;
+            document.getElementById('geoBasud').textContent = dto.applicantsByMunicipality?.Basud || 0;
+            document.getElementById('geoDaet').textContent = dto.applicantsByMunicipality?.Daet || 0;
+            document.getElementById('geoVinzons').textContent = dto.applicantsByMunicipality?.Vinzons || 0;
+            document.getElementById('geoLabo').textContent = dto.applicantsByMunicipality?.Labo || 0;
+
+            // Applicants by municipality
+            var muniHtml = '';
+            var muni = dto.applicantsByMunicipality || {};
+            if (Object.keys(muni).length > 0) {
+                muniHtml = '<ul>';
+                Object.entries(muni).forEach(function(_ref) {
+                    var _ref2 = _slicedToArray(_ref, 2),
+                        municipality = _ref2[0],
+                        count = _ref2[1];
+                    muniHtml += '<li>' + municipality + ': ' + count + '</li>';
+                });
+                muniHtml += '</ul>';
+            } else {
+                muniHtml = '<p class="no-data">No municipal data available.</p>';
+            }
+            document.getElementById('geoByMunicipality').innerHTML = muniHtml;
+
+            // Applicants by barangay
+            document.getElementById('geoByBarangay').textContent = (dto.applicantsByBarangay || 0) + ' applicants';
+        })
+        .catch(function(err) {
+            console.error('Error fetching geographic insights:', err);
+        });
+}
+
+/* Fetch recruitment insights */
+function fetchRecruitmentInsights() {
+    if (!currentEmployerId) return;
+
+    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
+
+    fetch('/api/employers/analytics/insights?employerId=' + currentEmployerId + '&dateRange=' + dateRange)
+        .then(function(response) {
+            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
+            return response.json();
+        })
+        .then(function(insights) {
+            var insightsContainer = document.getElementById('recruitmentInsights');
+            if (!insights || insights.length === 0) {
+                insightsContainer.innerHTML = '<p>No insights available at this time.</p>';
+                return;
+            }
+
+            insightsContainer.innerHTML = insights.map(function(insight) {
+                var priorityClass = insight.priority === 'warning' ? 'insight-warning' : 'insight-info';
+                return '<div class="insight-item ' + priorityClass + '">' +
+                    '<strong>' + insight.title + '</strong>' +
+                    '<span>' + insight.description + '</span>' +
+                '</div>';
+            }).join('');
+        })
+        .catch(function(err) {
+            console.error('Error fetching recruitment insights:', err);
+        });
+}
+
+/* Load skills analysis for a specific job */
+function loadSkillsAnalysis(jobId) {
+    if (!currentEmployerId || !jobId) return;
+
+    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
+
+    fetch('/api/employers/analytics/skills?employerId=' + currentEmployerId + '&jobId=' + jobId + '&dateRange=' + dateRange)
+        .then(function(response) {
+            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
+            return response.json();
+        })
+        .then(function(dto) {
+            var content = document.getElementById('skillsAnalysisContent');
+            if (!dto || !dto.jobTitle) {
+                content.innerHTML = '<p>No skills data available for this job.</p>';
+                return;
+            }
+
+            // Most common applicant skills
+            var applicantSkills = dto.mostCommonApplicantSkills || [];
+            var skillsHtml = '<h4>Most common applicant skills:</ul>';
+            applicantSkills.slice(0, 10).forEach(function(_ref3) {
+                var _ref4 = _slicedToArray(_ref3, 2),
+                    skill = _ref4[0],
+                    count = _ref4[1];
+                skillsHtml += '<li>' + skill + ' (' + count + ' applicants)</li>';
+            });
+            skillsHtml += '</ul>';
+
+            // Skills coverage (required vs applicant possession)
+            var coverage = dto.skillsCoverage || [];
+            skillsHtml += '<h4>Skills coverage:</ul>';
+            coverage.slice(0, 8).forEach(function(_ref5) {
+                var _ref6 = _slicedToArray(_ref5, 4),
+                    skill = _ref6[0],
+                    applicantsWithSkill = _ref6[1],
+                    totalApplicants = _ref6[2],
+                    pct = _ref6[3];
+                skillsHtml += '<li>' + skill + ': ' + applicantsWithSkill + '/' + totalApplicants + ' (' + Math.round(pct) + '%)</li>';
+            });
+            skillsHtml += '</ul>';
+
+            // Missing required skills
+            var missing = dto.missingRequiredSkills || [];
+            if (missing.length > 0) {
+                skillsHtml += '<h4>Missing required skills:</ul>';
+                missing.forEach(function(_ref7) {
+                    var _ref8 = _slicedToArray(_ref7, 2),
+                        missingSkill = _ref8[0],
+                        pct = _ref8[1];
+                skillsHtml += '<li>' + missingSkill + ' missing (' + Math.round(pct) + '%)</li>';
+                });
+                skillsHtml += '</ul>';
+            }
+
+            content.innerHTML = skillsHtml;
+        })
+        .catch(function(err) {
+            console.error('Error fetching skills analysis:', err);
+            document.getElementById('skillsAnalysisContent').innerHTML = '<p class="error">Failed to load skills analysis.</p>';
+        });
+}
+
+/* Date filtering */
+document.querySelectorAll('.filter-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+        this.classList.add('active');
+
+        var filter = this.getAttribute('data-filter');
+        applyDateFilter(filter);
+    });
+});
+
+function applyDateFilter(filter) {
+    // Update the filtered metrics display
+    document.getElementById('filteredMetrics').innerHTML = '<p>Reporting period: ' + filter + '</p>';
+
+    // Refresh all analytics sections with the new date filter
+    fetchAnalytics();
+}
+
+/* Fetch all analytics data */
+function fetchAnalytics() {
+    if (!currentEmployerId) return;
+
+    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
+
+    // Fetch overview metrics
+    fetchOverview();
+
+    // Fetch funnel data
+    fetchFunnel();
+
+    // Fetch response metrics
+    fetchResponseMetrics();
+
+    // Fetch matching insights
+    fetchMatchingInsights();
+
+    // Fetch job performance data
+    fetchJobPerformance();
+
+    // Fetch geographic insights
+    fetchGeographicInsights();
+
+    // Fetch recruitment insights
+    fetchRecruitmentInsights();
+
+    // Load jobs for selector and performance table
+    fetchJobsForSelector();
+
+    // Display the active reporting period
+    var periodLabels = {
+        'all-time': 'All time',
+        '90d': 'Last 90 days',
+        '30d': 'Last 30 days',
+        '7d': 'Last 7 days',
+        'this-month': 'This month',
+        'prev-month': 'Previous month'
+    };
+    var periodLabel = periodLabels[filter] || filter;
+    document.getElementById('filteredMetrics').previousElementSibling?.previousElementSibling?.textContent || document.querySelector('.panel-head h3')?.textContent;
+    // Update page head subtitle to show active period
+    var pageSubtitle = document.querySelector('.page-head p');
+    if (pageSubtitle) {
+        pageSubtitle.textContent = 'Data-driven hiring insights from your job posts (' + periodLabel + ')';
+    }
+}
+
+function exportAsCSV() {
+    if (!currentEmployerId) return;
+
+    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
+
+    fetch('/api/employers/analytics/export?employerId=' + currentEmployerId + '&dateRange=' + dateRange)
+        .then(function(response) {
+            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
+            return response.blob();
+        })
+        .then(function(blob) {
+            var url = window.URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'employer-analytics-report-' + new Date().toISOString().split('T')[0] + '.csv';
+            document.body.append(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.remove(a);
+            document.getElementById('exportStatus').innerHTML = '<p style="color: green;">Report exported successfully!</p>';
+            document.getElementById('exportStatus').hidden = false;
+        })
+        .catch(function(err) {
+            console.error('Error exporting CSV:', err);
+            document.getElementById('exportStatus').innerHTML = '<p style="color: red;">Error exporting report. See console for details.</p>';
+            document.getElementById('exportStatus').hidden = false;
+        })
+}
+
+document.getElementById('exportBtn').addEventListener('click', exportAsCSV);
+
+</script>
+</body>
+</html>

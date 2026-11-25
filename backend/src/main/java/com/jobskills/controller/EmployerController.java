@@ -1,9 +1,15 @@
 package com.jobskills.controller;
 
+import org.springframework.web.multipart.MultipartFile;
 import com.jobskills.config.CustomUserDetails;
 import com.jobskills.dto.*;
 import com.jobskills.model.*;
 import com.jobskills.model.enums.ApplicationStatus;
+import com.jobskills.model.enums.EmploymentType;
+import com.jobskills.repository.ApplicationStatusHistoryRepository;
+import com.jobskills.repository.EmployerProfileRepository;
+import com.jobskills.repository.JobApplicationRepository;
+import com.jobskills.repository.JobPostRepository;
 import com.jobskills.repository.UserRepository;
 import com.jobskills.service.*;
 import jakarta.validation.Valid;
@@ -12,9 +18,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
+import org.springframework.data.domain.Page;
 
 @RestController
 @RequestMapping("/api/employers")
@@ -25,10 +31,14 @@ public class EmployerController {
     private final UserService userService;
     private final JobService jobService;
     private final ApplicationService applicationService;
+    private final EmployerAnalyticsService employerAnalyticsService;
+    private final JobPostRepository jobPostRepository;
+    private final JobApplicationRepository applicationRepository;
+    private final ApplicationStatusHistoryRepository historyRepository;
+    private final EmployerProfileRepository employerRepository;
     private final UserRepository userRepository;
 
-    /**
-     * The company profile plus the account email and verification state, which
+    /** The company profile plus the account email and verification state, which
      * the employer entity itself does not expose.
      */
     @GetMapping("/profile")
@@ -55,8 +65,7 @@ public class EmployerController {
         return ResponseEntity.ok(dto);
     }
 
-    /**
-     * Updates only the company fields. The registration bean is reused, but its
+    /** Updates only the company fields. The registration bean is reused, but its
      * @Valid rules (a required email and password) do not apply to an update:
      * UserService ignores both and validates each field it actually writes.
      */
@@ -75,7 +84,7 @@ public class EmployerController {
 
     @PutMapping("/jobs/{id}")
     public ResponseEntity<JobPost> updateJob(@PathVariable Long id, @RequestBody JobPostRequest request,
-                                             Authentication authentication) {
+                                           Authentication authentication) {
         return ResponseEntity.ok(jobService.updateJob(id, extractEmployerId(authentication), request));
     }
 
@@ -101,54 +110,91 @@ public class EmployerController {
         return ResponseEntity.ok(stats);
     }
 
-    @GetMapping("/applicants")
-    public ResponseEntity<List<ApplicantDto>> getApplicants(@RequestParam Long jobId,
-                                                            @RequestParam(defaultValue = "match") String sortBy,
-                                                            Authentication authentication) {
-        return ResponseEntity.ok(
-            applicationService.getJobApplicants(jobId, extractEmployerId(authentication), sortBy));
+    @GetMapping("/analytics/overview")
+    public ResponseEntity<EmployerAnalyticsOverviewDto> getAnalyticsOverview(Authentication authentication,
+            @RequestParam(required = false) String dateRange) {
+        Long employerId = extractEmployerId(authentication);
+        EmployerAnalyticsOverviewDto overview = employerAnalyticsService.overview(employerId, dateRange);
+        return ResponseEntity.ok(overview);
     }
 
-    /**
-     * The legacy applicant-status path the employer screens already call. It now
-     * goes through the same validated transition table and history as every other
-     * status change, and accepts an optional note for the timeline.
-     */
-    @PutMapping("/applicants/{id}/status")
-    public ResponseEntity<Map<String, String>> updateApplicantStatus(
-            @PathVariable Long id,
-            @RequestParam ApplicationStatus status,
-            @RequestParam(required = false) String message,
+    @GetMapping("/analytics/job-performance")
+    public ResponseEntity<Page<EmployerJobPerformanceDto>> jobPerformance(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir,
+            @RequestParam(required = false) String municipality,
+            @RequestParam(required = false) EmploymentType employmentType,
+            @RequestParam(required = false) String statusFilter,
+            @RequestParam(required = false) String dateRange) {
+
+        Long employerId = extractEmployerId(authentication);
+        Page<EmployerJobPerformanceDto> performance = employerAnalyticsService.jobPerformance(
+            employerId, sortBy, sortDir, municipality, employmentType, statusFilter, page, size, dateRange);
+        return ResponseEntity.ok(performance);
+    }
+
+    @GetMapping("/analytics/funnel")
+    public ResponseEntity<EmployerApplicantFunnelDto> applicantFunnel(Authentication authentication,
+            @RequestParam(required = false) String dateRange) {
+        Long employerId = extractEmployerId(authentication);
+        EmployerApplicantFunnelDto funnel = employerAnalyticsService.funnel(employerId, dateRange);
+        return ResponseEntity.ok(funnel);
+    }
+
+    @GetMapping("/analytics/response-metrics")
+    public ResponseEntity<EmployerResponseMetricsDto> responseMetrics(Authentication authentication,
+            @RequestParam(required = false) String dateRange) {
+        Long employerId = extractEmployerId(authentication);
+        EmployerResponseMetricsDto metrics = employerAnalyticsService.responseMetrics(employerId, dateRange);
+        return ResponseEntity.ok(metrics);
+    }
+
+    @GetMapping("/analytics/matching")
+    public ResponseEntity<EmployerMatchingInsightsDto> matchingInsights(Authentication authentication,
+            @RequestParam(required = false) String dateRange) {
+        Long employerId = extractEmployerId(authentication);
+        EmployerMatchingInsightsDto insights = employerAnalyticsService.matchingInsights(employerId, dateRange);
+        return ResponseEntity.ok(insights);
+    }
+
+    @GetMapping("/analytics/skills/{jobId}")
+    public ResponseEntity<EmployerSkillsAnalysisDto> skillsAnalysis(
+            @PathVariable Long jobId,
+            Authentication authentication,
+            @RequestParam(required = false) String dateRange) {
+
+        Long employerId = extractEmployerId(authentication);
+        EmployerSkillsAnalysisDto analysis = employerAnalyticsService.skillsAnalysis(employerId, jobId, dateRange);
+        return ResponseEntity.ok(analysis);
+    }
+
+    @GetMapping("/analytics/geographic")
+    public ResponseEntity<EmployerGeographicInsightsDto> geographicInsights(Authentication authentication,
+            @RequestParam(required = false) String dateRange) {
+        Long employerId = extractEmployerId(authentication);
+        EmployerGeographicInsightsDto insights = employerAnalyticsService.geographicInsights(employerId, dateRange);
+        return ResponseEntity.ok(insights);
+    }
+
+    @GetMapping("/analytics/insights")
+    public ResponseEntity<List<EmployerInsightDto>> recruitmentInsights(Authentication authentication,
+            @RequestParam(required = false) String dateRange) {
+        Long employerId = extractEmployerId(authentication);
+        List<EmployerInsightDto> insights = employerAnalyticsService.insights(employerId, dateRange);
+        return ResponseEntity.ok(insights);
+    }
+
+    @GetMapping("/analytics/export")
+    public ResponseEntity<EmployerAnalyticsExportDto> exportAnalytics(
+            @RequestParam(required = false) String dateRange,
             Authentication authentication) {
-        applicationService.updateStatus(id, extractUserId(authentication), status, message);
-        return ResponseEntity.ok(Map.of("status", status.name()));
-    }
 
-    @PostMapping("/applicants/{id}/shortlist")
-    public ResponseEntity<Map<String, String>> shortlist(@PathVariable Long id, Authentication authentication) {
-        applicationService.updateStatus(id, extractUserId(authentication), ApplicationStatus.SHORTLISTED, null);
-        return ResponseEntity.ok(Map.of("status", "SHORTLISTED"));
-    }
-
-    /** Creates a real interview invitation (the old version only set the status). */
-    @PostMapping("/applicants/{id}/interview")
-    public ResponseEntity<Map<String, String>> scheduleInterview(@PathVariable Long id,
-                                                                @RequestBody InterviewRequest request,
-                                                                Authentication authentication) {
-        applicationService.scheduleInterview(id, extractUserId(authentication), request);
-        return ResponseEntity.ok(Map.of("status", "INTERVIEW"));
-    }
-
-    @PostMapping("/applicants/{id}/hire")
-    public ResponseEntity<Map<String, String>> hire(@PathVariable Long id, Authentication authentication) {
-        applicationService.updateStatus(id, extractUserId(authentication), ApplicationStatus.ACCEPTED, null);
-        return ResponseEntity.ok(Map.of("status", "ACCEPTED"));
-    }
-
-    @PostMapping("/applicants/{id}/reject")
-    public ResponseEntity<Map<String, String>> reject(@PathVariable Long id, Authentication authentication) {
-        applicationService.updateStatus(id, extractUserId(authentication), ApplicationStatus.REJECTED, null);
-        return ResponseEntity.ok(Map.of("status", "REJECTED"));
+        Long employerId = extractEmployerId(authentication);
+        EmployerAnalyticsExportDto export = employerAnalyticsService.export(employerId, dateRange);
+        return ResponseEntity.ok(export);
     }
 
     private Long extractUserId(Authentication authentication) {

@@ -155,7 +155,88 @@
     }
 
     function jobRow(job, counts) {
-        var applicants = counts[job.id] || 0;
+
+    async function boot() {
+        var data = await ROLE.loadEmployerData();
+        if (data.error) showError(data.error);
+
+        var jobs = data.jobs.slice().sort(function (a, b) {
+            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        });
+        var applicants = data.applicants;
+
+        var counts = {};
+        applicants.forEach(function (applicant) {
+            counts[applicant.jobId] = (counts[applicant.jobId] || 0) + 1;
+        });
+
+        document.getElementById('metricTotal').textContent = jobs.length;
+        document.getElementById('metricActive').textContent = jobs.filter(isActive).length;
+        document.getElementById('metricApplicants').textContent = applicants.length;
+        document.getElementById('metricNew').textContent = applicants.filter(function (applicant) {
+            return String(applicant.applicationStatus || '').toUpperCase() === 'SUBMITTED';
+        }).length;
+        document.getElementById('metricReviewing').textContent = applicants.filter(function (applicant) {
+            return String(applicant.applicationStatus || '').toUpperCase() === 'REVIEWING';
+        }).length;
+        document.getElementById('metricInterviews').textContent = applicants.filter(function (applicant) {
+            return String(applicant.applicationStatus || '').toUpperCase() === 'INTERVIEW';
+        }).length;
+        document.getElementById('metricAccepted').textContent = applicants.filter(function (applicant) {
+            return String(applicant.applicationStatus || '').toUpperCase() === 'ACCEPTED';
+        }).length;
+        document.getElementById('metricRejected').textContent = applicants.filter(function (applicant) {
+            return String(applicant.applicationStatus || '').toUpperCase() === 'REJECTED';
+        }).length;
+
+        // Add analytics summary section
+        var analyticsSection = document.createElement('section');
+        analyticsSection.className = 'card panel';
+        analyticsSection.setAttribute('aria-label', 'Analytics summary');
+        analyticsSection.innerHTML = '<h3><i class="fas fa-chart-bar"></i> Hiring Insights</h3>'+
+            '<div class="metrics cols-4" style="margin-top: 15px;">'+
+                '<article class="metric" style="width: 25%;">'+
+                    '<div class="metric-icon"><i class="fas fa-user-tie"></i></div>'+
+                    '<div>'+
+                        '<div class="metric-value" id="dashboardTotalApplicants">—</div>'+
+                        '<div class="metric-label">Total Applicants</div>'+
+                        '<div class="metric-desc">All time</div>'+
+                    '</div>'+
+                '</article>'+
+                '<article class="metric" style="width: 25%;">'+
+                    '<div class="metric-icon"><i class="fas fa-user-plus"></i></div>'+
+                    '<div>'+
+                        '<div class="metric-value" id="dashboardNewApplicants">—</div>'+
+                        '<div class="metric-label">New Applicants</div>'+
+                        '<div class="metric-desc">Last 30 days</div>'+
+                    '</div>'+
+                '</article>'+
+                '<article class="metric" style="width: 25%;">'+
+                    '<div class="metric-icon"><i class="fas fa-trophy"></i></div>'+
+                    '<div>'+
+                        '<div class="metric-value" id="dashboardAvgMatch">—</div>'+
+                        '<div class="metric-label">Avg Match Score</div>'+
+                        '<div class="metric-desc">Overall</div>'+
+                    '</div>'+
+                '</article>'+
+                '<article class="metric" style="width: 25%;">'+
+                    '<div class="metric-icon"><i class="fas fa-calendar-check"></i></div>'+
+                    '<div>'+
+                        '<div class="metric-value" id="dashboardUpcomingInterviews">—</div>'+
+                        '<div class="metric-label">Upcoming Interviews</div>'+
+                        '<div class="metric-desc">This month</div>'+
+                    '</div>'+
+                '</article>'+
+            '</div>'+
+            '<div style="text-align: center; margin-top: 15px;">'+
+                '<a class="btn-solid" href="analytics.html" style="font-size: 0.9rem;">VIEW ANALYTICS</a>'+
+            '</div>';
+        document.querySelector('.main').prepend(analyticsSection);
+    }
+
+    boot();
+})();
+</script>        var applicants = counts[job.id] || 0;
         return `<div class="list-row">
             <span class="list-icon"><i class="fas ${ROLE.categoryIcon(job.jobCategory)}"></i></span>
             <div class="list-body">

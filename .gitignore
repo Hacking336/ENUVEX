@@ -35,3 +35,4 @@ mobile/www/
 
 # Local review screenshots (not part of the app)
 artifacts/
+.venv-bcrypt
