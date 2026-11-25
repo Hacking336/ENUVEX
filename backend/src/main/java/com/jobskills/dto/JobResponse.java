@@ -22,6 +22,13 @@ public class JobResponse {
     private Municipality municipality;
     private String barangay;
     private String jobLocation;
+    /** Confirmed workplace pin; null when the employer has not placed one. */
+    private Double latitude;
+    private Double longitude;
+    private String municipalityCode;
+    private String barangayCode;
+    /** Straight-line distance from the searcher, only on Near Me results. */
+    private Double distanceKm;
     private boolean isActive;
     private LocalDateTime createdAt;
     private Double matchPercentage;

@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../job-seeker/enuvex-app.css">
     <link rel="stylesheet" href="../assets/css/enuvex-role.css">
+    <link rel="stylesheet" href="../assets/css/jsm-map.css">
     <script>
         window.ENUVEX_PAGE = {
             active: 'post-job',
@@ -125,11 +126,40 @@
                         </div>
                         <div class="form-field">
                             <label for="barangay">Barangay</label>
-                            <input type="text" id="barangay" placeholder="e.g. Bagasbas">
+                            <select id="barangay" disabled>
+                                <option value="">Select a municipality first</option>
+                            </select>
+                            <p class="form-note">Official PSGC barangays only. The barangay must belong to the selected municipality.</p>
                         </div>
                         <div class="form-field span-2">
                             <label for="jobLocation">Exact address or landmark</label>
                             <input type="text" id="jobLocation" placeholder="e.g. 123 Main Street, near the public market">
+                        </div>
+
+                        <div class="form-field span-2">
+                            <label for="workplaceMap">Workplace pin <span class="muted">(optional)</span></label>
+                            <div id="workplaceMap" class="map-picker" role="application" aria-label="Map for choosing the exact workplace"></div>
+                            <div class="location-status">
+                                <span class="location-chip" id="pinStatus"><i class="fas fa-map-pin"></i> No pin placed</span>
+                                <span class="location-coords" id="pinCoords"></span>
+                                <button class="btn-soft btn-sm" id="confirmLocation" type="button" hidden>
+                                    <i class="fas fa-check"></i> Confirm this location
+                                </button>
+                                <button class="btn-ghost btn-sm" id="clearLocation" type="button" hidden>
+                                    <i class="fas fa-xmark"></i> Remove pin
+                                </button>
+                            </div>
+                            <p class="form-note">
+                                Click the map to place the workplace and drag the marker to adjust it, then confirm.
+                                A job only appears on the job map after its location is confirmed; leave the pin empty
+                                to publish with the text address only.
+                            </p>
+                            <div class="map-preview" id="locationPreview" hidden></div>
+                            <div class="map-banner" id="pickerTileBanner" hidden>
+                                <i class="fas fa-triangle-exclamation"></i>
+                                <span>Map tiles could not be downloaded. You can still place the pin; only the background is missing.</span>
+                            </div>
+                            <p class="form-note" id="geoNote" hidden></p>
                         </div>
                     </div>
                 </section>
@@ -182,6 +212,7 @@
 <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
 <script src="../assets/js/api.js"></script>
+<script src="../assets/js/jsm-map.js"></script>
 <script src="../assets/js/role-app.js"></script>
 <script>
 (function () {
@@ -206,6 +237,20 @@
     // New posts publish live; an existing post keeps the state it already has
     // unless the employer pauses or activates it from the job list.
     var formActive = true;
+
+    // The workplace pin is only sent once the employer confirms it, so a stray
+    // click on the map cannot silently become a published workplace.
+    var pin = {
+        latitude: null,
+        longitude: null,
+        state: 'none',
+        cleared: false,
+        municipalityValue: ''
+    };
+
+    var municipalityIndex = [];
+    var picker = null;
+    var pinMarker = null;
 
     function field(id) { return document.getElementById(id); }
 
@@ -232,28 +277,250 @@
         });
     }
 
+    function municipalityEntry(value) {
+        return municipalityIndex.filter(function (item) { return item.value === value; })[0] || null;
+    }
+
+    function municipalityCodeFor(value) {
+        var item = municipalityEntry(value);
+        return item && item.code ? item.code : '';
+    }
+
+    function municipalityLabelFor(value) {
+        var item = municipalityEntry(value);
+        return item ? item.name : ROLE.municipalityLabel(value);
+    }
+
     async function fillMunicipalities() {
         var select = field('municipality');
-        var result = await ROLE.safe(ApiClient.request('/municipalities'));
-        var values = ROLE.failed(result) || !Array.isArray(result)
-            ? ['BASUD', 'DAET', 'VINZONS', 'LABO']
-            : result;
-        values.forEach(function (value) {
+        var coverage = await ROLE.safe(ApiClient.request('/geo/municipalities'));
+
+        if (!ROLE.failed(coverage) && Array.isArray(coverage) && coverage.length) {
+            municipalityIndex = coverage.map(function (item) {
+                return {
+                    value: item.value,
+                    name: item.name,
+                    code: item.code,
+                    center: item.center
+                };
+            });
+        } else {
+            // Without the reference data there are no verified barangays or
+            // boundary checks, and the map pin stays unavailable. The job can
+            // still be saved with a text address, as before.
+            municipalityIndex = ['BASUD', 'DAET', 'VINZONS', 'LABO'].map(function (value) {
+                return { value: value, name: ROLE.municipalityLabel(value), code: '', center: null };
+            });
+            var note = field('geoNote');
+            note.hidden = false;
+            note.textContent = 'The geographic reference data could not be loaded, so the map pin and barangay list are unavailable right now. You can still save this job with a municipality and text address.';
+        }
+
+        municipalityIndex.forEach(function (item) {
             var option = document.createElement('option');
-            option.value = value;
-            option.textContent = ROLE.municipalityLabel(value);
+            option.value = item.value;
+            option.textContent = item.name;
             select.appendChild(option);
         });
     }
 
+    async function loadBarangayOptions(selectedCode, selectedName) {
+        var select = field('barangay');
+        var municipalityValue = field('municipality').value;
+        select.innerHTML = '<option value="">No barangay selected</option>';
+        select.disabled = true;
+
+        if (!municipalityValue) {
+            select.innerHTML = '<option value="">Select a municipality first</option>';
+            return;
+        }
+        var entry = municipalityEntry(municipalityValue);
+        if (!entry || !entry.code) {
+            select.innerHTML = '<option value="">Barangay list unavailable</option>';
+            return;
+        }
+
+        var list = await ROLE.safe(ApiClient.request(
+            '/geo/municipalities/' + encodeURIComponent(entry.code) + '/barangays'));
+        if (ROLE.failed(list) || !Array.isArray(list)) {
+            select.innerHTML = '<option value="">Barangay list unavailable</option>';
+            return;
+        }
+
+        list.forEach(function (barangay) {
+            var option = document.createElement('option');
+            option.value = barangay.code;
+            option.textContent = barangay.name;
+            option.dataset.code = barangay.code;
+            select.appendChild(option);
+        });
+        select.disabled = false;
+
+        var match = null;
+        if (selectedCode) {
+            match = list.filter(function (barangay) { return barangay.code === selectedCode; })[0];
+        }
+        if (!match && selectedName) {
+            match = list.filter(function (barangay) {
+                return barangay.name.toLowerCase() === String(selectedName).toLowerCase();
+            })[0];
+        }
+        if (match) select.value = match.code;
+    }
+
+    function selectedBarangay() {
+        var select = field('barangay');
+        if (!select.value) return null;
+        return {
+            code: select.value,
+            name: select.options[select.selectedIndex].text
+        };
+    }
+
+    function renderPinState() {
+        var status = field('pinStatus');
+        var coords = field('pinCoords');
+        var confirmBtn = field('confirmLocation');
+        var clearBtn = field('clearLocation');
+        var preview = field('locationPreview');
+
+        if (!status) return;
+
+        if (pin.latitude == null || pin.longitude == null) {
+            status.className = 'location-chip';
+            status.innerHTML = '<i class="fas fa-map-pin"></i> No pin placed';
+            coords.textContent = '';
+            confirmBtn.hidden = true;
+            clearBtn.hidden = true;
+            preview.hidden = true;
+            return;
+        }
+
+        coords.textContent = pin.latitude.toFixed(6) + ', ' + pin.longitude.toFixed(6);
+        clearBtn.hidden = false;
+
+        if (pin.state === 'confirmed') {
+            status.className = 'location-chip is-confirmed';
+            status.innerHTML = '<i class="fas fa-circle-check"></i> Location confirmed';
+            confirmBtn.hidden = true;
+            preview.hidden = false;
+            var barangay = selectedBarangay();
+            var municipalityName = municipalityLabelFor(field('municipality').value);
+            preview.innerHTML = '<i class="fas fa-location-dot"></i><span>Seekers will see this workplace at <strong>'
+                + ROLE.esc(barangay ? barangay.name : municipalityName)
+                + '</strong>' + (barangay ? ', ' + ROLE.esc(municipalityName) : '') + '.</span>';
+        } else {
+            status.className = 'location-chip is-pending';
+            status.innerHTML = '<i class="fas fa-circle-exclamation"></i> Pin placed — confirm to save';
+            confirmBtn.hidden = false;
+            preview.hidden = true;
+        }
+    }
+
+    function placePin(latitude, longitude, markPlaced) {
+        pin.latitude = Number(Number(latitude).toFixed(6));
+        pin.longitude = Number(Number(longitude).toFixed(6));
+        pin.municipalityValue = field('municipality').value;
+        pin.cleared = false;
+        if (markPlaced) pin.state = 'placed';
+
+        if (picker) {
+            if (pinMarker) {
+                pinMarker.setLatLng([pin.latitude, pin.longitude]);
+            } else {
+                pinMarker = picker.L.marker([pin.latitude, pin.longitude], {
+                    icon: JSMMap.workplaceIcon(),
+                    draggable: true,
+                    keyboard: true,
+                    title: 'Workplace pin'
+                }).addTo(picker.map);
+                pinMarker.on('dragend', function () {
+                    var position = pinMarker.getLatLng();
+                    placePin(position.lat, position.lng, true);
+                });
+            }
+        }
+        renderPinState();
+    }
+
+    function clearPin(recordAsCleared) {
+        pin.latitude = null;
+        pin.longitude = null;
+        pin.state = 'none';
+        pin.municipalityValue = '';
+        pin.cleared = !!recordAsCleared;
+        if (pinMarker && picker) {
+            picker.map.removeLayer(pinMarker);
+        }
+        pinMarker = null;
+        renderPinState();
+    }
+
+    async function initPicker() {
+        try {
+            picker = await JSMMap.createMap('workplaceMap', {
+                zoom: 10,
+                onTileError: function () { field('pickerTileBanner').hidden = false; }
+            });
+        } catch (error) {
+            var note = field('geoNote');
+            note.hidden = false;
+            note.textContent = 'The map pin is unavailable: ' + (error.message || 'the map library could not load')
+                + ' You can still save this job with a municipality and text address.';
+            return;
+        }
+
+        try {
+            var data = await JSMMap.boundaries('municipality');
+            picker.municipalities = JSMMap.addMunicipalities(picker.map, data, {
+                onSelect: function (props) {
+                    var select = field('municipality');
+                    if (select.value !== props.municipality) {
+                        select.value = props.municipality;
+                        onMunicipalityChange();
+                    }
+                    var bounds = picker.municipalities.bounds(props.code);
+                    if (bounds) picker.map.fitBounds(bounds.pad(0.1), { maxZoom: 13 });
+                }
+            });
+        } catch (error) {
+            // Boundaries are context only; the pin itself still works.
+        }
+
+        picker.map.on('click', function (event) {
+            placePin(event.latlng.lat, event.latlng.lng, true);
+        });
+    }
+
+    async function onMunicipalityChange() {
+        var value = field('municipality').value;
+        var entry = municipalityEntry(value);
+
+        // A pin chosen for another municipality is not kept: it would claim a
+        // workplace the employer never picked for this area.
+        if (pin.latitude != null && pin.municipalityValue !== value) {
+            clearPin(false);
+        }
+
+        if (picker && entry && entry.center) {
+            picker.map.setView([entry.center.lat, entry.center.lng], Math.max(picker.map.getZoom(), 11));
+        }
+
+        await loadBarangayOptions();
+        renderPinState();
+    }
+
     function payload() {
+        var barangay = selectedBarangay();
         var data = {
             jobTitle: field('jobTitle').value.trim(),
             jobCategory: field('jobCategory').value || null,
             jobDescription: field('jobDescription').value.trim(),
             responsibilities: field('responsibilities').value.trim(),
             requiredSkills: field('requiredSkills').value.trim() || null,
-            barangay: field('barangay').value.trim() || null,
+            barangay: barangay ? barangay.name : null,
+            barangayCode: barangay ? barangay.code : null,
+            municipalityCode: municipalityCodeFor(field('municipality').value) || null,
             jobLocation: field('jobLocation').value.trim() || null,
             experienceRequirement: field('experienceRequirement').value.trim() || null,
             certifications: field('certifications').value.trim() || null,
@@ -270,6 +537,13 @@
         if (min) data.salaryMin = Number(min);
         if (max) data.salaryMax = Number(max);
 
+        if (pin.latitude != null && pin.longitude != null) {
+            data.latitude = pin.latitude;
+            data.longitude = pin.longitude;
+        } else if (pin.cleared) {
+            data.clearLocation = true;
+        }
+
         return data;
     }
 
@@ -280,6 +554,9 @@
         if (!data.responsibilities) return 'Enter the key responsibilities.';
         if (!data.municipality) return 'Select a municipality.';
         if (data.availablePositions < 1) return 'Available positions must be at least 1.';
+        if (pin.latitude != null && pin.state !== 'confirmed') {
+            return 'Confirm the pinned workplace location, or remove the pin to save a text address only.';
+        }
         return null;
     }
 
@@ -310,18 +587,30 @@
         field('responsibilities').value = job.responsibilities || '';
         field('requiredSkills').value = job.requiredSkills || '';
         field('municipality').value = job.municipality || '';
-        field('barangay').value = job.barangay || '';
         field('jobLocation').value = job.jobLocation || '';
         field('salaryMin').value = job.salaryMin == null ? '' : job.salaryMin;
         field('salaryMax').value = job.salaryMax == null ? '' : job.salaryMax;
         field('educationRequirement').value = job.educationRequirement || '';
         field('experienceRequirement').value = job.experienceRequirement || '';
         field('certifications').value = job.certifications || '';
+
+        await loadBarangayOptions(job.barangayCode, job.barangay);
+
+        if (job.latitude != null && job.longitude != null) {
+            placePin(job.latitude, job.longitude, false);
+            pin.state = 'confirmed';
+            pin.municipalityValue = job.municipality || '';
+            renderPinState();
+            if (picker) {
+                picker.map.setView([Number(job.latitude), Number(job.longitude)], 14);
+            }
+        }
     }
 
     document.addEventListener('enuvex:ready', async function () {
         fillCategories();
         await fillMunicipalities();
+        await initPicker();
 
         var params = new URLSearchParams(window.location.search);
         var id = params.get('id');
@@ -329,6 +618,22 @@
             editingId = id;
             await loadForEdit(id);
         }
+
+        field('municipality').addEventListener('change', onMunicipalityChange);
+
+        field('barangay').addEventListener('change', renderPinState);
+
+        field('confirmLocation').addEventListener('click', function () {
+            if (pin.latitude == null) return;
+            pin.state = 'confirmed';
+            pin.cleared = false;
+            renderPinState();
+        });
+
+        field('clearLocation').addEventListener('click', function () {
+            clearPin(!!editingId);
+            ROLE.toast('Workplace pin removed from this form.', 'success');
+        });
 
         document.getElementById('jobForm').addEventListener('submit', async function (event) {
             event.preventDefault();

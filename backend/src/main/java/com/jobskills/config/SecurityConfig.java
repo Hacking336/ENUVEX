@@ -143,6 +143,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/health").permitAll()
                 .requestMatchers("/api/municipalities", "/api/categories", "/api/business-types").permitAll()
+                // PSGC reference data and boundaries are non-personal background
+                // layers; map pages need them before a seeker signs in.
+                .requestMatchers(HttpMethod.GET, "/api/geo/**").permitAll()
                 // Read-only job browsing is public: JobController only exposes
                 // GETs here and they return active posts. Without this rule the
                 // job listing and job detail pages answered 401 to anyone not

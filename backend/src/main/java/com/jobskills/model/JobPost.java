@@ -69,6 +69,17 @@ public class JobPost {
 
     private String jobLocation;
 
+    /**
+     * Optional workplace pin. Only set once an employer confirms a location on
+     * the map, so existing text-only posts stay valid and off the map.
+     */
+    private Double latitude;
+    private Double longitude;
+
+    /** Official PSGC codes for the selected municipality and barangay. */
+    private String municipalityCode;
+    private String barangayCode;
+
     @Builder.Default
     private boolean isActive = true;
 

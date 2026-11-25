@@ -1,6 +1,7 @@
 package com.jobskills.controller;
 
 import com.jobskills.config.CustomUserDetails;
+import com.jobskills.dto.JobMapDto;
 import com.jobskills.dto.JobResponse;
 import com.jobskills.dto.JobSearchRequest;
 import com.jobskills.model.JobPost;
@@ -22,6 +23,15 @@ public class JobController {
     @GetMapping
     public ResponseEntity<Page<JobResponse>> searchJobs(JobSearchRequest search) {
         return ResponseEntity.ok(jobService.searchJobs(search, null));
+    }
+
+    /**
+     * Map markers for the same filters as the listing. Public like the listing:
+     * it only returns active posts, and only those with a confirmed pin.
+     */
+    @GetMapping("/map")
+    public ResponseEntity<JobMapDto> mapJobs(JobSearchRequest search) {
+        return ResponseEntity.ok(jobService.searchJobsMap(search, null));
     }
 
     @GetMapping("/{id}")

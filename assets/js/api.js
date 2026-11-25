@@ -341,6 +341,11 @@ const ApiClient = {
         return this.request(`/admin/job-posts/${encodeURIComponent(jobId)}`, { method: 'DELETE' });
     },
 
+    async getAdminGeoStats(params = {}) {
+        const query = new URLSearchParams(params).toString();
+        return this.request(`/admin/geo/stats${query ? '?' + query : ''}`);
+    },
+
     async getAdminReports() {
         return this.request('/admin/reports');
     },

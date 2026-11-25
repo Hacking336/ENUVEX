@@ -2,6 +2,7 @@ package com.jobskills.service;
 
 import com.jobskills.dto.*;
 import com.jobskills.model.*;
+import com.jobskills.model.enums.Municipality;
 import com.jobskills.repository.*;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
@@ -28,6 +29,7 @@ public class JobService {
     private final JobApplicationRepository applicationRepository;
     private final SavedJobRepository savedJobRepository;
     private final MatchingEngine matchingEngine;
+    private final GeoService geoService;
 
     @Transactional
     public JobPost createJob(Long employerId, JobPostRequest request) {
@@ -49,8 +51,8 @@ public class JobService {
         job.setEmploymentType(request.getEmploymentType());
         job.setWorkSchedule(request.getWorkSchedule());
         job.setMunicipality(requireValue(request.getMunicipality(), "Municipality"));
-        job.setBarangay(blankToNull(request.getBarangay()));
         job.setJobLocation(blankToNull(request.getJobLocation()));
+        applyWorkplaceLocation(job, request, true);
         applySalary(job, request);
         job.setAvailablePositions(request.getAvailablePositions() == null || request.getAvailablePositions() < 1
             ? 1 : request.getAvailablePositions());
@@ -87,8 +89,6 @@ public class JobService {
         if (request.getCertifications() != null) job.setCertifications(blankToNull(request.getCertifications()));
         if (request.getEmploymentType() != null) job.setEmploymentType(request.getEmploymentType());
         if (request.getWorkSchedule() != null) job.setWorkSchedule(request.getWorkSchedule());
-        if (request.getMunicipality() != null) job.setMunicipality(request.getMunicipality());
-        if (request.getBarangay() != null) job.setBarangay(blankToNull(request.getBarangay()));
         if (request.getJobLocation() != null) job.setJobLocation(blankToNull(request.getJobLocation()));
         if (request.getSalaryMin() != null) job.setSalaryMin(request.getSalaryMin());
         if (request.getSalaryMax() != null) job.setSalaryMax(request.getSalaryMax());
@@ -102,6 +102,8 @@ public class JobService {
         // an edit that does not touch "active" keep a paused post paused and a
         // live post live.
         if (request.getActive() != null) job.setActive(request.getActive());
+
+        applyWorkplaceLocation(job, request, false);
 
         return jobPostRepository.save(job);
     }
@@ -127,7 +129,107 @@ public class JobService {
      * @param seekerUserId the logged-in user's id (not the profile id), or null for anonymous search.
      */
     public Page<JobResponse> searchJobs(JobSearchRequest search, Long seekerUserId) {
-        Specification<JobPost> spec = (root, query, cb) -> {
+        Specification<JobPost> spec = buildSpecification(search);
+        Sort sort = resolveSort(search);
+
+        if (search.getNearLatitude() != null || search.getNearLongitude() != null) {
+            return searchJobsNear(search, spec, seekerUserId);
+        }
+
+        Pageable pageable = PageRequest.of(
+            Math.max(search.getPage(), 0),
+            Math.max(search.getSize(), 1),
+            sort);
+
+        Page<JobPost> jobs = jobPostRepository.findAll(spec, pageable);
+        JobSeekerProfile seeker = seekerUserId != null ? requireSeeker(seekerUserId) : null;
+
+        boolean sortByMatch = "matchPercentage".equalsIgnoreCase(search.getSortBy()) && seeker != null;
+        Page<JobResponse> page = jobs.map(job -> mapToResponse(job, seeker));
+
+        if (sortByMatch) {
+            List<JobResponse> sorted = page.getContent().stream()
+                .sorted(Comparator.comparingDouble(
+                    (JobResponse response) -> response.getMatchPercentage() == null ? -1.0 : response.getMatchPercentage())
+                    .reversed())
+                .collect(Collectors.toList());
+            return new PageImpl<>(sorted, pageable, page.getTotalElements());
+        }
+        return page;
+    }
+
+    /**
+     * Map payload for the active filters.
+     *
+     * Only jobs with a confirmed pin are returned as markers. The number of
+     * matching jobs without a pin is reported separately, so a map never shows
+     * an invented marker and the page can tell the seeker where the rest are.
+     */
+    public JobMapDto searchJobsMap(JobSearchRequest search, Long seekerUserId) {
+        Specification<JobPost> spec = buildSpecification(search);
+        Sort sort = resolveSort(search);
+        JobSeekerProfile seeker = seekerUserId != null ? requireSeeker(seekerUserId) : null;
+
+        long total = jobPostRepository.count(spec);
+        long withPin = jobPostRepository.count(withCoordinates(spec));
+
+        List<JobResponse> mapped = jobPostRepository
+            .findAll(spec, PageRequest.of(0, 2000, sort)).stream()
+            .map(job -> mapToResponse(job, seeker))
+            .filter(job -> job.getLatitude() != null && job.getLongitude() != null)
+            .collect(Collectors.toCollection(ArrayList::new));
+
+        if (search.getNearLatitude() != null || search.getNearLongitude() != null) {
+            double lat = requireCoordinates(search.getNearLatitude(), search.getNearLongitude())[0];
+            double lng = requireCoordinates(search.getNearLatitude(), search.getNearLongitude())[1];
+            double radiusKm = radiusKm(search.getRadiusKm());
+            mapped = mapped.stream()
+                .peek(job -> job.setDistanceKm(round(GeoService.distanceKm(
+                    lat, lng, job.getLatitude(), job.getLongitude()), 2)))
+                .filter(job -> job.getDistanceKm() <= radiusKm)
+                .sorted(Comparator.comparing(JobResponse::getDistanceKm))
+                .collect(Collectors.toCollection(ArrayList::new));
+        }
+
+        int limit = 500;
+        boolean truncated = mapped.size() > limit;
+        List<JobResponse> markers = truncated ? new ArrayList<>(mapped.subList(0, limit)) : mapped;
+
+        return new JobMapDto(markers, total, Math.max(0, total - withPin), truncated);
+    }
+
+    /**
+     * Near Me search. Only jobs with real coordinates can be ranked by distance;
+     * the seeker's position is used for this request and never stored.
+     */
+    private Page<JobResponse> searchJobsNear(JobSearchRequest search, Specification<JobPost> spec, Long seekerUserId) {
+        double[] point = requireCoordinates(search.getNearLatitude(), search.getNearLongitude());
+        double radiusKm = radiusKm(search.getRadiusKm());
+
+        JobSeekerProfile seeker = seekerUserId != null ? requireSeeker(seekerUserId) : null;
+        List<JobResponse> nearby = new ArrayList<>();
+        for (JobPost job : jobPostRepository.findAll(spec)) {
+            JobResponse response = mapToResponse(job, seeker);
+            if (response.getLatitude() == null || response.getLongitude() == null) {
+                continue;
+            }
+            double distance = GeoService.distanceKm(point[0], point[1], response.getLatitude(), response.getLongitude());
+            if (distance <= radiusKm) {
+                response.setDistanceKm(round(distance, 2));
+                nearby.add(response);
+            }
+        }
+        nearby.sort(Comparator.comparing(JobResponse::getDistanceKm));
+
+        int size = Math.max(search.getSize(), 1);
+        int page = Math.max(search.getPage(), 0);
+        int from = Math.min(page * size, nearby.size());
+        int to = Math.min(from + size, nearby.size());
+        return new PageImpl<>(nearby.subList(from, to), PageRequest.of(page, size), nearby.size());
+    }
+
+    private Specification<JobPost> buildSpecification(JobSearchRequest search) {
+        return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("isActive"), true));
 
@@ -164,39 +266,46 @@ public class JobService {
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+    }
 
-        boolean sortByMatch = "matchPercentage".equalsIgnoreCase(search.getSortBy()) && seekerUserId != null;
+    private Specification<JobPost> withCoordinates(Specification<JobPost> spec) {
+        return spec.and((root, query, cb) -> cb.and(
+            cb.isNotNull(root.get("latitude")),
+            cb.isNotNull(root.get("longitude"))));
+    }
+
+    private Sort resolveSort(JobSearchRequest search) {
         String sortColumn = SORTABLE_COLUMNS.contains(search.getSortBy()) ? search.getSortBy() : "createdAt";
-
-        Pageable pageable = PageRequest.of(
-            Math.max(search.getPage(), 0),
-            Math.max(search.getSize(), 1),
-            Sort.by(Sort.Direction.fromString(search.getSortDir()), sortColumn)
-        );
-
-        Page<JobPost> jobs = jobPostRepository.findAll(spec, pageable);
-
-        Page<JobResponse> page;
-        if (seekerUserId != null) {
-            JobSeekerProfile seeker = requireSeeker(seekerUserId);
-            page = jobs.map(job -> {
-                JobResponse response = mapToResponse(job);
-                response.setMatchPercentage(matchingEngine.calculateMatch(seeker, job).getOverallMatch());
-                return response;
-            });
-        } else {
-            page = jobs.map(this::mapToResponse);
+        Sort.Direction direction;
+        try {
+            direction = Sort.Direction.fromString(search.getSortDir());
+        } catch (IllegalArgumentException | NullPointerException e) {
+            direction = Sort.Direction.DESC;
         }
+        return Sort.by(direction, sortColumn);
+    }
 
-        if (sortByMatch) {
-            List<JobResponse> sorted = page.getContent().stream()
-                .sorted(Comparator.comparingDouble(
-                    (JobResponse response) -> response.getMatchPercentage() == null ? -1.0 : response.getMatchPercentage())
-                    .reversed())
-                .collect(Collectors.toList());
-            return new PageImpl<>(sorted, pageable, page.getTotalElements());
+    private double radiusKm(Double value) {
+        double radius = value == null ? 25 : value;
+        if (radius <= 0 || radius > 500) {
+            throw new IllegalArgumentException("Distance must be between 0 and 500 km");
         }
-        return page;
+        return radius;
+    }
+
+    private double[] requireCoordinates(Double latitude, Double longitude) {
+        if (latitude == null || longitude == null) {
+            throw new IllegalArgumentException("Near Me needs both the device latitude and longitude");
+        }
+        if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+            throw new IllegalArgumentException("The device location is not a valid coordinate");
+        }
+        return new double[] {latitude, longitude};
+    }
+
+    private static double round(double value, int decimals) {
+        double factor = Math.pow(10, decimals);
+        return Math.round(value * factor) / factor;
     }
 
     public JobResponse getJobDetails(Long jobId, Long seekerUserId) {
@@ -315,6 +424,63 @@ public class JobService {
             .orElseThrow(() -> new IllegalArgumentException("No job seeker profile for the current account"));
     }
 
+    private JobResponse mapToResponse(JobPost job, JobSeekerProfile seeker) {
+        JobResponse response = mapToResponse(job);
+        if (seeker != null) {
+            response.setMatchPercentage(matchingEngine.calculateMatch(seeker, job).getOverallMatch());
+        }
+        return response;
+    }
+
+    /**
+     * Applies the employer's workplace selection and validates it against the
+     * PSGC reference data. A job only gets coordinates when the employer
+     * confirmed a pin; text-only posts keep working unchanged.
+     */
+    private void applyWorkplaceLocation(JobPost job, JobPostRequest request, boolean creating) {
+        if (Boolean.TRUE.equals(request.getClearLocation())) {
+            job.setLatitude(null);
+            job.setLongitude(null);
+            job.setMunicipalityCode(null);
+            job.setBarangayCode(null);
+            return;
+        }
+
+        boolean touched = creating
+            || request.getMunicipality() != null
+            || request.getMunicipalityCode() != null
+            || request.getBarangay() != null
+            || request.getBarangayCode() != null
+            || request.getLatitude() != null
+            || request.getLongitude() != null;
+        if (!touched) {
+            return;
+        }
+
+        Municipality municipality = request.getMunicipality() != null
+            ? request.getMunicipality() : job.getMunicipality();
+        String municipalityCode = request.getMunicipalityCode() != null
+            ? request.getMunicipalityCode() : job.getMunicipalityCode();
+        String barangayCode = request.getBarangayCode() != null
+            ? request.getBarangayCode() : job.getBarangayCode();
+        String barangayName = request.getBarangay() != null
+            ? request.getBarangay() : job.getBarangay();
+        Double latitude = request.getLatitude() != null ? request.getLatitude() : job.getLatitude();
+        Double longitude = request.getLongitude() != null ? request.getLongitude() : job.getLongitude();
+
+        GeoService.ResolvedLocation resolved = geoService.validate(
+            municipality, municipalityCode, barangayCode, barangayName, latitude, longitude);
+
+        job.setMunicipality(municipality);
+        job.setMunicipalityCode(resolved.municipalityCode());
+        job.setBarangayCode(resolved.barangayCode());
+        job.setBarangay(resolved.barangayName() != null
+            ? resolved.barangayName()
+            : blankToNull(barangayName));
+        job.setLatitude(latitude);
+        job.setLongitude(longitude);
+    }
+
     private JobResponse mapToResponse(JobPost job) {
         JobResponse response = new JobResponse();
         response.setId(job.getId());
@@ -330,6 +496,10 @@ public class JobService {
         response.setMunicipality(job.getMunicipality());
         response.setBarangay(job.getBarangay());
         response.setJobLocation(job.getJobLocation());
+        response.setLatitude(job.getLatitude());
+        response.setLongitude(job.getLongitude());
+        response.setMunicipalityCode(job.getMunicipalityCode());
+        response.setBarangayCode(job.getBarangayCode());
         response.setActive(job.isActive());
         response.setCreatedAt(job.getCreatedAt());
         response.setRequiredSkills(job.getRequiredSkills());

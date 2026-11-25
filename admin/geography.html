@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Geographic Map — JSM Admin</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/brand/jsm-favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/brand/jsm-icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/brand/jsm-icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../job-seeker/enuvex-app.css">
+    <link rel="stylesheet" href="../assets/css/enuvex-role.css">
+    <link rel="stylesheet" href="../assets/css/jsm-map.css">
+    <script>
+        window.ENUVEX_PAGE = {
+            active: 'geography',
+            title: 'Geographic Map',
+            subtitle: 'Coverage, job posts and participation by municipality'
+        };
+    </script>
+</head>
+<body data-role="admin">
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="page-head">
+                <div>
+                    <h2>Geographic coverage</h2>
+                    <p>Counts come from the job, employer, seeker and application tables. No individual address or seeker position is shown.</p>
+                </div>
+                <div class="page-head-actions">
+                    <a class="btn-ghost" href="reports.html"><i class="fas fa-chart-column"></i> Reports</a>
+                    <a class="btn-soft" href="job-posts.html"><i class="fas fa-briefcase"></i> Job posts</a>
+                </div>
+            </div>
+
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load geographic statistics.</span>
+            </div>
+
+            <form class="card toolbar map-toolbar" id="geoFilters">
+                <label class="field select" for="geoMunicipality">
+                    <i class="fas fa-location-dot" aria-hidden="true"></i>
+                    <span class="visually-hidden">Municipality</span>
+                    <select id="geoMunicipality">
+                        <option value="">All municipalities</option>
+                    </select>
+                </label>
+                <label class="field select" for="geoBarangay">
+                    <i class="fas fa-map-pin" aria-hidden="true"></i>
+                    <span class="visually-hidden">Barangay</span>
+                    <select id="geoBarangay" disabled>
+                        <option value="">All barangays</option>
+                    </select>
+                </label>
+                <label class="field" for="geoFrom">
+                    <i class="fas fa-calendar-day" aria-hidden="true"></i>
+                    <span class="visually-hidden">From date</span>
+                    <input type="date" id="geoFrom" aria-label="Posted from">
+                </label>
+                <label class="field" for="geoTo">
+                    <i class="fas fa-calendar-day" aria-hidden="true"></i>
+                    <span class="visually-hidden">To date</span>
+                    <input type="date" id="geoTo" aria-label="Posted to">
+                </label>
+                <button class="btn-solid" type="submit"><i class="fas fa-filter"></i> Apply filters</button>
+                <button class="btn-ghost" type="button" id="geoReset"><i class="fas fa-rotate-left"></i> Reset</button>
+            </form>
+
+            <section class="geo-metrics" aria-label="Coverage totals">
+                <article class="geo-metric">
+                    <div class="geo-metric-label">Job posts</div>
+                    <div class="geo-metric-value" id="metricJobs">—</div>
+                    <div class="geo-metric-note" id="metricActiveJobs">— active</div>
+                </article>
+                <article class="geo-metric">
+                    <div class="geo-metric-label">Employers</div>
+                    <div class="geo-metric-value" id="metricEmployers">—</div>
+                    <div class="geo-metric-note">Registered in these areas</div>
+                </article>
+                <article class="geo-metric">
+                    <div class="geo-metric-label">Job seekers</div>
+                    <div class="geo-metric-value" id="metricSeekers">—</div>
+                    <div class="geo-metric-note">Municipality on their profile</div>
+                </article>
+                <article class="geo-metric">
+                    <div class="geo-metric-label">Applications</div>
+                    <div class="geo-metric-value" id="metricApplications">—</div>
+                    <div class="geo-metric-note">Applications to jobs in these areas</div>
+                </article>
+                <article class="geo-metric">
+                    <div class="geo-metric-label">Jobs on the map</div>
+                    <div class="geo-metric-value" id="metricPins">—</div>
+                    <div class="geo-metric-note" id="metricWithoutPin">— without a confirmed pin</div>
+                </article>
+            </section>
+
+            <div class="map-split">
+                <aside class="map-side">
+                    <section class="card map-card" aria-labelledby="municipalityTableTitle">
+                        <h3 id="municipalityTableTitle"><i class="fas fa-table-list"></i> By municipality</h3>
+                        <p class="map-card-note">Select a row to filter the page to that municipality.</p>
+                        <div class="table-wrap">
+                            <table class="geo-table" id="municipalityTable">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Municipality</th>
+                                        <th scope="col" class="num">Jobs</th>
+                                        <th scope="col" class="num">Employers</th>
+                                        <th scope="col" class="num">Seekers</th>
+                                        <th scope="col" class="num">Applications</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="municipalityRows">
+                                    <tr><td colspan="5" class="muted">Loading…</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <section class="card map-card" aria-labelledby="barangayTableTitle">
+                        <h3 id="barangayTableTitle"><i class="fas fa-map-pin"></i> By barangay</h3>
+                        <p class="map-card-note" id="barangayTableNote">Only barangays with job posts are listed; the rest have no listings.</p>
+                        <div class="table-wrap">
+                            <table class="geo-table" id="barangayTable">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Barangay</th>
+                                        <th scope="col">PSGC</th>
+                                        <th scope="col" class="num">Jobs</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="barangayRows">
+                                    <tr><td colspan="3" class="muted">Loading…</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </aside>
+
+                <div class="map-canvas-wrap">
+                    <div class="map-canvas" id="geoMap" role="application" aria-label="Map of the four covered municipalities"></div>
+                    <div class="map-state" id="geoMapState">
+                        <i class="fas fa-circle-notch fa-spin"></i>
+                        <strong>Loading the coverage map…</strong>
+                        <p>Fetching municipality boundaries and statistics.</p>
+                    </div>
+                    <div class="map-state" id="geoMapEmpty" hidden>
+                        <i class="fas fa-map-location-dot"></i>
+                        <strong>No statistics for these filters</strong>
+                        <p>Try a wider date range or another municipality.</p>
+                    </div>
+                    <div class="map-state" id="geoMapError" hidden>
+                        <i class="fas fa-triangle-exclamation"></i>
+                        <strong>Coverage map could not be loaded</strong>
+                        <p id="geoMapErrorText">Check your connection and try again.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="map-banner" id="geoBanner" hidden>
+                <i class="fas fa-triangle-exclamation"></i>
+                <span>Map tiles could not be downloaded. Boundaries and statistics are still shown.</span>
+            </div>
+
+            <section class="card panel" style="margin-top: 16px;" aria-labelledby="dataSourceTitle">
+                <div class="panel-head">
+                    <h3 id="dataSourceTitle"><i class="fas fa-database"></i> Geographic data source</h3>
+                </div>
+                <div id="dataSource" class="muted" style="line-height: 1.7;">Loading reference data details…</div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/jsm-map.js"></script>
+<script src="../assets/js/role-app.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var state = {
+        coverage: null,
+        config: null,
+        stats: null,
+        navigation: null,
+        municipalityLayer: null,
+        municipality: '',
+        barangays: []
+    };
+
+    var el = {
+        municipality: document.getElementById('geoMunicipality'),
+        barangay: document.getElementById('geoBarangay'),
+        from: document.getElementById('geoFrom'),
+        to: document.getElementById('geoTo'),
+        rows: document.getElementById('municipalityRows'),
+        barangayRows: document.getElementById('barangayRows'),
+        barangayNote: document.getElementById('barangayTableNote'),
+        mapState: document.getElementById('geoMapState'),
+        mapEmpty: document.getElementById('geoMapEmpty'),
+        mapError: document.getElementById('geoMapError'),
+        mapErrorText: document.getElementById('geoMapErrorText'),
+        banner: document.getElementById('geoBanner'),
+        pageError: document.getElementById('pageError'),
+        pageErrorText: document.getElementById('pageErrorText'),
+        source: document.getElementById('dataSource')
+    };
+
+    function showError(message) {
+        el.pageError.hidden = false;
+        el.pageErrorText.textContent = message;
+    }
+
+    function setMapState(which) {
+        el.mapState.hidden = which !== 'loading';
+        el.mapEmpty.hidden = which !== 'empty';
+        el.mapError.hidden = which !== 'error';
+    }
+
+    function filters() {
+        var params = {};
+        if (el.municipality.value) params.municipality = el.municipality.value;
+        if (el.barangay.value) params.barangay = el.barangay.value;
+        if (el.from.value) params.from = el.from.value;
+        if (el.to.value) params.to = el.to.value;
+        return params;
+    }
+
+    function renderSource() {
+        var coverage = state.config && state.config.coverage;
+        if (!coverage) {
+            el.source.textContent = 'Reference data details are unavailable.';
+            return;
+        }
+        var source = coverage.source;
+        el.source.innerHTML = '<strong>' + ROLE.esc(source.name) + '</strong><br>'
+            + ROLE.esc(source.publisher) + '<br>'
+            + 'Reference: ' + ROLE.esc(source.referenceDate) + ' · License: ' + ROLE.esc(source.license) + '<br>'
+            + '<a href="' + ROLE.esc(source.url) + '" target="_blank" rel="noopener noreferrer">Dataset repository</a><br><br>'
+            + ROLE.esc(coverage.coverageNote) + '<br>' + ROLE.esc(coverage.barangayNote);
+    }
+
+    function renderRows(stats) {
+        var rows = (stats && stats.municipalities) || [];
+        if (!rows.length) {
+            el.rows.innerHTML = '<tr><td colspan="5" class="muted">No municipality rows were returned.</td></tr>';
+            return;
+        }
+        el.rows.innerHTML = rows.map(function (row) {
+            return '<tr data-municipality="' + ROLE.esc(row.municipality) + '"'
+                + (row.municipality === el.municipality.value ? ' class="is-selected"' : '') + '>'
+                + '<td><strong>' + ROLE.esc(row.name) + '</strong><br><span class="code">PSGC ' + ROLE.esc(row.code) + '</span></td>'
+                + '<td class="num">' + Number(row.jobs) + '<br><span class="code">' + Number(row.activeJobs) + ' active</span></td>'
+                + '<td class="num">' + Number(row.employers) + '</td>'
+                + '<td class="num">' + Number(row.jobSeekers) + '</td>'
+                + '<td class="num">' + Number(row.applications) + '</td>'
+                + '</tr>';
+        }).join('');
+
+        el.rows.querySelectorAll('tr[data-municipality]').forEach(function (row) {
+            row.addEventListener('click', function () {
+                el.municipality.value = row.getAttribute('data-municipality');
+                loadBarangays();
+                loadStats();
+                selectOnMap(el.municipality.value);
+            });
+        });
+    }
+
+    function renderBarangays(stats) {
+        var rows = (stats && stats.barangays) || [];
+        if (!rows.length) {
+            el.barangayRows.innerHTML = '<tr><td colspan="3" class="muted">No barangay has a job post for these filters.</td></tr>';
+            el.barangayNote.textContent = 'Only barangays with job posts are listed; the rest have no listings.';
+            return;
+        }
+        el.barangayNote.textContent = 'Barangays with at least one job post for these filters. All 125 barangays exist in the PSGC reference data; the others simply have no listings.';
+        el.barangayRows.innerHTML = rows.map(function (row) {
+            return '<tr>'
+                + '<td>' + ROLE.esc(row.name) + '</td>'
+                + '<td class="code">' + ROLE.esc(row.code) + '</td>'
+                + '<td class="num">' + Number(row.jobs) + '</td>'
+                + '</tr>';
+        }).join('');
+    }
+
+    function renderMetrics(stats) {
+        var totals = (stats && stats.totals) || {};
+        document.getElementById('metricJobs').textContent = totals.jobs != null ? totals.jobs : '0';
+        document.getElementById('metricActiveJobs').textContent = (totals.activeJobs != null ? totals.activeJobs : 0) + ' active';
+        document.getElementById('metricEmployers').textContent = totals.employers != null ? totals.employers : '0';
+        document.getElementById('metricSeekers').textContent = totals.jobSeekers != null ? totals.jobSeekers : '0';
+        document.getElementById('metricApplications').textContent = totals.applications != null ? totals.applications : '0';
+        document.getElementById('metricPins').textContent = totals.jobsWithPin != null ? totals.jobsWithPin : '0';
+        document.getElementById('metricWithoutPin').textContent = (totals.jobsWithoutPin != null ? totals.jobsWithoutPin : 0)
+            + ' without a confirmed pin';
+    }
+
+    function paintMap(stats) {
+        if (!state.navigation || !state.municipalityLayer) return;
+        var rows = (stats && stats.municipalities) || [];
+        var max = rows.reduce(function (top, row) { return Math.max(top, Number(row.jobs) || 0); }, 0);
+        rows.forEach(function (row) {
+            var ratio = max ? (Number(row.jobs) || 0) / max : 0;
+            state.municipalityLayer.styleFor(row.code, {
+                fillOpacity: 0.08 + ratio * 0.42,
+                weight: row.municipality === el.municipality.value ? 2.6 : 1.6
+            });
+        });
+    }
+
+    function selectOnMap(value) {
+        if (!state.navigation || !state.municipalityLayer) return;
+        var entry = (state.coverage && state.coverage.municipalities || []).filter(function (item) {
+            return item.value === value;
+        })[0];
+        state.municipalityLayer.select(entry ? entry.code : null);
+        if (entry) {
+            var bounds = state.municipalityLayer.bounds(entry.code);
+            if (bounds) state.navigation.map.fitBounds(bounds.pad(0.1), { maxZoom: 12 });
+        }
+    }
+
+    async function loadBarangays() {
+        var value = el.municipality.value;
+        el.barangay.innerHTML = '<option value="">All barangays</option>';
+        el.barangay.disabled = true;
+        state.barangays = [];
+        if (!value || !state.coverage) return;
+
+        var entry = state.coverage.municipalities.filter(function (item) { return item.value === value; })[0];
+        if (!entry) return;
+
+        var list = await ROLE.safe(ApiClient.request('/geo/municipalities/' + encodeURIComponent(entry.code) + '/barangays'));
+        if (ROLE.failed(list) || !Array.isArray(list)) return;
+
+        state.barangays = list;
+        list.forEach(function (barangay) {
+            var option = document.createElement('option');
+            option.value = barangay.code;
+            option.textContent = barangay.name;
+            el.barangay.appendChild(option);
+        });
+        el.barangay.disabled = false;
+    }
+
+    async function loadStats() {
+        el.pageError.hidden = true;
+        setMapState('loading');
+        var result = await ROLE.safe(ApiClient.getAdminGeoStats(filters()));
+        if (ROLE.failed(result)) {
+            showError(result.__error || 'Could not load geographic statistics.');
+            setMapState('error');
+            el.mapErrorText.textContent = result.__error || 'Check your connection and try again.';
+            return;
+        }
+
+        state.stats = result;
+        renderMetrics(result);
+        renderRows(result);
+        renderBarangays(result);
+        paintMap(result);
+        selectOnMap(el.municipality.value);
+
+        var total = result.totals ? Number(result.totals.jobs) || 0 : 0;
+        setMapState(total ? null : 'empty');
+    }
+
+    async function boot() {
+        try {
+            var loaded = await Promise.all([JSMMap.config(), ApiClient.getAdminGeoStats({})]);
+            state.config = loaded[0];
+            state.coverage = loaded[0].coverage;
+
+            var options = ['<option value="">All municipalities</option>'];
+            state.coverage.municipalities.forEach(function (item) {
+                options.push('<option value="' + ROLE.esc(item.value) + '">' + ROLE.esc(item.name) + '</option>');
+            });
+            el.municipality.innerHTML = options.join('');
+
+            state.navigation = await JSMMap.createMap('geoMap', {
+                onTileError: function () { el.banner.hidden = false; }
+            });
+
+            var data = await JSMMap.boundaries('municipality');
+            state.municipalityLayer = JSMMap.addMunicipalities(state.navigation.map, data, {
+                onSelect: function (props) {
+                    el.municipality.value = props.municipality;
+                    loadBarangays();
+                    loadStats();
+                    selectOnMap(props.municipality);
+                }
+            });
+
+            var bounds = state.municipalityLayer.bounds();
+            if (bounds) state.navigation.map.fitBounds(bounds.pad(0.08), { maxZoom: 11 });
+
+            renderSource();
+            state.stats = loaded[1] && !loaded[1].__error ? loaded[1] : null;
+            if (loaded[1] && loaded[1].__error) {
+                showError(loaded[1].__error);
+                setMapState('error');
+                el.mapErrorText.textContent = loaded[1].__error;
+            } else {
+                renderMetrics(loaded[1]);
+                renderRows(loaded[1]);
+                renderBarangays(loaded[1]);
+                paintMap(loaded[1]);
+                setMapState(loaded[1] && loaded[1].totals && Number(loaded[1].totals.jobs) ? null : 'empty');
+            }
+        } catch (error) {
+            setMapState('error');
+            el.mapErrorText.textContent = error.message || 'Check your connection and try again.';
+            showError(error.message || 'The coverage map could not be loaded.');
+        }
+    }
+
+    document.addEventListener('enuvex:ready', function () {
+        document.getElementById('geoFilters').addEventListener('submit', function (event) {
+            event.preventDefault();
+            loadStats();
+        });
+
+        el.municipality.addEventListener('change', function () {
+            loadBarangays();
+            selectOnMap(el.municipality.value);
+            loadStats();
+        });
+
+        el.barangay.addEventListener('change', loadStats);
+
+        document.getElementById('geoReset').addEventListener('click', function () {
+            el.municipality.value = '';
+            el.from.value = '';
+            el.to.value = '';
+            loadBarangays();
+            selectOnMap('');
+            loadStats();
+        });
+
+        boot();
+    }, { once: true });
+})();
+</script>
+</body>
+</html>

@@ -17,6 +17,10 @@ public class JobSearchRequest {
     private EmploymentType employmentType;
     private WorkSchedule workSchedule;
     private Double maxDistance;
+    /** Near Me: the seeker's temporary position, used only for this request. */
+    private Double nearLatitude;
+    private Double nearLongitude;
+    private Double radiusKm;
     private String experience;
     private String education;
     private int page = 0;

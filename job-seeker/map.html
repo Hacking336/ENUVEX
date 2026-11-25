@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Job Map — JSM</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/brand/jsm-favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/brand/jsm-icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/brand/jsm-icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="enuvex-app.css">
+    <link rel="stylesheet" href="../assets/css/jsm-map.css">
+    <script>
+        window.ENUVEX_PAGE = {
+            active: 'map',
+            title: 'Job Map',
+            subtitle: 'Jobs with a confirmed workplace in Camarines Norte'
+        };
+    </script>
+</head>
+<body>
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="page-head">
+                <div>
+                    <h2>Job map</h2>
+                    <p>Basud, Daet, Labo and Vinzons. Only jobs whose employer pinned a real workplace are plotted.</p>
+                </div>
+                <div class="page-head-actions">
+                    <a class="btn-ghost" href="jobs.html"><i class="fas fa-list"></i> Search jobs</a>
+                </div>
+            </div>
+
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">The map could not be loaded.</span>
+            </div>
+
+            <form class="card toolbar map-toolbar" id="mapFilters" role="search">
+                <label class="field map-toolbar-grow" for="mapKeyword">
+                    <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                    <span class="visually-hidden">Job title, keyword, or company</span>
+                    <input type="search" id="mapKeyword" placeholder="Job title, skill, or company">
+                </label>
+                <label class="field select" for="mapMunicipality">
+                    <i class="fas fa-location-dot" aria-hidden="true"></i>
+                    <span class="visually-hidden">Municipality</span>
+                    <select id="mapMunicipality">
+                        <option value="">All municipalities</option>
+                    </select>
+                </label>
+                <label class="field select" for="mapBarangay">
+                    <i class="fas fa-map-pin" aria-hidden="true"></i>
+                    <span class="visually-hidden">Barangay</span>
+                    <select id="mapBarangay" disabled>
+                        <option value="">All barangays</option>
+                    </select>
+                </label>
+                <label class="field select" for="mapType">
+                    <i class="fas fa-clock" aria-hidden="true"></i>
+                    <span class="visually-hidden">Employment type</span>
+                    <select id="mapType">
+                        <option value="">Any employment type</option>
+                        <option value="FULL_TIME">Full-time</option>
+                        <option value="PART_TIME">Part-time</option>
+                        <option value="CONTRACT">Contract</option>
+                        <option value="TEMPORARY">Temporary</option>
+                    </select>
+                </label>
+                <label class="field select" for="mapRadius" id="mapRadiusField" hidden>
+                    <i class="fas fa-route" aria-hidden="true"></i>
+                    <span class="visually-hidden">Distance</span>
+                    <select id="mapRadius">
+                        <option value="5">Within 5 km</option>
+                        <option value="10">Within 10 km</option>
+                        <option value="25" selected>Within 25 km</option>
+                        <option value="50">Within 50 km</option>
+                    </select>
+                </label>
+                <button class="btn-soft" type="button" id="nearMeBtn">
+                    <i class="fas fa-location-crosshairs"></i> Near me
+                </button>
+                <button class="btn-solid" type="submit"><i class="fas fa-sliders"></i> Apply</button>
+                <button class="btn-ghost" type="button" id="resetMap"><i class="fas fa-rotate-left"></i> Reset</button>
+            </form>
+
+            <p class="filter-note" id="nearMeNote" style="margin: -4px 0 12px;">
+                Near Me asks your browser for your position once. It is used only to measure distance for this search, is never saved, and is never shared with employers.
+            </p>
+
+            <div class="map-banner" id="tileBanner" hidden>
+                <i class="fas fa-triangle-exclamation"></i>
+                <span>Map tiles could not be downloaded. Boundaries, job markers and the lists still work; check your connection to see the base map.</span>
+            </div>
+
+            <div class="map-split">
+                <aside class="map-side">
+                    <section class="card map-card" aria-labelledby="coverageTitle">
+                        <h3 id="coverageTitle"><i class="fas fa-map-location-dot"></i> Project coverage</h3>
+                        <p class="map-card-note">Select a municipality to see its barangays and boundaries.</p>
+                        <div class="coverage-list" id="coverageList">
+                            <div class="loading">Loading coverage…</div>
+                        </div>
+                    </section>
+
+                    <section class="card map-card" id="barangayCard" hidden aria-labelledby="barangayTitle">
+                        <h3 id="barangayTitle"><i class="fas fa-map-pin"></i> Barangays</h3>
+                        <p class="map-card-note" id="barangayNote">PSGC reference list with current job-post counts.</p>
+                        <div class="barangay-scroll" id="barangayList"></div>
+                    </section>
+
+                    <section class="card map-card" aria-labelledby="selectedJobTitle">
+                        <h3 id="selectedJobTitle"><i class="fas fa-briefcase"></i> Selected job</h3>
+                        <div id="selectedJob" class="map-job-empty">
+                            <i class="fas fa-hand-pointer"></i>
+                            <span>Select a marker on the map to preview the job here.</span>
+                        </div>
+                    </section>
+
+                    <div class="map-honesty">
+                        <i class="fas fa-circle-info"></i>
+                        <span id="mapHonesty">
+                            Only jobs with a confirmed workplace pin appear on the map. Every other matching job is still listed in Search Jobs.
+                        </span>
+                    </div>
+                </aside>
+
+                <div class="map-canvas-wrap">
+                    <div class="map-canvas" id="jobMap" role="application" aria-label="Map of jobs with confirmed workplace locations"></div>
+
+                    <div class="map-state" id="mapState">
+                        <i class="fas fa-circle-notch fa-spin"></i>
+                        <strong>Loading the map…</strong>
+                        <p>Fetching boundaries and job locations.</p>
+                    </div>
+
+                    <div class="map-state" id="mapEmptyState" hidden>
+                        <i class="fas fa-map-location-dot"></i>
+                        <strong>No job has a confirmed location for these filters</strong>
+                        <p id="mapEmptyText">Widen the filters, or browse these jobs in the list — employers have not pinned a workplace yet.</p>
+                        <a class="btn-solid btn-sm" href="jobs.html">Open list view</a>
+                    </div>
+
+                    <div class="map-state" id="mapErrorState" hidden>
+                        <i class="fas fa-triangle-exclamation"></i>
+                        <strong>Map data could not be loaded</strong>
+                        <p id="mapErrorText">Check your connection and try again.</p>
+                        <button class="btn-solid btn-sm" type="button" id="retryMap"><i class="fas fa-rotate-right"></i> Try again</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/jsm-map.js"></script>
+<script src="enuvex-app.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var state = {
+        coverage: null,
+        counts: null,
+        municipality: '',
+        barangayCode: '',
+        barangays: [],
+        navigation: null,
+        barangayLayer: null,
+        jobsLayer: null,
+        markers: [],
+        near: null,
+        selectedJobId: null
+    };
+
+    var el = {
+        keyword: document.getElementById('mapKeyword'),
+        municipality: document.getElementById('mapMunicipality'),
+        barangay: document.getElementById('mapBarangay'),
+        type: document.getElementById('mapType'),
+        radius: document.getElementById('mapRadius'),
+        radiusField: document.getElementById('mapRadiusField'),
+        nearNote: document.getElementById('nearMeNote'),
+        coverageList: document.getElementById('coverageList'),
+        barangayCard: document.getElementById('barangayCard'),
+        barangayList: document.getElementById('barangayList'),
+        barangayNote: document.getElementById('barangayNote'),
+        selectedJob: document.getElementById('selectedJob'),
+        honesty: document.getElementById('mapHonesty'),
+        state: document.getElementById('mapState'),
+        empty: document.getElementById('mapEmptyState'),
+        emptyText: document.getElementById('mapEmptyText'),
+        error: document.getElementById('mapErrorState'),
+        errorText: document.getElementById('mapErrorText'),
+        tileBanner: document.getElementById('tileBanner'),
+        pageError: document.getElementById('pageError'),
+        pageErrorText: document.getElementById('pageErrorText')
+    };
+
+    function showState(node) {
+        [el.state, el.empty, el.error].forEach(function (item) { item.hidden = item !== node; });
+    }
+
+    function showPageError(message) {
+        el.pageError.hidden = false;
+        el.pageErrorText.textContent = message;
+    }
+
+    function clearPageError() {
+        el.pageError.hidden = true;
+    }
+
+    function municipalityName(code) {
+        var item = state.coverage && state.coverage.municipalities.filter(function (m) { return m.code === code; })[0];
+        return item ? item.name : '';
+    }
+
+    function jobCountForMunicipality(code) {
+        if (!state.counts || !state.counts.municipalities) return 0;
+        return Number(state.counts.municipalities[code]) || 0;
+    }
+
+    function jobCountForBarangay(code) {
+        if (!state.counts || !state.counts.barangays) return 0;
+        return Number(state.counts.barangays[code]) || 0;
+    }
+
+    function coverageCodeForEnum(value) {
+        var item = state.coverage && state.coverage.municipalities.filter(function (m) { return m.value === value; })[0];
+        return item ? item.code : '';
+    }
+
+    function renderCoverage() {
+        var list = state.coverage.municipalities;
+        el.coverageList.innerHTML = list.map(function (item) {
+            var count = jobCountForMunicipality(item.code);
+            return '<button type="button" class="coverage-item' + (item.code === state.municipality ? ' is-active' : '') + '" '
+                + 'data-municipality="' + JSMMap.esc(item.code) + '">'
+                + '<span class="coverage-icon"><i class="fas fa-map-location-dot"></i></span>'
+                + '<span class="coverage-text"><strong>' + JSMMap.esc(item.name) + '</strong>'
+                + '<small>PSGC ' + JSMMap.esc(item.code) + ' · ' + item.barangayCount + ' barangays</small></span>'
+                + '<span class="coverage-count">' + count + '<small>active jobs</small></span>'
+                + '</button>';
+        }).join('');
+
+        el.coverageList.querySelectorAll('[data-municipality]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                selectMunicipality(button.getAttribute('data-municipality'));
+            });
+        });
+    }
+
+    function renderBarangays() {
+        if (!state.municipality) {
+            el.barangayCard.hidden = true;
+            return;
+        }
+        el.barangayCard.hidden = false;
+        el.barangayNote.textContent = 'PSGC reference list for ' + municipalityName(state.municipality)
+            + '. Counts are active job posts.';
+
+        var rows = state.barangays.map(function (barangay) {
+            var count = jobCountForBarangay(barangay.code);
+            return '<button type="button" class="barangay-row' + (barangay.code === state.barangayCode ? ' is-active' : '') + '" '
+                + 'data-barangay="' + JSMMap.esc(barangay.code) + '">'
+                + '<span>' + JSMMap.esc(barangay.name) + '</span>'
+                + '<span class="barangay-code">' + JSMMap.esc(barangay.code) + '</span>'
+                + '<span class="barangay-jobs' + (count ? '' : ' is-zero') + '">' + count + '</span>'
+                + '</button>';
+        }).join('');
+
+        el.barangayList.innerHTML = rows || '<p class="panel-empty">No barangay reference rows were returned.</p>';
+
+        el.barangayList.querySelectorAll('[data-barangay]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                selectBarangay(button.getAttribute('data-barangay'));
+            });
+        });
+    }
+
+    function fillMunicipalitySelect() {
+        var options = ['<option value="">All municipalities</option>'];
+        state.coverage.municipalities.forEach(function (item) {
+            options.push('<option value="' + JSMMap.esc(item.code) + '">' + JSMMap.esc(item.name) + '</option>');
+        });
+        el.municipality.innerHTML = options.join('');
+    }
+
+    function fillBarangaySelect() {
+        if (!state.municipality) {
+            el.barangay.disabled = true;
+            el.barangay.innerHTML = '<option value="">All barangays</option>';
+            return;
+        }
+        var options = ['<option value="">All barangays</option>'];
+        state.barangays.forEach(function (barangay) {
+            options.push('<option value="' + JSMMap.esc(barangay.code) + '">' + JSMMap.esc(barangay.name) + '</option>');
+        });
+        el.barangay.innerHTML = options.join('');
+        el.barangay.disabled = false;
+        el.barangay.value = state.barangayCode || '';
+    }
+
+    function filters() {
+        var params = new URLSearchParams();
+        if (state.municipality) params.set('municipality', state.coverage.municipalities
+            .filter(function (m) { return m.code === state.municipality; })[0].value);
+        if (state.barangayCode) {
+            var barangay = state.barangays.filter(function (b) { return b.code === state.barangayCode; })[0];
+            if (barangay) params.set('barangay', barangay.name);
+        }
+        var keyword = el.keyword.value.trim();
+        if (keyword) params.set('skills', keyword);
+        if (el.type.value) params.set('employmentType', el.type.value);
+        if (state.near) {
+            params.set('nearLatitude', state.near.lat);
+            params.set('nearLongitude', state.near.lng);
+            params.set('radiusKm', el.radius.value);
+        }
+        params.set('size', '500');
+        return params;
+    }
+
+    function renderSelectedJob(job) {
+        if (!job) {
+            el.selectedJob.className = 'map-job-empty';
+            el.selectedJob.innerHTML = '<i class="fas fa-hand-pointer"></i><span>Select a marker on the map to preview the job here.</span>';
+            return;
+        }
+        el.selectedJob.className = '';
+        el.selectedJob.innerHTML = JSMMap.jobPreview(job);
+    }
+
+    function highlightJobCard(jobId) {
+        state.selectedJobId = jobId;
+        if (state.jobsLayer) state.jobsLayer.highlight(jobId);
+        var job = state.markers.filter(function (item) { return String(item.id) === String(jobId); })[0];
+        renderSelectedJob(job);
+    }
+
+    async function loadJobs() {
+        clearPageError();
+        if (!state.navigation) return;
+        try {
+            var result = await ApiClient.request('/job-seekers/jobs/map?' + filters().toString());
+            state.markers = (result && result.markers) || [];
+
+            if (state.jobsLayer) {
+                state.navigation.map.removeLayer(state.jobsLayer.group);
+                state.jobsLayer = null;
+            }
+
+            state.jobsLayer = JSMMap.addJobs(state.navigation.map, state.markers, {
+                onSelect: function (job) { highlightJobCard(job.id); }
+            });
+
+            if (state.selectedJobId && state.markers.some(function (job) {
+                return String(job.id) === String(state.selectedJobId);
+            })) {
+                highlightJobCard(state.selectedJobId);
+            } else {
+                state.selectedJobId = null;
+                renderSelectedJob(null);
+            }
+
+            var hidden = Number(result && result.jobsWithoutCoordinates) || 0;
+            el.honesty.innerHTML = state.markers.length
+                ? '<strong>' + state.markers.length + '</strong> matching job' + (state.markers.length === 1 ? '' : 's')
+                  + ' with a confirmed location. '
+                  + (hidden ? hidden + ' other matching job' + (hidden === 1 ? ' is' : 's are') + ' not on the map because the employer has not pinned a workplace.' : 'Every matching job can be plotted.')
+                : 'Only jobs with a confirmed workplace pin appear on the map. Every other matching job is still listed in Search Jobs.';
+
+            if (!state.markers.length) {
+                el.emptyText.textContent = hidden
+                    ? hidden + ' matching job' + (hidden === 1 ? ' has' : 's have') + ' no confirmed workplace location yet, so the map has nothing to plot. They are all still in the list view.'
+                    : 'No active job matches these filters. Try another municipality or clear the keyword.';
+                showState(el.empty);
+            } else {
+                showState(null);
+                if (state.jobsLayer.count && state.navigation.map.getZoom() < 9) {
+                    var bounds = state.jobsLayer.bounds();
+                    if (bounds) state.navigation.map.fitBounds(bounds.pad(0.25), { maxZoom: 13 });
+                }
+            }
+        } catch (error) {
+            showState(el.error);
+            el.errorText.textContent = error.message || 'Check your connection and try again.';
+        }
+    }
+
+    async function loadBarangays() {
+        state.barangays = [];
+        state.barangayCode = '';
+        el.barangay.value = '';
+        if (!state.municipality) {
+            el.barangayCard.hidden = true;
+            fillBarangaySelect();
+            if (state.barangayLayer) {
+                state.navigation.map.removeLayer(state.barangayLayer.layer);
+                state.barangayLayer = null;
+            }
+            return;
+        }
+
+        try {
+            var data = await JSMMap.boundaries('barangay', state.municipality);
+            if (state.barangayLayer) state.navigation.map.removeLayer(state.barangayLayer.layer);
+            state.barangayLayer = JSMMap.addBarangays(state.navigation.map, data, {
+                onSelect: function (props) { selectBarangay(props.code); }
+            });
+            state.barangays = await ApiClient.request('/geo/municipalities/' + encodeURIComponent(state.municipality) + '/barangays');
+            renderBarangays();
+            fillBarangaySelect();
+        } catch (error) {
+            el.barangayList.innerHTML = '<p class="panel-empty">Barangay boundaries could not be loaded. ' + JSMMap.esc(error.message || '') + '</p>';
+            el.barangayCard.hidden = false;
+        }
+    }
+
+    async function selectMunicipality(code) {
+        state.municipality = code || '';
+        el.municipality.value = state.municipality;
+        renderCoverage();
+        if (state.navigation) {
+            state.navigation.municipalities.select(state.municipality);
+            if (!code) {
+                var allBounds = state.navigation.municipalities.bounds();
+                if (allBounds) state.navigation.map.fitBounds(allBounds.pad(0.1), { maxZoom: 11 });
+            } else {
+                var bounds = state.navigation.municipalities.bounds(code);
+                if (bounds) state.navigation.map.fitBounds(bounds.pad(0.1), { maxZoom: 13 });
+            }
+        }
+        await loadBarangays();
+        await loadJobs();
+    }
+
+    function selectBarangay(code) {
+        state.barangayCode = code || '';
+        el.barangay.value = state.barangayCode;
+        renderBarangays();
+        if (state.barangayLayer) {
+            state.barangayLayer.select(state.barangayCode);
+            if (state.barangayCode) {
+                var bounds = state.barangayLayer.bounds(state.barangayCode);
+                if (bounds) state.navigation.map.fitBounds(bounds.pad(0.2), { maxZoom: 15 });
+            }
+        }
+        loadJobs();
+    }
+
+    function setNear(near) {
+        state.near = near;
+        el.radiusField.hidden = !near;
+        if (near) {
+            el.nearNote.textContent = 'Using your current position for this search only. It is not stored, not sent to any employer, and disappears when you reset or leave the page.';
+            el.nearNote.style.color = 'var(--green-dark)';
+        } else {
+            el.nearNote.textContent = 'Near Me asks your browser for your position once. It is used only to measure distance for this search, is never saved, and is never shared with employers.';
+            el.nearNote.style.color = '';
+        }
+    }
+
+    function requestNearMe() {
+        if (!navigator.geolocation) {
+            el.nearNote.textContent = 'This browser does not provide a location. You can keep searching by municipality and barangay.';
+            return;
+        }
+        el.nearNote.textContent = 'Waiting for your permission…';
+        navigator.geolocation.getCurrentPosition(function (position) {
+            setNear({ lat: Number(position.coords.latitude).toFixed(6), lng: Number(position.coords.longitude).toFixed(6) });
+            loadJobs();
+        }, function (error) {
+            setNear(null);
+            el.nearNote.style.color = '';
+            el.nearNote.textContent = error && error.code === 1
+                ? 'Location permission was denied. You can still search by municipality and barangay — nothing else changes.'
+                : 'Your location could not be determined. You can still search by municipality and barangay.';
+        }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 0 });
+    }
+
+    async function boot() {
+        if (!window.ApiClient || !ApiClient.loadAuth()) {
+            showState(el.error);
+            el.errorText.innerHTML = 'Sign in to see jobs on the map.';
+            var retry = document.getElementById('retryMap');
+            retry.outerHTML = '<a class="btn-solid btn-sm" href="../login.html">Sign in</a>';
+            return;
+        }
+
+        try {
+            var results = await Promise.all([JSMMap.config(), JSMMap.jobCounts()]);
+            state.coverage = results[0].coverage;
+            state.counts = results[1];
+
+            fillMunicipalitySelect();
+            renderCoverage();
+
+            state.navigation = await JSMMap.createMap('jobMap', {
+                onTileError: function () { el.tileBanner.hidden = false; }
+            });
+
+            var municipalityData = await JSMMap.boundaries('municipality');
+            state.navigation.municipalities = JSMMap.addMunicipalities(state.navigation.map, municipalityData, {
+                onSelect: function (props) { selectMunicipality(props.code); }
+            });
+
+            var bounds = state.navigation.municipalities.bounds();
+            if (bounds) state.navigation.map.fitBounds(bounds.pad(0.1), { maxZoom: 11 });
+
+            await loadJobs();
+        } catch (error) {
+            showState(el.error);
+            el.errorText.textContent = error.message || 'Check your connection and try again.';
+            showPageError(error.message || 'The map could not be loaded.');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('mapFilters').addEventListener('submit', function (event) {
+            event.preventDefault();
+            loadJobs();
+        });
+
+        el.municipality.addEventListener('change', function () {
+            selectMunicipality(this.value);
+        });
+
+        el.barangay.addEventListener('change', function () {
+            selectBarangay(this.value);
+        });
+
+        el.type.addEventListener('change', loadJobs);
+        el.radius.addEventListener('change', function () {
+            if (state.near) loadJobs();
+        });
+
+        document.getElementById('nearMeBtn').addEventListener('click', requestNearMe);
+
+        document.getElementById('resetMap').addEventListener('click', function () {
+            el.keyword.value = '';
+            el.type.value = '';
+            setNear(null);
+            state.selectedJobId = null;
+            renderSelectedJob(null);
+            if (state.navigation) state.navigation.map.setView(
+                [state.navigation.settings.center.lat, state.navigation.settings.center.lng],
+                state.navigation.settings.zoom);
+            selectMunicipality('');
+        });
+
+        document.getElementById('retryMap').addEventListener('click', function () {
+            showState(el.state);
+            boot();
+        });
+
+        ENUVEX.wireJobActions(function (action) {
+            if (action === 'applied') loadJobs();
+        });
+
+        boot();
+    });
+})();
+</script>
+</body>
+</html>

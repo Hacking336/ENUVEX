@@ -56,6 +56,21 @@ jwt:
   expiration: ${JWT_EXPIRATION_MS:3600000}
   refresh-expiration: ${JWT_REFRESH_EXPIRATION_MS:604800000}
 
+# Map tiles are configuration, not code: a deployment can point every JSM map at
+# another OpenStreetMap-compatible provider by setting these variables. The
+# default is OpenStreetMap's public tile service, which is usage-limited and
+# offered without an uptime guarantee, so production traffic should use a
+# provider that allows it (or a self-hosted tile server).
+jsm:
+  map:
+    tile-url: ${JSM_MAP_TILE_URL:https://tile.openstreetmap.org/{z}/{x}/{y}.png}
+    attribution: ${JSM_MAP_ATTRIBUTION:&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors}
+    min-zoom: ${JSM_MAP_MIN_ZOOM:8}
+    max-zoom: ${JSM_MAP_MAX_ZOOM:18}
+    center-lat: ${JSM_MAP_CENTER_LAT:14.1290}
+    center-lng: ${JSM_MAP_CENTER_LNG:122.9200}
+    zoom: ${JSM_MAP_ZOOM:10}
+
 springdoc:
   api-docs:
     path: /api-docs

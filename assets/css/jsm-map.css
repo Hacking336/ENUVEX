@@ -1,0 +1,549 @@
+/* ==========================================================================
+   JSM — Map surfaces
+   Shared styling for every Leaflet map in the app: the Job Map, the map view
+   inside Search Jobs, the employer workplace picker and the admin geographic
+   page. Uses the JSM design tokens from enuvex-app.css.
+   ========================================================================== */
+
+.map-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-end;
+    margin-bottom: 14px;
+}
+
+.map-toolbar .field { min-width: 0; }
+.map-toolbar .field select,
+.map-toolbar .field input { min-width: 0; }
+
+.map-toolbar-grow { flex: 1 1 220px; }
+
+.map-mode {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 3px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--white);
+    box-shadow: var(--shadow-sm);
+}
+.map-mode button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 0;
+    background: transparent;
+    color: var(--body);
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 8px 13px;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.map-mode button.is-active {
+    background: var(--green-tint);
+    color: var(--ink);
+}
+.map-mode button:hover:not(.is-active) { background: #F4F8F5; color: var(--green-dark); }
+
+.map-split {
+    display: grid;
+    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.map-side {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+
+.map-canvas-wrap {
+    position: relative;
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--white);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.map-canvas {
+    width: 100%;
+    height: clamp(380px, 62vh, 720px);
+    background: #E8EFF5;
+    z-index: 0;
+}
+
+.map-canvas--compact { height: clamp(320px, 48vh, 520px); }
+
+/* Leaflet's own controls, aligned with the JSM controls. */
+.map-canvas .leaflet-control-zoom a {
+    color: var(--ink);
+    border-radius: 9px;
+    font-weight: 600;
+}
+.map-canvas .leaflet-control-zoom {
+    border: 0;
+    box-shadow: var(--shadow-sm);
+    border-radius: 11px;
+    overflow: hidden;
+}
+.map-canvas .leaflet-control-attribution {
+    font-size: 10.5px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #4B5D70;
+    padding: 2px 8px;
+}
+.map-canvas .leaflet-control-attribution a { color: var(--green-dark); }
+.map-canvas .leaflet-bar a:hover { background: var(--green-tint); }
+
+/* ---- pins --------------------------------------------------------------- */
+
+.jsm-pin { background: transparent; border: 0; }
+.jsm-pin span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50% 50% 50% 4px;
+    transform: rotate(-45deg);
+    background: var(--green);
+    border: 2px solid var(--white);
+    color: var(--white);
+    font-size: 12.5px;
+    box-shadow: 0 4px 12px rgba(16, 43, 76, 0.32);
+}
+.jsm-pin span i { transform: rotate(45deg); }
+.jsm-pin--selected span { background: var(--ink); }
+.jsm-pin--workplace span { background: var(--ink); border-color: var(--green); }
+
+.jsm-cluster {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--green);
+    color: var(--white);
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 13px;
+    border: 3px solid rgba(255, 255, 255, 0.92);
+    box-shadow: 0 6px 16px rgba(16, 43, 76, 0.28);
+}
+
+/* ---- popup -------------------------------------------------------------- */
+
+.map-canvas .leaflet-popup-content-wrapper {
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+    padding: 0;
+}
+.map-canvas .leaflet-popup-content {
+    margin: 0;
+    width: 268px !important;
+    font-family: var(--font-body);
+    color: var(--body);
+}
+.jsm-popup { padding: 14px 15px 13px; }
+.jsm-popup h4 {
+    margin: 0 0 3px;
+    font-size: 14.5px;
+    line-height: 1.3;
+    color: var(--ink);
+}
+.jsm-popup .jsm-popup-company { font-size: 12.5px; color: var(--muted-text); margin-bottom: 8px; }
+.jsm-popup .jsm-popup-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+    margin-bottom: 9px;
+}
+.jsm-popup .jsm-popup-meta span { display: flex; align-items: center; gap: 7px; }
+.jsm-popup .jsm-popup-meta i { color: var(--green-dark); width: 13px; text-align: center; }
+.jsm-popup .jsm-popup-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+.jsm-popup .jsm-popup-tags span {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: var(--green-tint);
+    color: var(--green-dark);
+}
+.jsm-popup .jsm-popup-actions { display: flex; gap: 7px; flex-wrap: wrap; }
+.jsm-popup .jsm-popup-actions a,
+.jsm-popup .jsm-popup-actions button {
+    flex: 1 1 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 10px;
+    border-radius: 9px;
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--ink);
+    cursor: pointer;
+    text-decoration: none;
+}
+.jsm-popup .jsm-popup-actions .is-primary {
+    background: var(--green);
+    border-color: var(--green);
+    color: var(--white);
+}
+.jsm-popup .jsm-popup-actions .is-primary:hover { background: var(--green-dark); }
+.jsm-popup .jsm-popup-actions a:hover,
+.jsm-popup .jsm-popup-actions button:hover { border-color: var(--green); color: var(--green-dark); }
+
+/* ---- overlaid states ---------------------------------------------------- */
+
+.map-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-align: center;
+    padding: 24px;
+    background: rgba(245, 248, 250, 0.92);
+    color: var(--body);
+    z-index: 500;
+}
+.map-state[hidden] { display: none; }
+.map-state i { font-size: 26px; color: var(--green); }
+.map-state strong { font-family: var(--font-head); color: var(--ink); font-size: 15px; }
+.map-state p { margin: 0; max-width: 360px; font-size: 13px; line-height: 1.5; }
+.map-state .btn-solid, .map-state .btn-soft { margin-top: 4px; }
+
+.map-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    background: var(--amber-soft, #FDF4E3);
+    border: 1px solid #EEDDBB;
+    color: #7A5410;
+    font-size: 12.5px;
+    margin-bottom: 10px;
+}
+.map-banner[hidden] { display: none; }
+.map-banner i { color: var(--amber, #B57611); }
+
+/* ---- legend ------------------------------------------------------------- */
+
+.jsm-legend {
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 9px 11px;
+    box-shadow: var(--shadow-sm);
+    font-size: 11.5px;
+    color: var(--body);
+    line-height: 1.5;
+}
+.jsm-legend strong {
+    display: block;
+    font-family: var(--font-head);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted-text);
+    margin-bottom: 5px;
+}
+.jsm-legend span { display: flex; align-items: center; gap: 7px; }
+.jsm-legend .swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    border: 1px solid rgba(16, 43, 76, 0.2);
+    flex: 0 0 auto;
+}
+.jsm-legend .swatch--job { background: var(--green); border-radius: 50%; }
+.jsm-legend .swatch--muni { background: rgba(47, 162, 71, 0.22); }
+.jsm-legend .swatch--barangay { background: rgba(16, 43, 76, 0.08); }
+
+/* ---- side panel content -------------------------------------------------- */
+
+.map-card { padding: 16px 16px 14px; }
+.map-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    margin-bottom: 4px;
+}
+.map-card h3 i { color: var(--green-dark); }
+.map-card .map-card-note { font-size: 12px; color: var(--muted-text); margin: 0 0 11px; line-height: 1.5; }
+
+.coverage-list { display: flex; flex-direction: column; gap: 7px; }
+.coverage-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    background: var(--white);
+    cursor: pointer;
+    font: inherit;
+    color: var(--ink);
+}
+.coverage-item:hover { border-color: rgba(47, 162, 71, 0.5); background: #FBFDFB; }
+.coverage-item.is-active { border-color: var(--green); background: var(--green-tint); }
+.coverage-item .coverage-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    background: var(--navy-soft, #EDF2F8);
+    color: var(--ink);
+    flex: 0 0 auto;
+    font-size: 12px;
+}
+.coverage-item.is-active .coverage-icon { background: var(--white); color: var(--green-dark); }
+.coverage-item .coverage-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.coverage-item .coverage-text strong { font-size: 13px; font-family: var(--font-head); }
+.coverage-item .coverage-text small { font-size: 11px; color: var(--muted-text); }
+.coverage-item .coverage-count {
+    font-family: var(--font-head);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green-dark);
+    white-space: nowrap;
+}
+.coverage-item .coverage-count small { display: block; font-size: 9.5px; font-weight: 500; color: var(--muted-text); text-align: right; }
+
+.barangay-scroll { max-height: 300px; overflow-y: auto; margin: 0 -4px; padding: 0 4px; }
+.barangay-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    padding: 7px 8px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    font: inherit;
+    font-size: 12.5px;
+    color: var(--ink-soft, #26384A);
+    cursor: pointer;
+    text-align: left;
+}
+.barangay-row:hover { background: #F4F8F5; }
+.barangay-row.is-active { background: var(--green-tint); color: var(--green-dark); font-weight: 600; }
+.barangay-row .barangay-code { font-size: 10.5px; color: var(--muted-text); font-variant-numeric: tabular-nums; }
+.barangay-row .barangay-jobs {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--green-dark);
+    background: var(--green-tint);
+    padding: 2px 7px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+.barangay-row .barangay-jobs.is-zero { background: #F1F5F8; color: var(--muted-text); font-weight: 500; }
+
+.map-job-card { display: flex; flex-direction: column; gap: 8px; }
+.map-job-card h4 { margin: 0; font-family: var(--font-head); font-size: 14.5px; color: var(--ink); }
+.map-job-card .map-job-company { font-size: 12.5px; color: var(--muted-text); margin-top: -4px; }
+.map-job-card .map-job-meta { display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; }
+.map-job-card .map-job-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #F4F7FA;
+    color: var(--body);
+}
+.map-job-card .map-job-meta i { color: var(--green-dark); }
+.map-job-card .map-job-actions { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 2px; }
+.map-job-card .map-job-actions a,
+.map-job-card .map-job-actions button { flex: 1 1 auto; justify-content: center; }
+
+.map-job-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 16px 8px;
+    text-align: center;
+    color: var(--muted-text);
+    font-size: 12.5px;
+}
+.map-job-empty i { font-size: 20px; color: #B7C6D4; }
+
+.map-honesty {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--body);
+    background: #F4F7FA;
+    border: 1px dashed #CBD9E4;
+    border-radius: 10px;
+    padding: 9px 11px;
+}
+.map-honesty i { color: var(--green-dark); margin-top: 2px; }
+.map-honesty strong { color: var(--ink); }
+
+/* ---- map view inside Search Jobs ---------------------------------------- */
+
+.jobs-map-panel { margin-top: 16px; }
+.jobs-map-panel[hidden] { display: none; }
+.jobs-map-panel .map-canvas { height: clamp(380px, 56vh, 620px); }
+
+.job.is-highlighted {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(47, 162, 71, 0.14);
+}
+.job.is-highlighted .job-title { color: var(--green-dark); }
+
+/* ---- employer workplace picker ----------------------------------------- */
+
+.map-picker {
+    width: 100%;
+    height: 320px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: #E8EFF5;
+    z-index: 0;
+}
+
+.location-status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--body);
+    margin-top: 8px;
+}
+.location-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    background: #F1F5F8;
+    color: var(--muted-text);
+}
+.location-chip.is-confirmed { background: var(--green-tint); color: var(--green-dark); }
+.location-chip.is-pending { background: var(--amber-soft, #FDF4E3); color: #7A5410; }
+.location-coords { font-variant-numeric: tabular-nums; color: var(--muted-text); }
+
+.map-preview {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 10px;
+    padding: 9px 11px;
+    border-radius: 10px;
+    background: var(--green-tint);
+    color: var(--green-dark);
+    font-size: 12.5px;
+}
+.map-preview[hidden] { display: none; }
+.map-preview i { font-size: 13px; }
+
+/* ---- admin geography ---------------------------------------------------- */
+
+.geo-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.geo-metric {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 13px 14px;
+    box-shadow: var(--shadow-sm);
+}
+.geo-metric .geo-metric-label {
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted-text);
+    font-weight: 600;
+}
+.geo-metric .geo-metric-value {
+    font-family: var(--font-head);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.2;
+}
+.geo-metric .geo-metric-note { font-size: 11.5px; color: var(--muted-text); }
+
+.table-wrap { overflow-x: auto; }
+.geo-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.geo-table th, .geo-table td {
+    text-align: left;
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+}
+.geo-table th {
+    font-family: var(--font-head);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted-text);
+    font-weight: 600;
+}
+.geo-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.geo-table tr.is-selected td { background: var(--green-tint); }
+.geo-table tr[data-municipality] { cursor: pointer; }
+.geo-table tr[data-municipality]:hover td { background: #F6FAF7; }
+.geo-table .code { font-size: 11px; color: var(--muted-text); font-variant-numeric: tabular-nums; }
+
+/* ---- responsive --------------------------------------------------------- */
+
+@media (max-width: 1080px) {
+    .map-split { grid-template-columns: minmax(0, 1fr); }
+    .map-side { order: 2; }
+    .map-canvas-wrap { order: 1; }
+    .map-canvas { height: clamp(320px, 52vh, 560px); }
+    .map-canvas--compact { height: clamp(300px, 46vh, 480px); }
+    .barangay-scroll { max-height: 240px; }
+}
+
+@media (max-width: 620px) {
+    .map-canvas { height: 58vh; min-height: 300px; }
+    .map-canvas--compact { height: 50vh; min-height: 280px; }
+    .map-canvas .leaflet-popup-content { width: 232px !important; }
+    .map-toolbar { gap: 8px; }
+    .map-toolbar .field { flex: 1 1 calc(50% - 8px); }
+    .map-toolbar .field.map-toolbar-grow { flex-basis: 100%; }
+    .map-toolbar .btn-solid { flex: 1 1 100%; justify-content: center; }
+    .map-mode button { padding: 7px 10px; font-size: 12px; }
+    .jsm-legend { font-size: 10.5px; padding: 7px 9px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .jsm-pin span { transition: none; }
+}

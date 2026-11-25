@@ -41,6 +41,17 @@ public class JobPostRequest {
     private String barangay;
     private String jobLocation;
 
+    /** Optional workplace pin, confirmed by the employer on the map. */
+    private Double latitude;
+    private Double longitude;
+
+    /** Official PSGC codes; validated against the bundled boundary data. */
+    private String municipalityCode;
+    private String barangayCode;
+
+    /** Set to true to remove a previously confirmed pin and keep the text address. */
+    private Boolean clearLocation;
+
     /** null on create means "publish"; null on update means "leave unchanged". */
     private Boolean active;
 }

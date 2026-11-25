@@ -11,6 +11,7 @@
     var NAV = [
         { id: 'dashboard', href: 'dashboard.html', icon: 'fa-house', label: 'Dashboard', short: 'Home', mobileIcon: 'fa-house' },
         { id: 'jobs', href: 'jobs.html', icon: 'fa-magnifying-glass', label: 'Search Jobs', short: 'Search', mobileIcon: 'fa-magnifying-glass' },
+        { id: 'map', href: 'map.html', icon: 'fa-map-location-dot', label: 'Job Map', short: 'Map', mobileIcon: 'fa-map' },
         { id: 'applications', href: 'applications.html', icon: 'fa-file-lines', label: 'Applications', short: 'Applications', mobileIcon: 'fa-file-lines' },
         { id: 'saved', href: 'saved-jobs.html', icon: 'fa-bookmark', label: 'Saved Jobs', short: 'Saved', mobileIcon: 'fa-bookmark' },
         { id: 'profile', href: 'profile.html', icon: 'fa-user', label: 'Profile', short: 'Profile', mobileIcon: 'fa-user' }
@@ -288,7 +289,7 @@
         var savedNote = opts.showSavedDate && opts.savedAt ? '<span class="saved-flag"><i class="fas fa-bookmark"></i>Saved ' + esc(dateLabel(opts.savedAt)) + '</span>' : '';
 
         return `
-            <article class="job">
+            <article class="job" data-job-id="${esc(job.id)}">
                 <div class="job-icon"><i class="fas ${jobIcon(job.category)}"></i></div>
                 <div class="job-body">
                     <div class="job-head">
@@ -301,6 +302,7 @@
                     <div class="job-meta">
                         ${location ? `<span><i class="fas fa-location-dot"></i>${esc(location)}</span>` : ''}
                         ${salary ? `<span><i class="fas fa-peso-sign"></i>${esc(salary)}</span>` : ''}
+                        ${job.distanceKm != null ? `<span><i class="fas fa-route"></i>${Number(job.distanceKm) < 1 ? Math.round(Number(job.distanceKm) * 1000) + ' m' : Number(job.distanceKm).toFixed(Number(job.distanceKm) < 10 ? 1 : 0) + ' km'} away</span>` : ''}
                         ${posted ? `<span><i class="far fa-calendar"></i>${esc(posted)}</span>` : ''}
                     </div>
                     ${type || schedule || skills.length ? `<div class="job-tags">

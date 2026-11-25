@@ -55,6 +55,13 @@ public class JobSeekerController {
         return ResponseEntity.ok(jobService.searchJobs(search, extractUserId(authentication)));
     }
 
+    /** Map markers for the signed-in seeker, with match scores and distances. */
+    @GetMapping("/jobs/map")
+    public ResponseEntity<com.jobskills.dto.JobMapDto> mapJobs(
+            JobSearchRequest search, Authentication authentication) {
+        return ResponseEntity.ok(jobService.searchJobsMap(search, extractUserId(authentication)));
+    }
+
     @GetMapping("/recommended")
     public ResponseEntity<org.springframework.data.domain.Page<JobResponse>> getRecommended(
             JobSearchRequest search, Authentication authentication) {
