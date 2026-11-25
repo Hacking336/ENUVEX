@@ -37,6 +37,7 @@ public class AdminController {
         stats.setActiveJobPosts(jobPostRepository.countByIsActiveTrue());
         stats.setTotalApplications(applicationRepository.count());
         stats.setHiredApplicants((long) applicationRepository.findByApplicationStatus(ApplicationStatus.ACCEPTED).size());
+        stats.setApplicationsByStatus(applicationCounts());
         return ResponseEntity.ok(stats);
     }
 
@@ -142,6 +143,7 @@ public class AdminController {
         report.put("activeJobPosts", jobPostRepository.countByIsActiveTrue());
         report.put("totalApplications", applicationRepository.count());
         report.put("hiredApplicants", applicationRepository.countByApplicationStatus(ApplicationStatus.ACCEPTED));
+        report.put("applicationsByStatus", applicationCounts());
 
         // Job posts by municipality
         Map<String, Long> postsByMunicipality = Arrays.stream(Municipality.values())
@@ -152,6 +154,14 @@ public class AdminController {
         report.put("jobPostsByMunicipality", postsByMunicipality);
 
         return ResponseEntity.ok(report);
+    }
+
+    private Map<String, Long> applicationCounts() {
+        Map<String, Long> counts = new LinkedHashMap<>();
+        for (ApplicationStatus status : ApplicationStatus.values()) {
+            counts.put(status.name(), applicationRepository.countByApplicationStatus(status));
+        }
+        return counts;
     }
 
     @GetMapping("/municipalities")

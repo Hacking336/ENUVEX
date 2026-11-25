@@ -39,44 +39,78 @@
                     <div class="metric-icon"><i class="fas fa-file-lines"></i></div>
                     <div>
                         <div class="metric-value" id="metricTotal">—</div>
-                        <div class="metric-label">Total Applications</div>
+                        <div class="metric-label">Total applications</div>
                         <div class="metric-desc">Every job you applied to</div>
                     </div>
                 </article>
                 <article class="metric">
-                    <div class="metric-icon"><i class="fas fa-hourglass-half"></i></div>
+                    <div class="metric-icon"><i class="fas fa-paper-plane"></i></div>
                     <div>
-                        <div class="metric-value" id="metricProgress">—</div>
-                        <div class="metric-label">In Progress</div>
-                        <div class="metric-desc">Applied, under review or shortlisted</div>
+                        <div class="metric-value" id="metricSubmitted">—</div>
+                        <div class="metric-label">Submitted</div>
+                        <div class="metric-desc">Waiting for employer review</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-magnifying-glass"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricReviewing">—</div>
+                        <div class="metric-label">Under review</div>
+                        <div class="metric-desc">Employer is reviewing</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-star"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricShortlisted">—</div>
+                        <div class="metric-label">Shortlisted</div>
+                        <div class="metric-desc">Selected for consideration</div>
                     </div>
                 </article>
                 <article class="metric">
                     <div class="metric-icon"><i class="fas fa-comments"></i></div>
                     <div>
                         <div class="metric-value" id="metricInterview">—</div>
-                        <div class="metric-label">Interviews</div>
-                        <div class="metric-desc">Employers who invited you</div>
+                        <div class="metric-label">Interview</div>
+                        <div class="metric-desc">Interview invitations</div>
                     </div>
                 </article>
                 <article class="metric">
                     <div class="metric-icon"><i class="fas fa-circle-check"></i></div>
                     <div>
                         <div class="metric-value" id="metricAccepted">—</div>
-                        <div class="metric-label">Offered</div>
+                        <div class="metric-label">Accepted</div>
                         <div class="metric-desc">Applications accepted</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-circle-xmark"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricRejected">—</div>
+                        <div class="metric-label">Rejected</div>
+                        <div class="metric-desc">Not proceeding</div>
                     </div>
                 </article>
             </section>
 
-            <div class="tabs" id="statusTabs" role="tablist" aria-label="Filter applications by status">
-                <button class="tab is-active" type="button" data-status="ALL" role="tab" aria-selected="true">All <span class="count" id="countAll">0</span></button>
-                <button class="tab" type="button" data-status="APPLIED" role="tab" aria-selected="false">Applied <span class="count" id="countApplied">0</span></button>
-                <button class="tab" type="button" data-status="UNDER_REVIEW" role="tab" aria-selected="false">Under Review <span class="count" id="countReview">0</span></button>
-                <button class="tab" type="button" data-status="SHORTLISTED" role="tab" aria-selected="false">Shortlisted <span class="count" id="countShortlisted">0</span></button>
-                <button class="tab" type="button" data-status="INTERVIEW" role="tab" aria-selected="false">Interview <span class="count" id="countInterview">0</span></button>
-                <button class="tab" type="button" data-status="ACCEPTED" role="tab" aria-selected="false">Accepted <span class="count" id="countAccepted">0</span></button>
-                <button class="tab" type="button" data-status="REJECTED" role="tab" aria-selected="false">Rejected <span class="count" id="countRejected">0</span></button>
+            <div class="tracker-toolbar">
+                <div class="tabs" id="statusTabs" role="tablist" aria-label="Filter applications by status">
+                    <button class="tab is-active" type="button" data-status="ALL" role="tab" aria-selected="true">All <span class="count" id="countAll">0</span></button>
+                    <button class="tab" type="button" data-status="SUBMITTED" role="tab" aria-selected="false">Submitted <span class="count" id="countSubmitted">0</span></button>
+                    <button class="tab" type="button" data-status="REVIEWING" role="tab" aria-selected="false">Reviewing <span class="count" id="countReviewing">0</span></button>
+                    <button class="tab" type="button" data-status="SHORTLISTED" role="tab" aria-selected="false">Shortlisted <span class="count" id="countShortlisted">0</span></button>
+                    <button class="tab" type="button" data-status="INTERVIEW" role="tab" aria-selected="false">Interview <span class="count" id="countInterview">0</span></button>
+                    <button class="tab" type="button" data-status="ACCEPTED" role="tab" aria-selected="false">Accepted <span class="count" id="countAccepted">0</span></button>
+                    <button class="tab" type="button" data-status="REJECTED" role="tab" aria-selected="false">Rejected <span class="count" id="countRejected">0</span></button>
+                    <button class="tab" type="button" data-status="WITHDRAWN" role="tab" aria-selected="false">Withdrawn <span class="count" id="countWithdrawn">0</span></button>
+                </div>
+                <label class="visually-hidden" for="sortSelect">Sort applications</label>
+                <select id="sortSelect">
+                    <option value="newest">Newest application</option>
+                    <option value="oldest">Oldest application</option>
+                    <option value="updated">Recently updated</option>
+                    <option value="title">Job title (A–Z)</option>
+                </select>
             </div>
 
             <div class="app-list" id="applicationList" aria-live="polite">
@@ -96,7 +130,7 @@
 (function () {
     'use strict';
 
-    var state = { applications: [], status: 'ALL' };
+    var state = { applications: [], status: 'ALL', sort: 'newest' };
 
     var el = {
         list: document.getElementById('applicationList'),
@@ -104,17 +138,28 @@
         pageErrorText: document.getElementById('pageErrorText')
     };
 
-    function countBy(status) {
-        if (status === 'ALL') return state.applications.length;
-        return state.applications.filter(function (app) {
-            return String(app.status || '').toUpperCase() === status;
-        }).length;
+    function statusOf(app) {
+        return String(app.status || '').toUpperCase();
     }
 
-    function sortNewestFirst(list) {
-        return list.slice().sort(function (a, b) {
-            return new Date(b.appliedAt || 0) - new Date(a.appliedAt || 0);
-        });
+    function countBy(status) {
+        if (status === 'ALL') return state.applications.length;
+        return state.applications.filter(function (app) { return statusOf(app) === status; }).length;
+    }
+
+    function salary(app) {
+        var min = ENUVEX.money(app.salaryMin);
+        var max = ENUVEX.money(app.salaryMax);
+        if (min && max) return min + ' – ' + max;
+        if (min) return 'From ' + min;
+        if (max) return 'Up to ' + max;
+        return 'Not stated';
+    }
+
+    function location(app) {
+        var place = ENUVEX.municipalityLabel(app.municipality) || 'Location not set';
+        if (app.barangay) place += ', ' + app.barangay;
+        return place;
     }
 
     function card(app) {
@@ -122,7 +167,8 @@
         var match = Number(app.matchPercentage);
         var title = ENUVEX.esc(app.jobTitle || 'Job');
         var company = ENUVEX.esc(app.companyName || 'Employer');
-        var detailsHref = app.jobPostId ? 'job-details.html?id=' + encodeURIComponent(app.jobPostId) : 'jobs.html';
+        var jobHref = app.jobPostId ? 'job-details.html?id=' + encodeURIComponent(app.jobPostId) : 'jobs.html';
+        var appHref = 'application.html?id=' + encodeURIComponent(app.id);
 
         return `
             <article class="card app-card">
@@ -138,24 +184,62 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="app-meta-grid">
+                    <div class="app-meta"><span>Location</span><strong>${ENUVEX.esc(location(app))}</strong></div>
+                    <div class="app-meta"><span>Employment type</span><strong>${ENUVEX.esc(ENUVEX.typeLabel(app.employmentType) || 'Not stated')}</strong></div>
+                    <div class="app-meta"><span>Salary</span><strong>${ENUVEX.esc(salary(app))}</strong></div>
+                    <div class="app-meta"><span>Applied on</span><strong>${ENUVEX.esc(ENUVEX.dateLabel(app.appliedAt) || '—')}</strong></div>
+                    <div class="app-meta"><span>Match</span><strong>${isFinite(match) && match > 0 ? Math.round(match) + '%' : 'Not scored'}</strong></div>
+                    <div class="app-meta"><span>Last update</span><strong>${ENUVEX.esc(ENUVEX.dateLabel(app.lastUpdatedAt) || '—')}</strong></div>
+                </div>
+
+                ${app.latestEventTitle
+                    ? `<div class="app-latest"><strong>${ENUVEX.esc(app.latestEventTitle)}</strong>${app.latestEventDescription ? ' — ' + ENUVEX.esc(app.latestEventDescription) : ''}</div>`
+                    : ''}
+
+                ${app.interview && app.interview.status !== 'CANCELLED'
+                    ? `<div class="app-latest"><i class="fas fa-calendar-check"></i> Interview on ${ENUVEX.esc(ENUVEX.dateLabel(app.interview.interviewAt))} at ${ENUVEX.esc(new Date(app.interview.interviewAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }))}</div>`
+                    : ''}
+
                 <div class="app-card-bottom">
                     <div class="app-highlights">
-                        <span><i class="fas fa-calendar-check"></i>Applied ${ENUVEX.esc(ENUVEX.dateLabel(app.appliedAt) || '—')}</span>
-                        ${isFinite(match) && match > 0 ? `<span><i class="fas fa-bullseye"></i>${Math.round(match)}% match</span>` : ''}
+                        <span><i class="fas fa-hashtag"></i>Application #${ENUVEX.esc(app.id)}</span>
                     </div>
-                    <a class="btn-ghost btn-sm" href="${detailsHref}"><i class="fas fa-eye"></i> View Details</a>
+                    <div class="app-card-actions">
+                        <a class="btn-ghost btn-sm" href="${jobHref}"><i class="fas fa-briefcase"></i> View Job</a>
+                        <a class="btn-solid btn-sm" href="${appHref}"><i class="fas fa-file-lines"></i> View Application</a>
+                    </div>
                 </div>
             </article>`;
     }
 
+    function sorted(list) {
+        var copy = list.slice();
+        switch (state.sort) {
+            case 'oldest':
+                return copy.sort(function (a, b) { return new Date(a.appliedAt || 0) - new Date(b.appliedAt || 0); });
+            case 'updated':
+                return copy.sort(function (a, b) {
+                    return new Date(b.lastUpdatedAt || b.appliedAt || 0) - new Date(a.lastUpdatedAt || a.appliedAt || 0);
+                });
+            case 'title':
+                return copy.sort(function (a, b) {
+                    return String(a.jobTitle || '').localeCompare(String(b.jobTitle || ''), undefined, { sensitivity: 'base' });
+                });
+            default:
+                return copy.sort(function (a, b) { return new Date(b.appliedAt || 0) - new Date(a.appliedAt || 0); });
+        }
+    }
+
     function render() {
-        var list = sortNewestFirst(state.applications).filter(function (app) {
-            return state.status === 'ALL' || String(app.status || '').toUpperCase() === state.status;
-        });
+        var list = sorted(state.applications.filter(function (app) {
+            return state.status === 'ALL' || statusOf(app) === state.status;
+        }));
 
         if (!list.length) {
             el.list.innerHTML = state.applications.length
-                ? `<div class="empty"><i class="fas fa-filter"></i><strong>No applications with this status</strong>Choose another status to see your other applications.</div>`
+                ? `<div class="empty"><i class="fas fa-filter"></i><strong>No applications in this stage</strong>Choose another status to see your other applications.</div>`
                 : `<div class="empty"><i class="fas fa-file-lines"></i><strong>No applications yet</strong>Once you apply to a job it will appear here with its live status.<a class="btn-solid btn-sm" href="jobs.html"><i class="fas fa-magnifying-glass"></i> Browse Jobs</a></div>`;
             return;
         }
@@ -165,19 +249,22 @@
 
     function renderSummary() {
         var total = countBy('ALL');
-        var accepted = countBy('ACCEPTED');
         document.getElementById('metricTotal').textContent = total;
-        document.getElementById('metricProgress').textContent = countBy('APPLIED') + countBy('UNDER_REVIEW') + countBy('SHORTLISTED');
+        document.getElementById('metricSubmitted').textContent = countBy('SUBMITTED');
+        document.getElementById('metricReviewing').textContent = countBy('REVIEWING');
+        document.getElementById('metricShortlisted').textContent = countBy('SHORTLISTED');
         document.getElementById('metricInterview').textContent = countBy('INTERVIEW');
-        document.getElementById('metricAccepted').textContent = accepted;
+        document.getElementById('metricAccepted').textContent = countBy('ACCEPTED');
+        document.getElementById('metricRejected').textContent = countBy('REJECTED');
 
         document.getElementById('countAll').textContent = total;
-        document.getElementById('countApplied').textContent = countBy('APPLIED');
-        document.getElementById('countReview').textContent = countBy('UNDER_REVIEW');
+        document.getElementById('countSubmitted').textContent = countBy('SUBMITTED');
+        document.getElementById('countReviewing').textContent = countBy('REVIEWING');
         document.getElementById('countShortlisted').textContent = countBy('SHORTLISTED');
         document.getElementById('countInterview').textContent = countBy('INTERVIEW');
-        document.getElementById('countAccepted').textContent = accepted;
+        document.getElementById('countAccepted').textContent = countBy('ACCEPTED');
         document.getElementById('countRejected').textContent = countBy('REJECTED');
+        document.getElementById('countWithdrawn').textContent = countBy('WITHDRAWN');
     }
 
     async function loadApplications() {
@@ -194,7 +281,7 @@
         if (ENUVEX.failed(result)) {
             el.pageError.hidden = false;
             el.pageErrorText.textContent = result.__error.message || 'Could not load your applications.';
-            el.list.innerHTML = `<div class="empty"><i class="fas fa-triangle-exclamation"></i><strong>Applications could not be loaded</strong>Please refresh the page to try again.</div>`;
+            el.list.innerHTML = `<div class="empty"><i class="fas fa-triangle-exclamation"></i><strong>Applications could not be loaded</strong>Please try again in a moment.</div>`;
             return;
         }
 
@@ -213,6 +300,11 @@
                 button.classList.toggle('is-active', isActive);
                 button.setAttribute('aria-selected', isActive ? 'true' : 'false');
             });
+            render();
+        });
+
+        document.getElementById('sortSelect').addEventListener('change', function (event) {
+            state.sort = event.target.value;
             render();
         });
 

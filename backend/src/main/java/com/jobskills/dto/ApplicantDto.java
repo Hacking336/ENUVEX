@@ -38,4 +38,6 @@ public class ApplicantDto {
     private List<String> missingSkills = new ArrayList<>();
     private List<MatchCriterionDto> matchCriteria = new ArrayList<>();
     private String contactNumber;
+    /** The active interview arrangement, when there is one. */
+    private InterviewDto interview;
 }

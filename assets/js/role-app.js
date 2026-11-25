@@ -94,12 +94,16 @@
     };
 
     var STATUS_META = {
-        APPLIED: { label: 'Applied', cls: 'status-applied' },
-        UNDER_REVIEW: { label: 'Under Review', cls: 'status-review' },
+        SUBMITTED: { label: 'Submitted', cls: 'status-applied' },
+        REVIEWING: { label: 'Reviewing', cls: 'status-review' },
         SHORTLISTED: { label: 'Shortlisted', cls: 'status-shortlisted' },
         INTERVIEW: { label: 'Interview', cls: 'status-interview' },
         ACCEPTED: { label: 'Accepted', cls: 'status-accepted' },
-        REJECTED: { label: 'Rejected', cls: 'status-rejected' }
+        REJECTED: { label: 'Rejected', cls: 'status-rejected' },
+        WITHDRAWN: { label: 'Withdrawn', cls: 'status-withdrawn' },
+        // Pre-V6 values stay routable for cached pages.
+        APPLIED: { label: 'Submitted', cls: 'status-applied' },
+        UNDER_REVIEW: { label: 'Reviewing', cls: 'status-review' }
     };
 
     var API_ORIGIN = (window.API_BASE_URL || '/api').replace(/\/api\/?$/, '');
@@ -171,7 +175,7 @@
     }
 
     function statusMeta(value) {
-        return STATUS_META[String(value || 'APPLIED').toUpperCase()] || STATUS_META.APPLIED;
+        return STATUS_META[String(value || 'SUBMITTED').toUpperCase()] || STATUS_META.SUBMITTED;
     }
 
     function dateLabel(value) {
@@ -315,6 +319,7 @@
                             <span id="notifSummary">No new notifications</span>
                         </div>
                         <div class="dropdown-list" id="notifList"></div>
+                        <a class="dropdown-footer" href="notifications.html">View all notifications</a>
                     </div>
                 </div>
 
@@ -422,7 +427,7 @@
         var items = (state.notifications || []).slice().sort(function (a, b) {
             return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
         });
-        var unread = items.filter(function (n) { return !n.isRead; });
+        var unread = items.filter(function (n) { return !JSMNotify.isRead(n); });
 
         if (unread.length) {
             badge.hidden = false;
@@ -439,9 +444,7 @@
         }
 
         list.innerHTML = items.slice(0, 8).map(function (n) {
-            return '<div class="notif' + (n.isRead ? '' : ' notif-unread') + '">' +
-                '<div class="notif-icon"><i class="fas fa-bell"></i></div>' +
-                '<div><p>' + esc(n.message) + '</p><time>' + esc(timeAgo(n.createdAt)) + '</time></div></div>';
+            return JSMNotify.itemHtml(n);
         }).join('');
     }
 
@@ -487,6 +490,9 @@
         }
         if (window.requestIdleCallback) window.requestIdleCallback(run, { timeout: 1200 });
         else setTimeout(run, 200);
+
+        // New notices arrive on their own, without a full page refresh.
+        JSMNotify.startPolling(function () { run(); });
     }
 
     /* ---------- interactions --------------------------------------------- */
@@ -551,6 +557,20 @@
             closeDropdowns();
             dropdown.hidden = !willOpen;
             btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        }
+
+        var notifList = document.getElementById('notifList');
+        if (notifList) {
+            notifList.addEventListener('click', function (event) {
+                var row = event.target.closest('[data-notification-id]');
+                if (!row) return;
+                JSMNotify.markRead(row.getAttribute('data-notification-id'));
+                row.classList.remove('notif-unread');
+                state.notifications.forEach(function (n) {
+                    if (String(n.id) === row.getAttribute('data-notification-id')) n.isRead = true;
+                });
+                renderNotifications();
+            });
         }
 
         if (bellBtn && bellDropdown) {

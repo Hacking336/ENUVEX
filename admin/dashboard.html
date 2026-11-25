@@ -120,6 +120,16 @@
                 </section>
             </div>
 
+            <section class="card panel" aria-labelledby="activityTitle" style="margin-top: 20px;">
+                <div class="panel-head">
+                    <h3 id="activityTitle"><i class="fas fa-file-lines"></i> Application activity</h3>
+                    <a class="link-all" href="reports.html">Full report</a>
+                </div>
+                <div class="tag-list" id="applicationActivity">
+                    <div class="loading">Loading application activity…</div>
+                </div>
+            </section>
+
             <section class="card panel" aria-labelledby="matchTitle" style="margin-top: 20px;">
                 <div class="panel-head">
                     <h3 id="matchTitle"><i class="fas fa-bullseye"></i> Matching analytics</h3>
@@ -405,6 +415,14 @@
         document.getElementById('metricEmployers').textContent = stats.totalEmployers != null ? stats.totalEmployers : 0;
         document.getElementById('metricActiveJobs').textContent = stats.activeJobPosts != null ? stats.activeJobPosts : 0;
         document.getElementById('metricApplications').textContent = stats.totalApplications != null ? stats.totalApplications : 0;
+
+        var activity = document.getElementById('applicationActivity');
+        var byStatus = stats.applicationsByStatus || {};
+        var order = ['SUBMITTED', 'REVIEWING', 'SHORTLISTED', 'INTERVIEW', 'ACCEPTED', 'REJECTED', 'WITHDRAWN'];
+        activity.innerHTML = order.map(function (status) {
+            var meta = ROLE.statusMeta(status);
+            return '<span class="status ' + meta.cls + '" style="margin: 0 6px 6px 0;">' + ROLE.esc(meta.label) + ': ' + (byStatus[status] || 0) + '</span>';
+        }).join('');
 
         var jobsPage = ROLE.failed(results[1]) ? null : results[1];
         document.getElementById('metricJobs').textContent = jobsPage && jobsPage.totalElements != null ? jobsPage.totalElements : 0;

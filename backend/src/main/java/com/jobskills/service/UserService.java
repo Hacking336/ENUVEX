@@ -28,6 +28,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final UploadedFileRepository uploadedFileRepository;
+    private final NotificationService notificationService;
 
     /** Labels the registration forms send, mapped to the business type enum. */
     private static final Map<String, BusinessType> BUSINESS_TYPE_LABELS = Map.ofEntries(
@@ -116,6 +117,18 @@ public class UserService {
         }
 
         employerRepository.save(profile);
+
+        // A new employer account is an admin verification request; admin accounts
+        // are the only recipients, and one notice per employer is enough.
+        Long employerUserId = user.getId();
+        String businessName = profile.getBusinessName();
+        userRepository.findByUserType(UserType.ADMIN).forEach(admin ->
+            notificationService.notify(admin, NotificationService.EMPLOYER_VERIFICATION,
+                "Employer verification request",
+                businessName + " registered as an employer and may need verification.",
+                "/admin/employers.html", "USER", employerUserId,
+                "employer-" + employerUserId + "-verification"));
+
         return new AuthResponse(
             jwtService.generateToken(user),
             jwtService.generateRefreshToken(user),

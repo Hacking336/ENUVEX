@@ -46,6 +46,37 @@
                 <span id="pageErrorText">Could not load applicants.</span>
             </div>
 
+            <section class="metrics" aria-label="Applicant summary" style="margin-bottom: 18px;">
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-users"></i></div>
+                    <div><div class="metric-value" id="metricTotal">—</div><div class="metric-label">Total applicants</div><div class="metric-desc">All applications</div></div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-user-plus"></i></div>
+                    <div><div class="metric-value" id="metricNew">—</div><div class="metric-label">New applicants</div><div class="metric-desc">Not yet reviewed</div></div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-magnifying-glass"></i></div>
+                    <div><div class="metric-value" id="metricReviewing">—</div><div class="metric-label">Reviewing</div><div class="metric-desc">In progress</div></div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-star"></i></div>
+                    <div><div class="metric-value" id="metricShortlisted">—</div><div class="metric-label">Shortlisted</div><div class="metric-desc">For further review</div></div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div><div class="metric-value" id="metricInterview">—</div><div class="metric-label">Interview</div><div class="metric-desc">Invited candidates</div></div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-circle-check"></i></div>
+                    <div><div class="metric-value" id="metricAccepted">—</div><div class="metric-label">Accepted</div><div class="metric-desc">Hired applicants</div></div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-circle-xmark"></i></div>
+                    <div><div class="metric-value" id="metricRejected">—</div><div class="metric-label">Rejected</div><div class="metric-desc">Not proceeding</div></div>
+                </article>
+            </section>
+
             <div class="card rv-toolbar">
                 <div class="form-field">
                     <label for="jobFilter">Job post</label>
@@ -69,12 +100,13 @@
 
             <div class="tabs" id="statusTabs" role="tablist" aria-label="Filter applicants by status">
                 <button class="tab is-active" type="button" data-status="ALL" role="tab" aria-selected="true">All <span class="count" id="countAll">0</span></button>
-                <button class="tab" type="button" data-status="APPLIED" role="tab" aria-selected="false">Applied <span class="count" id="countApplied">0</span></button>
-                <button class="tab" type="button" data-status="UNDER_REVIEW" role="tab" aria-selected="false">Under review <span class="count" id="countReview">0</span></button>
+                <button class="tab" type="button" data-status="SUBMITTED" role="tab" aria-selected="false">Submitted <span class="count" id="countSubmitted">0</span></button>
+                <button class="tab" type="button" data-status="REVIEWING" role="tab" aria-selected="false">Reviewing <span class="count" id="countReviewing">0</span></button>
                 <button class="tab" type="button" data-status="SHORTLISTED" role="tab" aria-selected="false">Shortlisted <span class="count" id="countShortlisted">0</span></button>
                 <button class="tab" type="button" data-status="INTERVIEW" role="tab" aria-selected="false">Interview <span class="count" id="countInterview">0</span></button>
-                <button class="tab" type="button" data-status="ACCEPTED" role="tab" aria-selected="false">Hired <span class="count" id="countAccepted">0</span></button>
+                <button class="tab" type="button" data-status="ACCEPTED" role="tab" aria-selected="false">Accepted <span class="count" id="countAccepted">0</span></button>
                 <button class="tab" type="button" data-status="REJECTED" role="tab" aria-selected="false">Rejected <span class="count" id="countRejected">0</span></button>
+                <button class="tab" type="button" data-status="WITHDRAWN" role="tab" aria-selected="false">Withdrawn <span class="count" id="countWithdrawn">0</span></button>
             </div>
 
             <div class="card panel" style="padding: 0;">
@@ -89,6 +121,99 @@
 <nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
 <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
+<!-- Update status -->
+<div class="modal" id="statusModal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="statusModalTitle">
+        <div class="modal-head">
+            <h3 id="statusModalTitle">Update application status</h3>
+            <button class="icon-btn" type="button" data-close-status aria-label="Close"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <p class="muted" id="statusApplicantLine" style="margin-bottom: 14px;"></p>
+            <div class="field" style="margin-bottom: 12px;">
+                <label for="statusSelect">New status</label>
+                <select id="statusSelect"></select>
+            </div>
+            <div class="field">
+                <label for="statusMessage">Message to the applicant (optional)</label>
+                <textarea id="statusMessage" maxlength="600" placeholder="This appears in the applicant's timeline and notification."></textarea>
+                <div class="hint">The change is recorded in the application history with your name and the time.</div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-ghost" type="button" data-close-status>Cancel</button>
+                <button class="btn-solid" type="button" id="statusSaveBtn"><i class="fas fa-check"></i> Save status</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interview invitation / reschedule -->
+<div class="modal" id="interviewModal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="interviewModalTitle">
+        <div class="modal-head">
+            <h3 id="interviewModalTitle">Schedule interview</h3>
+            <button class="icon-btn" type="button" data-close-interview aria-label="Close"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <p class="muted" id="interviewApplicantLine" style="margin-bottom: 14px;"></p>
+
+            <div id="interviewForm">
+                <div class="field-grid">
+                    <div class="field">
+                        <label for="ivDate">Interview date</label>
+                        <input type="date" id="ivDate">
+                    </div>
+                    <div class="field">
+                        <label for="ivTime">Interview time</label>
+                        <input type="time" id="ivTime">
+                    </div>
+                    <div class="field">
+                        <label for="ivType">Interview type</label>
+                        <select id="ivType">
+                            <option value="IN_PERSON">In person</option>
+                            <option value="ONLINE">Online</option>
+                            <option value="PHONE">Phone</option>
+                        </select>
+                    </div>
+                    <div class="field" id="ivLocationField">
+                        <label for="ivLocation">Location / address</label>
+                        <input type="text" id="ivLocation" maxlength="300" placeholder="e.g. 2nd Floor, ABC Building, Daet">
+                    </div>
+                    <div class="field field-full" id="ivLinkField" hidden>
+                        <label for="ivLink">Meeting link</label>
+                        <input type="url" id="ivLink" maxlength="500" placeholder="https://meet.example.com/…">
+                        <div class="hint">The applicant sees this link in their application and notification.</div>
+                    </div>
+                    <div class="field field-full">
+                        <label for="ivInstructions">Instructions (optional)</label>
+                        <textarea id="ivInstructions" maxlength="800" placeholder="Requirements, who to look for, estimated length…"></textarea>
+                    </div>
+                    <div class="field field-full">
+                        <label for="ivMessage">Message to the applicant (optional)</label>
+                        <textarea id="ivMessage" maxlength="600"></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-ghost" type="button" data-close-interview>Cancel</button>
+                    <button class="btn-solid" type="button" id="interviewReviewBtn"><i class="fas fa-arrow-right"></i> Review invitation</button>
+                </div>
+            </div>
+
+            <div id="interviewReview" hidden>
+                <div class="interview-box">
+                    <h3><i class="fas fa-calendar-check"></i> Review before sending</h3>
+                    <div class="kv-grid" id="interviewReviewBody"></div>
+                </div>
+                <p class="muted">Sending this invitation moves the application to Interview and notifies the applicant.</p>
+                <div class="modal-actions">
+                    <button class="btn-ghost" type="button" id="interviewBackBtn">Back</button>
+                    <button class="btn-solid" type="button" id="interviewSendBtn"><i class="fas fa-paper-plane"></i> Confirm &amp; send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="../assets/js/api.js"></script>
 <script src="../assets/js/jsm-match.js"></script>
 <script src="../assets/js/role-app.js"></script>
@@ -96,24 +221,29 @@
 (function () {
     'use strict';
 
-    var state = { jobs: [], applicants: [], status: 'ALL', jobId: 'ALL', sort: 'match', query: '' };
+    var state = {
+        jobs: [], applicants: [], status: 'ALL', jobId: 'ALL', sort: 'match', query: '',
+        active: null, mode: 'status', interviewMode: 'schedule', interviewId: null
+    };
 
     var ACTIONS = {
-        APPLIED: [
-            { status: 'UNDER_REVIEW', label: 'Start review', icon: 'fa-magnifying-glass', cls: 'btn-soft' },
+        SUBMITTED: [
+            { status: 'REVIEWING', label: 'Start review', icon: 'fa-magnifying-glass', cls: 'btn-soft' },
             { status: 'SHORTLISTED', label: 'Shortlist', icon: 'fa-star', cls: 'btn-ghost' },
             { status: 'REJECTED', label: 'Reject', icon: 'fa-xmark', cls: 'btn-danger' }
         ],
-        UNDER_REVIEW: [
+        REVIEWING: [
+            { status: 'SUBMITTED', label: 'Back to submitted', icon: 'fa-rotate-left', cls: 'btn-ghost' },
             { status: 'SHORTLISTED', label: 'Shortlist', icon: 'fa-star', cls: 'btn-ghost' },
             { status: 'REJECTED', label: 'Reject', icon: 'fa-xmark', cls: 'btn-danger' }
         ],
         SHORTLISTED: [
-            { status: 'INTERVIEW', label: 'Interview', icon: 'fa-calendar-check', cls: 'btn-soft' },
+            { status: 'REVIEWING', label: 'Back to review', icon: 'fa-rotate-left', cls: 'btn-ghost' },
             { status: 'ACCEPTED', label: 'Hire', icon: 'fa-circle-check', cls: 'btn-solid' },
             { status: 'REJECTED', label: 'Reject', icon: 'fa-xmark', cls: 'btn-danger' }
         ],
         INTERVIEW: [
+            { status: 'SHORTLISTED', label: 'Back to shortlist', icon: 'fa-rotate-left', cls: 'btn-ghost' },
             { status: 'ACCEPTED', label: 'Hire', icon: 'fa-circle-check', cls: 'btn-solid' },
             { status: 'REJECTED', label: 'Reject', icon: 'fa-xmark', cls: 'btn-danger' }
         ],
@@ -121,8 +251,9 @@
             { status: 'SHORTLISTED', label: 'Reopen', icon: 'fa-rotate-left', cls: 'btn-soft' }
         ],
         REJECTED: [
-            { status: 'UNDER_REVIEW', label: 'Reconsider', icon: 'fa-rotate-left', cls: 'btn-soft' }
-        ]
+            { status: 'REVIEWING', label: 'Reconsider', icon: 'fa-rotate-left', cls: 'btn-soft' }
+        ],
+        WITHDRAWN: []
     };
 
     function showError(message) {
@@ -133,7 +264,6 @@
         box.hidden = false;
     }
 
-    /** Matched/missing skills for this applicant against this job, from the server. */
     function applicantMatch(applicant) {
         var matched = Array.isArray(applicant.matchedSkills) ? applicant.matchedSkills : [];
         var missing = Array.isArray(applicant.missingSkills) ? applicant.missingSkills : [];
@@ -153,14 +283,33 @@
         return '<div class="match-inline">' + parts.join('') + '</div>';
     }
 
+    function interviewLine(applicant) {
+        var interview = applicant.interview;
+        if (!interview || interview.status === 'CANCELLED') return '';
+        var date = new Date(interview.interviewAt);
+        var label = isNaN(date.getTime()) ? '' : date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) +
+            ', ' + date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        return `<div class="app-latest" style="margin-top: 8px;"><i class="fas fa-calendar-check"></i> Interview: ${ROLE.esc(label)}
+            · ${ROLE.esc(String(interview.interviewType || '').replace('_', ' ').toLowerCase())}
+            <button class="btn-ghost btn-sm" type="button" data-interview-open="${encodeURIComponent(applicant.applicationId)}" data-interview-mode="reschedule" style="margin-left: 8px;">Reschedule</button>
+            <button class="btn-danger btn-sm" type="button" data-interview-cancel="${encodeURIComponent(applicant.applicationId)}">Cancel interview</button>
+        </div>`;
+    }
+
     function actionsFor(applicant) {
-        var status = String(applicant.applicationStatus || 'APPLIED').toUpperCase();
-        return (ACTIONS[status] || ACTIONS.APPLIED).map(function (action) {
+        var status = String(applicant.applicationStatus || 'SUBMITTED').toUpperCase();
+        var buttons = (ACTIONS[status] || ACTIONS.SUBMITTED).map(function (action) {
             return `<button class="${action.cls} btn-sm" type="button"
                 data-app="${encodeURIComponent(applicant.applicationId)}"
                 data-next="${action.status}">
                 <i class="fas ${action.icon}"></i> ${action.label}</button>`;
         }).join('');
+
+        if (status !== 'WITHDRAWN' && status !== 'ACCEPTED' && status !== 'REJECTED') {
+            buttons += `<button class="btn-soft btn-sm" type="button" data-interview-open="${encodeURIComponent(applicant.applicationId)}" data-interview-mode="schedule">
+                <i class="fas fa-calendar-plus"></i> ${applicant.interview ? 'Reschedule' : 'Schedule interview'}</button>`;
+        }
+        return buttons;
     }
 
     function row(applicant) {
@@ -171,11 +320,15 @@
         var skills = String(applicant.skills || '').split(',').map(function (skill) {
             return skill.trim();
         }).filter(Boolean);
+        var profileHref = 'applicant-profile.html?applicationId=' + encodeURIComponent(applicant.applicationId || '');
+        var avatar = applicant.profilePhoto
+            ? `<img src="${ROLE.esc(ROLE.photoUrl(applicant.profilePhoto))}" alt="">`
+            : ROLE.esc(ROLE.initials(name));
 
         return `<div class="list-row">
-            <span class="avatar">${ROLE.esc(ROLE.initials(name))}</span>
+            <span class="avatar">${avatar}</span>
             <div class="list-body">
-                <h4><a href="applicant-profile.html?applicationId=${encodeURIComponent(applicant.applicationId || '')}">${ROLE.esc(name)}</a></h4>
+                <h4><a href="${profileHref}">${ROLE.esc(name)}</a></h4>
                 <div class="list-meta">
                     <span><i class="fas fa-briefcase"></i>${ROLE.esc(applicant.jobTitle || '—')}</span>
                     <span><i class="fas fa-location-dot"></i>${ROLE.esc(ROLE.municipalityLabel(applicant.location) || 'Not set')}${applicant.barangay ? ', ' + ROLE.esc(applicant.barangay) : ''}</span>
@@ -183,13 +336,17 @@
                     ${skills.length ? `<span><i class="fas fa-tags"></i>${ROLE.esc(skills.slice(0, 3).join(', '))}</span>` : ''}
                     ${applicant.education ? `<span><i class="fas fa-graduation-cap"></i>${ROLE.esc(applicant.education)}</span>` : ''}
                 </div>
+                ${applicant.workExperience ? `<p class="muted" style="margin-top: 6px; font-size: 12.5px;">${ROLE.esc(String(applicant.workExperience).slice(0, 160))}${String(applicant.workExperience).length > 160 ? '…' : ''}</p>` : ''}
                 ${applicantMatch(applicant)}
+                ${interviewLine(applicant)}
             </div>
             <div class="list-side">
                 ${isFinite(match) && window.JSMMatch ? JSMMatch.pill(match) : (isFinite(match) ? `<span class="match-pill ${matchCls}">${Math.round(match)}%</span>` : '')}
                 <span class="status ${status.cls}">${ROLE.esc(status.label)}</span>
                 ${actionsFor(applicant)}
-                <a class="btn-soft btn-sm" href="applicant-profile.html?applicationId=${encodeURIComponent(applicant.applicationId || '')}">View profile</a>
+                <button class="btn-ghost btn-sm" type="button" data-status-open="${encodeURIComponent(applicant.applicationId)}">
+                    <i class="fas fa-pen"></i> Update status</button>
+                <a class="btn-soft btn-sm" href="${profileHref}">View application</a>
             </div>
         </div>`;
     }
@@ -197,8 +354,6 @@
     function visible() {
         var list = state.applicants.filter(function (applicant) {
             if (state.status !== 'ALL' && String(applicant.applicationStatus || '').toUpperCase() !== state.status) return false;
-            // The applicant DTO carries the job as jobPostId; jobId never existed
-            // on it, so the job filter used to match nothing.
             if (state.jobId !== 'ALL' && String(applicant.jobPostId) !== String(state.jobId)) return false;
             if (!state.query) return true;
             var haystack = [applicant.fullName, applicant.skills, applicant.barangay, applicant.jobTitle]
@@ -213,19 +368,41 @@
         });
     }
 
+    function findByApplicationId(id) {
+        return state.applicants.filter(function (applicant) {
+            return String(applicant.applicationId) === String(id);
+        })[0];
+    }
+
     function render() {
         var counts = { ALL: state.applicants.length };
         state.applicants.forEach(function (applicant) {
-            var status = String(applicant.applicationStatus || 'APPLIED').toUpperCase();
+            var status = String(applicant.applicationStatus || 'SUBMITTED').toUpperCase();
             counts[status] = (counts[status] || 0) + 1;
         });
+
+        var values = {
+            metricTotal: counts.ALL,
+            metricNew: counts.SUBMITTED || 0,
+            metricReviewing: counts.REVIEWING || 0,
+            metricShortlisted: counts.SHORTLISTED || 0,
+            metricInterview: counts.INTERVIEW || 0,
+            metricAccepted: counts.ACCEPTED || 0,
+            metricRejected: counts.REJECTED || 0
+        };
+        Object.keys(values).forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) el.textContent = values[id];
+        });
+
         document.getElementById('countAll').textContent = counts.ALL;
-        document.getElementById('countApplied').textContent = counts.APPLIED || 0;
-        document.getElementById('countReview').textContent = counts.UNDER_REVIEW || 0;
+        document.getElementById('countSubmitted').textContent = counts.SUBMITTED || 0;
+        document.getElementById('countReviewing').textContent = counts.REVIEWING || 0;
         document.getElementById('countShortlisted').textContent = counts.SHORTLISTED || 0;
         document.getElementById('countInterview').textContent = counts.INTERVIEW || 0;
         document.getElementById('countAccepted').textContent = counts.ACCEPTED || 0;
         document.getElementById('countRejected').textContent = counts.REJECTED || 0;
+        document.getElementById('countWithdrawn').textContent = counts.WITHDRAWN || 0;
 
         var list = visible();
         document.getElementById('resultCount').textContent =
@@ -271,7 +448,180 @@
         if (state.jobId !== 'ALL') select.value = state.jobId;
     }
 
-    document.addEventListener('enuvex:ready', async function () {
+    /* ---------- status modal --------------------------------------------- */
+
+    function openStatusModal(applicant) {
+        state.active = applicant;
+        state.mode = 'status';
+        document.getElementById('statusApplicantLine').textContent =
+            (applicant.fullName || 'Applicant') + ' · ' + (applicant.jobTitle || '') +
+            ' · now ' + ROLE.statusMeta(applicant.applicationStatus).label;
+
+        var select = document.getElementById('statusSelect');
+        var current = String(applicant.applicationStatus || 'SUBMITTED').toUpperCase();
+        // Only the transitions the backend accepts are offered, including the
+        // deliberate moves back to an earlier stage.
+        var options = (ACTIONS[current] || []).map(function (action) { return action.status; });
+        select.innerHTML = options.map(function (status) {
+            return '<option value="' + status + '">' + ROLE.esc(ROLE.statusMeta(status).label) + '</option>';
+        }).join('') || '<option value="">No status change available</option>';
+        document.getElementById('statusSaveBtn').disabled = options.length === 0;
+        document.getElementById('statusMessage').value = '';
+        document.getElementById('statusModal').hidden = false;
+    }
+
+    function closeStatusModal() {
+        document.getElementById('statusModal').hidden = true;
+        state.active = null;
+    }
+
+    async function saveStatus() {
+        if (!state.active) return;
+        var button = document.getElementById('statusSaveBtn');
+        var status = document.getElementById('statusSelect').value;
+        var message = document.getElementById('statusMessage').value;
+        button.disabled = true;
+        try {
+            await ApiClient.updateApplicationStatus(state.active.applicationId, status, message);
+            ROLE.toast('Applicant moved to ' + ROLE.statusMeta(status).label + '.', 'success');
+            closeStatusModal();
+            await load();
+        } catch (error) {
+            ROLE.toast(error.message || 'Could not update this applicant.', 'error');
+            button.disabled = false;
+        }
+    }
+
+    /* ---------- interview modal ------------------------------------------ */
+
+    function setInterviewTypeFields() {
+        var type = document.getElementById('ivType').value;
+        document.getElementById('ivLocationField').hidden = type === 'ONLINE';
+        document.getElementById('ivLinkField').hidden = type !== 'ONLINE';
+    }
+
+    function openInterviewModal(applicant, mode) {
+        state.active = applicant;
+        state.interviewMode = mode === 'reschedule' ? 'reschedule' : 'schedule';
+        document.getElementById('interviewModalTitle').textContent =
+            state.interviewMode === 'reschedule' ? 'Reschedule interview' : 'Schedule interview';
+        document.getElementById('interviewApplicantLine').textContent =
+            (applicant.fullName || 'Applicant') + ' · ' + (applicant.jobTitle || '');
+
+        var interview = applicant.interview || null;
+        var whenValue = interview ? new Date(interview.interviewAt) : null;
+        var dateInput = document.getElementById('ivDate');
+        var timeInput = document.getElementById('ivTime');
+        if (whenValue && !isNaN(whenValue.getTime())) {
+            var local = new Date(whenValue.getTime() - whenValue.getTimezoneOffset() * 60000);
+            dateInput.value = local.toISOString().slice(0, 10);
+            timeInput.value = local.toISOString().slice(11, 16);
+        } else {
+            dateInput.value = '';
+            timeInput.value = '';
+        }
+        document.getElementById('ivType').value = interview && interview.interviewType ? interview.interviewType : 'IN_PERSON';
+        document.getElementById('ivLocation').value = interview && interview.location ? interview.location : '';
+        document.getElementById('ivLink').value = interview && interview.meetingLink ? interview.meetingLink : '';
+        document.getElementById('ivInstructions').value = interview && interview.instructions ? interview.instructions : '';
+        document.getElementById('ivMessage').value = '';
+
+        setInterviewTypeFields();
+        document.getElementById('interviewForm').hidden = false;
+        document.getElementById('interviewReview').hidden = true;
+        document.getElementById('interviewModal').hidden = false;
+    }
+
+    function closeInterviewModal() {
+        document.getElementById('interviewModal').hidden = true;
+        state.active = null;
+    }
+
+    function interviewPayload() {
+        var date = document.getElementById('ivDate').value;
+        var time = document.getElementById('ivTime').value;
+        if (!date || !time) {
+            throw new Error('Choose the interview date and time.');
+        }
+        return {
+            interviewAt: date + 'T' + time + ':00',
+            interviewType: document.getElementById('ivType').value,
+            location: document.getElementById('ivLocation').value || null,
+            meetingLink: document.getElementById('ivLink').value || null,
+            instructions: document.getElementById('ivInstructions').value || null,
+            employerMessage: document.getElementById('ivMessage').value || null
+        };
+    }
+
+    function reviewInterview() {
+        var payload;
+        try {
+            payload = interviewPayload();
+        } catch (error) {
+            ROLE.toast(error.message, 'error');
+            return;
+        }
+        if (payload.interviewType === 'ONLINE' && !/^https?:\/\//.test(payload.meetingLink || '')) {
+            ROLE.toast('An online interview needs a meeting link starting with http:// or https://.', 'error');
+            return;
+        }
+        if (payload.interviewType === 'IN_PERSON' && !payload.location) {
+            ROLE.toast('An in-person interview needs a location.', 'error');
+            return;
+        }
+        state.pendingInterview = payload;
+
+        var date = new Date(payload.interviewAt);
+        var type = payload.interviewType === 'ONLINE' ? 'Online' : payload.interviewType === 'PHONE' ? 'Phone' : 'In person';
+        document.getElementById('interviewReviewBody').innerHTML = `
+            <div class="kv"><span>Applicant</span><strong>${ROLE.esc(state.active.fullName || 'Applicant')}</strong></div>
+            <div class="kv"><span>Date and time</span><strong>${ROLE.esc(date.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }))} at ${ROLE.esc(date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }))}</strong></div>
+            <div class="kv"><span>Type</span><strong>${type}</strong></div>
+            <div class="kv"><span>Location</span><strong>${ROLE.esc(payload.location || '—')}</strong></div>
+            ${payload.meetingLink ? `<div class="kv"><span>Meeting link</span><strong>${ROLE.esc(payload.meetingLink)}</strong></div>` : ''}
+            ${payload.instructions ? `<div class="kv"><span>Instructions</span><strong>${ROLE.esc(payload.instructions)}</strong></div>` : ''}
+            ${payload.employerMessage ? `<div class="kv"><span>Message</span><strong>${ROLE.esc(payload.employerMessage)}</strong></div>` : ''}`;
+
+        document.getElementById('interviewForm').hidden = true;
+        document.getElementById('interviewReview').hidden = false;
+    }
+
+    async function sendInterview() {
+        if (!state.active || !state.pendingInterview) return;
+        var button = document.getElementById('interviewSendBtn');
+        button.disabled = true;
+        try {
+            if (state.interviewMode === 'reschedule') {
+                await ApiClient.rescheduleInterview(state.active.applicationId, state.pendingInterview);
+            } else {
+                await ApiClient.scheduleInterview(state.active.applicationId, state.pendingInterview);
+            }
+            ROLE.toast(state.interviewMode === 'reschedule' ? 'Interview rescheduled.' : 'Interview invitation sent.', 'success');
+            closeInterviewModal();
+            await load();
+        } catch (error) {
+            ROLE.toast(error.message || 'Could not save the interview.', 'error');
+            button.disabled = false;
+        }
+    }
+
+    async function cancelInterview(applicationId) {
+        var applicant = findByApplicationId(applicationId);
+        var name = applicant ? applicant.fullName : 'this applicant';
+        if (!window.confirm('Cancel the interview with ' + name + '? The applicant will be notified.')) return;
+        var reason = window.prompt('Reason for cancelling (optional)') || '';
+        try {
+            await ApiClient.cancelInterview(applicationId, reason);
+            ROLE.toast('Interview cancelled.', 'success');
+            await load();
+        } catch (error) {
+            ROLE.toast(error.message || 'Could not cancel the interview.', 'error');
+        }
+    }
+
+    /* ---------- wiring ---------------------------------------------------- */
+
+    function wire() {
         var params = new URLSearchParams(window.location.search);
         if (params.get('jobId')) state.jobId = params.get('jobId');
 
@@ -303,6 +653,27 @@
         });
 
         document.getElementById('applicantRows').addEventListener('click', async function (event) {
+            var statusOpen = event.target.closest('[data-status-open]');
+            if (statusOpen) {
+                openStatusModal(findByApplicationId(decodeURIComponent(statusOpen.getAttribute('data-status-open'))));
+                return;
+            }
+
+            var interviewOpen = event.target.closest('[data-interview-open]');
+            if (interviewOpen) {
+                var applicant = findByApplicationId(decodeURIComponent(interviewOpen.getAttribute('data-interview-open')));
+                if (!applicant) return;
+                var mode = applicant.interview ? 'reschedule' : (interviewOpen.getAttribute('data-interview-mode') || 'schedule');
+                openInterviewModal(applicant, mode);
+                return;
+            }
+
+            var cancel = event.target.closest('[data-interview-cancel]');
+            if (cancel) {
+                cancelInterview(decodeURIComponent(cancel.getAttribute('data-interview-cancel')));
+                return;
+            }
+
             var button = event.target.closest('[data-app]');
             if (!button) return;
             var applicationId = decodeURIComponent(button.getAttribute('data-app'));
@@ -318,9 +689,47 @@
             }
         });
 
+        document.getElementById('ivType').addEventListener('change', setInterviewTypeFields);
+        document.getElementById('interviewReviewBtn').addEventListener('click', reviewInterview);
+        document.getElementById('interviewBackBtn').addEventListener('click', function () {
+            document.getElementById('interviewForm').hidden = false;
+            document.getElementById('interviewReview').hidden = true;
+        });
+        document.getElementById('interviewSendBtn').addEventListener('click', sendInterview);
+        document.getElementById('statusSaveBtn').addEventListener('click', saveStatus);
+
+        document.querySelectorAll('[data-close-status]').forEach(function (el) {
+            el.addEventListener('click', closeStatusModal);
+        });
+        document.querySelectorAll('[data-close-interview]').forEach(function (el) {
+            el.addEventListener('click', closeInterviewModal);
+        });
+        document.querySelectorAll('.modal').forEach(function (modal) {
+            modal.addEventListener('click', function (event) {
+                if (event.target === modal) modal.hidden = true;
+            });
+        });
+    }
+
+    document.addEventListener('enuvex:ready', async function () {
+        wire();
+        var params = new URLSearchParams(window.location.search);
         await load();
         fillJobFilter();
         render();
+
+        // A notification links straight to one application.
+        if (params.get('applicationId')) {
+            var applicant = findByApplicationId(params.get('applicationId'));
+            if (applicant) {
+                state.status = 'ALL';
+                if (params.get('mode') === 'interview') {
+                    openInterviewModal(applicant, applicant.interview ? 'reschedule' : 'schedule');
+                } else {
+                    openStatusModal(applicant);
+                }
+            }
+        }
     }, { once: true });
 })();
 </script>

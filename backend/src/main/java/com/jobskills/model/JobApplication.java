@@ -5,6 +5,7 @@ import com.jobskills.model.enums.ApplicationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -37,7 +38,12 @@ public class JobApplication {
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ApplicationStatus applicationStatus = ApplicationStatus.APPLIED;
+    private ApplicationStatus applicationStatus = ApplicationStatus.SUBMITTED;
 
     private BigDecimal matchPercentage;
+
+    /** Set on every status change; the timeline falls back to it for old rows. */
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

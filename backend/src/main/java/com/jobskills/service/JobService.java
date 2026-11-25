@@ -2,6 +2,7 @@ package com.jobskills.service;
 
 import com.jobskills.dto.*;
 import com.jobskills.model.*;
+import com.jobskills.model.enums.ApplicationStatus;
 import com.jobskills.model.enums.Municipality;
 import com.jobskills.repository.*;
 import jakarta.persistence.criteria.Predicate;
@@ -30,6 +31,12 @@ public class JobService {
     private final SavedJobRepository savedJobRepository;
     private final MatchingEngine matchingEngine;
     private final GeoService geoService;
+    private final ApplicationStatusHistoryRepository historyRepository;
+    private final NotificationService notificationService;
+
+    /** Most seekers told about one new post; keeps job creation bounded. */
+    private static final int MAX_JOB_RECOMMENDATIONS = 50;
+    private static final double MIN_RECOMMENDATION_MATCH = 60.0;
 
     @Transactional
     public JobPost createJob(Long employerId, JobPostRequest request) {
@@ -60,7 +67,39 @@ public class JobService {
         // an inactive post never shows up in a seeker's search.
         job.setActive(request.getActive() == null || request.getActive());
 
-        return jobPostRepository.save(job);
+        JobPost saved = jobPostRepository.save(job);
+        if (saved.isActive()) {
+            notifyMatchingSeekers(saved);
+        }
+        return saved;
+    }
+
+    /**
+     * One notification per seeker per new post, written when the post is created.
+     * The dedupe key makes a retried create idempotent, and the page never
+     * generates recommendations just by being opened.
+     */
+    private void notifyMatchingSeekers(JobPost job) {
+        int sent = 0;
+        for (JobSeekerProfile seeker : seekerRepository.findAll(PageRequest.of(0, 200)).getContent()) {
+            if (sent >= MAX_JOB_RECOMMENDATIONS) break;
+            if (seeker.getUser() == null || !seeker.getUser().isActive()) continue;
+            if (applicationRepository.existsByJobSeekerIdAndJobPostId(seeker.getId(), job.getId())) continue;
+
+            MatchResultDto match = matchingEngine.calculateMatch(seeker, job);
+            if (match.getOverallMatch() < MIN_RECOMMENDATION_MATCH) continue;
+
+            boolean created = notificationService.notify(seeker.getUser(),
+                NotificationService.JOB_RECOMMENDATION,
+                "New matching job",
+                "New job matching your skills: " + job.getJobTitle()
+                    + (job.getEmployer() != null ? " at " + job.getEmployer().getBusinessName() : "")
+                    + " (" + Math.round(match.getOverallMatch()) + "% match).",
+                "/job-seeker/job-details.html?id=" + job.getId(),
+                "JOB_POST", job.getId(),
+                "job-" + job.getId() + "-match-" + seeker.getUser().getId());
+            if (created) sent++;
+        }
     }
 
     public JobPost getJobById(Long id) {
@@ -481,7 +520,31 @@ public class JobService {
             ))
             .build();
 
-        return applicationRepository.save(application);
+        JobApplication saved = applicationRepository.save(application);
+
+        historyRepository.save(ApplicationStatusHistory.builder()
+            .applicationId(saved.getId())
+            .newStatus(ApplicationStatus.SUBMITTED)
+            .eventType("SUBMITTED")
+            .actorUserId(seeker.getUser().getId())
+            .actorRole("JOB_SEEKER")
+            .actorName(seeker.getFullName())
+            .build());
+
+        notificationService.notify(seeker.getUser(), NotificationService.APPLICATION_SUBMITTED,
+            "Application submitted",
+            "Your application for " + job.getJobTitle() + " was submitted successfully.",
+            "/job-seeker/application.html?id=" + saved.getId(),
+            "APPLICATION", saved.getId(), "app-" + saved.getId() + "-submitted");
+
+        if (job.getEmployer() != null) {
+            notificationService.notify(job.getEmployer().getUser(), NotificationService.APPLICATION_RECEIVED,
+                "New application received",
+                seeker.getFullName() + " applied for " + job.getJobTitle() + ".",
+                "/employer/applicants.html?applicationId=" + saved.getId(),
+                "APPLICATION", saved.getId(), "app-" + saved.getId() + "-received");
+        }
+        return saved;
     }
 
     private void applySalary(JobPost job, JobPostRequest request) {

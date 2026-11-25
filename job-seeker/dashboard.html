@@ -1270,6 +1270,16 @@
                         </a>
                     </section>
 
+                    <section class="card side-card" aria-labelledby="interviewsTitle">
+                        <div class="side-card-head">
+                            <h3 id="interviewsTitle">Upcoming Interviews</h3>
+                            <i class="fas fa-calendar-check" aria-hidden="true"></i>
+                        </div>
+                        <div class="activity" id="upcomingInterviews">
+                            <p class="muted">No interviews scheduled.</p>
+                        </div>
+                    </section>
+
                     <section class="card side-card">
                         <div class="side-card-head">
                             <h3>Recent Activity</h3>
@@ -1545,8 +1555,17 @@
             else if (key === 'REJECTED') rejected += 1;
         });
 
+        var submitted = 0;
+        var shortlisted = 0;
+        apps.forEach(function (app) {
+            var key = String(app.status || 'SUBMITTED').toUpperCase();
+            if (key === 'SUBMITTED' || key === 'APPLIED' || key === 'REVIEWING' || key === 'UNDER_REVIEW') submitted += 1;
+            if (key === 'SHORTLISTED') shortlisted += 1;
+        });
+
         var rows = [
-            ['Applied', apps.length, ''],
+            ['Submitted / reviewing', submitted, ''],
+            ['Shortlisted', shortlisted, ''],
             ['Interview', interview, 'navy'],
             ['Offered', offered, ''],
             ['Rejected', rejected, 'gray']
@@ -1559,6 +1578,34 @@
         }).join('') + (apps.length ? '' : '<p class="muted" style="margin: 10px 2px 0;">No applications yet. Jobs you apply to will appear here.</p>');
     }
 
+    /** Interviews are shown from the real application records. */
+    function renderInterviews(applications) {
+        var box = document.getElementById('upcomingInterviews');
+        if (!box) return;
+        var now = Date.now();
+        var items = (applications || []).filter(function (app) {
+            return app.interview && app.interview.status !== 'CANCELLED'
+                && new Date(app.interview.interviewAt).getTime() >= now - 60 * 60 * 1000;
+        }).sort(function (a, b) {
+            return new Date(a.interview.interviewAt) - new Date(b.interview.interviewAt);
+        }).slice(0, 3);
+
+        if (!items.length) {
+            box.innerHTML = '<p class="muted">No interviews scheduled.</p>';
+            return;
+        }
+
+        box.innerHTML = items.map(function (app) {
+            var date = new Date(app.interview.interviewAt);
+            return '<div class="activity-item">' +
+                '<div class="notif-icon"><i class="fas fa-calendar-check"></i></div>' +
+                '<div><p><a href="application.html?id=' + encodeURIComponent(app.id) + '"><strong>' + esc(app.jobTitle || 'Interview') + '</strong></a><br>' +
+                esc(date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) + ' at ' +
+                    date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })) + '</p>' +
+                '<time>' + esc(app.companyName || '') + '</time></div></div>';
+        }).join('');
+    }
+
     function renderNotifications(notifications) {
         var list = document.getElementById('notifList');
         var badge = document.getElementById('bellBadge');
@@ -1566,7 +1613,7 @@
         var items = (notifications || []).slice().sort(function (a, b) {
             return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
         });
-        var unread = items.filter(function (n) { return !n.isRead; });
+        var unread = items.filter(function (n) { return !(n.isRead === true || n.read === true); });
 
         if (unread.length) {
             badge.hidden = false;
@@ -1677,6 +1724,7 @@
         renderCompletion(completion);
         renderStats(recommendedTotal, nearbyTotal);
         renderOverview(state.applications);
+        renderInterviews(state.applications);
         renderNotifications(state.notifications);
         renderJobs('recommendedJobs', state.jobs.slice(0, 4), 'No recommendations yet. Complete your profile to improve matching.');
         renderJobs('nearbyJobs', nearbyJobsFor(municipality), 'No nearby jobs posted yet in your municipality.');

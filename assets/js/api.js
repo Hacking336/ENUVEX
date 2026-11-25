@@ -254,10 +254,59 @@ const ApiClient = {
         return this.request(`/employers/applicants?jobId=${jobId}&sortBy=${sortBy}`);
     },
 
-    async updateApplicationStatus(applicationId, status) {
-        return this.request(`/employers/applicants/${applicationId}/status?status=${status}`, {
-            method: 'PUT'
+    async updateApplicationStatus(applicationId, status, message) {
+        return this.request(`/applications/${applicationId}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: status, message: message || null })
         });
+    },
+
+    async getApplication(applicationId) {
+        return this.request(`/applications/${applicationId}`);
+    },
+
+    async getApplicationTimeline(applicationId) {
+        return this.request(`/applications/${applicationId}/timeline`);
+    },
+
+    async withdrawApplication(applicationId) {
+        return this.request(`/applications/${applicationId}/withdraw`, { method: 'POST' });
+    },
+
+    async scheduleInterview(applicationId, payload) {
+        return this.request(`/applications/${applicationId}/interview`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    },
+
+    async rescheduleInterview(applicationId, payload) {
+        return this.request(`/applications/${applicationId}/interview`, {
+            method: 'PATCH',
+            body: JSON.stringify(payload)
+        });
+    },
+
+    async cancelInterview(applicationId, reason) {
+        return this.request(`/applications/${applicationId}/interview?reason=${encodeURIComponent(reason || '')}`, {
+            method: 'DELETE'
+        });
+    },
+
+    async getUnreadNotificationCount() {
+        return this.request('/notifications/unread-count');
+    },
+
+    async markNotificationRead(id) {
+        return this.request(`/notifications/${id}/read`, { method: 'PATCH' });
+    },
+
+    async markAllNotificationsRead() {
+        return this.request('/notifications/read-all', { method: 'PATCH' });
+    },
+
+    async deleteNotification(id) {
+        return this.request(`/notifications/${id}`, { method: 'DELETE' });
     },
 
     async getAdminDashboard() {
@@ -359,3 +408,121 @@ const ApiClient = {
 ApiClient.loadAuth();
 
 window.ApiClient = ApiClient;
+
+/* ==========================================================================
+   Notification presentation shared by the bell and the inbox page.
+   ========================================================================== */
+(function () {
+    'use strict';
+
+    var ICONS = {
+        APPLICATION_SUBMITTED: 'fa-paper-plane',
+        APPLICATION_STATUS: 'fa-arrows-rotate',
+        APPLICATION_WITHDRAWN: 'fa-arrow-rotate-left',
+        APPLICATION_RECEIVED: 'fa-user-plus',
+        APPLICANT_WITHDRAWN: 'fa-user-minus',
+        INTERVIEW_INVITE: 'fa-calendar-plus',
+        INTERVIEW_RESCHEDULED: 'fa-calendar-day',
+        INTERVIEW_CANCELLED: 'fa-calendar-xmark',
+        JOB_RECOMMENDATION: 'fa-wand-magic-sparkles',
+        EMPLOYER_VERIFICATION: 'fa-building-circle-check'
+    };
+
+    function esc(value) {
+        return String(value == null ? '' : value)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function isRead(notification) {
+        return notification.isRead === true || notification.read === true;
+    }
+
+    function linkFor(notification) {
+        if (notification.link) return notification.link;
+        if (notification.referenceType === 'APPLICATION' && notification.referenceId) {
+            return '/job-seeker/application.html?id=' + encodeURIComponent(notification.referenceId);
+        }
+        if (notification.referenceType === 'JOB_POST' && notification.referenceId) {
+            return '/job-seeker/job-details.html?id=' + encodeURIComponent(notification.referenceId);
+        }
+        return null;
+    }
+
+    function icon(type) {
+        return ICONS[String(type || '').toUpperCase()] || 'fa-bell';
+    }
+
+    function timeAgo(value) {
+        if (!value) return '';
+        var then = new Date(value);
+        if (isNaN(then.getTime())) return '';
+        var seconds = Math.max(0, Math.floor((Date.now() - then.getTime()) / 1000));
+        if (seconds < 60) return 'Just now';
+        var minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return minutes + ' min ago';
+        var hours = Math.floor(minutes / 60);
+        if (hours < 24) return hours + ' hour' + (hours === 1 ? '' : 's') + ' ago';
+        var days = Math.floor(hours / 24);
+        if (days < 7) return days + ' day' + (days === 1 ? '' : 's') + ' ago';
+        return then.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    /** One dropdown row. Rendered as a link when the notice has a target. */
+    function itemHtml(notification, options) {
+        var unread = !isRead(notification);
+        var href = linkFor(notification);
+        var tag = href ? 'a' : 'div';
+        var attrs = href ? ' href="' + esc(href) + '"' : '';
+        var title = notification.title ? '<strong>' + esc(notification.title) + '</strong>' : '';
+        var body = '<div>' + title + '<p>' + esc(notification.message || '') + '</p><time>' +
+            esc(timeAgo(notification.createdAt)) + '</time></div>';
+        var action = options && options.deletable
+            ? '<button class="notif-delete" type="button" data-delete-notification="' +
+                esc(notification.id) + '" aria-label="Delete notification"><i class="fas fa-trash"></i></button>'
+            : '';
+        return '<' + tag + ' class="notif' + (unread ? ' notif-unread' : '') + '"' + attrs +
+            ' data-notification-id="' + esc(notification.id) + '">' +
+            '<div class="notif-icon"><i class="fas ' + icon(notification.type) + '"></i></div>' +
+            body + action + '</' + tag + '>';
+    }
+
+    function markRead(id) {
+        if (!window.ApiClient || !id) return Promise.resolve();
+        return ApiClient.markNotificationRead(id).catch(function () { /* non-blocking */ });
+    }
+
+    /**
+     * Polls the unread count so new notices appear without a page reload. One
+     * lightweight request every 45 seconds, paused while the tab is hidden.
+     */
+    function startPolling(onCount) {
+        var last = -1;
+        function tick() {
+            if (document.hidden || !window.ApiClient || !ApiClient.loadAuth()) return;
+            ApiClient.getUnreadNotificationCount().then(function (result) {
+                var count = Number(result && result.count);
+                if (!isFinite(count) || count === last) return;
+                last = count;
+                onCount(count);
+            }).catch(function () { /* keep the last known count */ });
+        }
+        tick();
+        var timer = setInterval(tick, 45000);
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) tick();
+        });
+        return timer;
+    }
+
+    window.JSMNotify = {
+        esc: esc,
+        isRead: isRead,
+        linkFor: linkFor,
+        icon: icon,
+        timeAgo: timeAgo,
+        itemHtml: itemHtml,
+        markRead: markRead,
+        startPolling: startPolling
+    };
+})();

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Notifications — JSM</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/brand/jsm-favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/brand/jsm-icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/brand/jsm-icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../job-seeker/enuvex-app.css">
+    <link rel="stylesheet" href="../assets/css/enuvex-role.css">
+    <script>
+        window.ENUVEX_PAGE = { active: 'notifications', title: 'Notifications', subtitle: 'Applicants and hiring activity' };
+    </script>
+</head>
+<body data-role="employer">
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+        <main class="content">
+            <div class="page-head">
+                <div>
+                    <h2>Notifications</h2>
+                    <p>New applications, withdrawals and other hiring updates.</p>
+                </div>
+                <div class="page-head-actions">
+                    <button class="btn-ghost" type="button" id="markAllBtn"><i class="fas fa-check-double"></i> Mark all as read</button>
+                </div>
+            </div>
+
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load your notifications.</span>
+            </div>
+
+            <div class="inbox-toolbar">
+                <div class="tabs" id="inboxTabs" role="tablist" aria-label="Filter notifications">
+                    <button class="tab is-active" type="button" data-filter="all" role="tab" aria-selected="true">All</button>
+                    <button class="tab" type="button" data-filter="unread" role="tab" aria-selected="false">Unread</button>
+                    <button class="tab" type="button" data-filter="read" role="tab" aria-selected="false">Read</button>
+                </div>
+                <label class="visually-hidden" for="typeFilter">Filter by type</label>
+                <select id="typeFilter">
+                    <option value="">All types</option>
+                    <option value="APPLICATION_RECEIVED">New applications</option>
+                    <option value="APPLICANT_WITHDRAWN">Applicant withdrawals</option>
+                </select>
+            </div>
+
+            <div class="inbox-list" id="inboxList" aria-live="polite"></div>
+            <div class="empty" id="inboxEmpty" hidden></div>
+        </main>
+    </div>
+</div>
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/jsm-inbox.js"></script>
+<script src="../assets/js/role-app.js"></script>
+</body>
+</html>

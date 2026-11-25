@@ -5,13 +5,14 @@ import com.jobskills.model.enums.UserType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
+    List<User> findByUserType(UserType userType);
     long countByUserType(UserType userType);
-    /** Used for the admin name-only login, where no email is supplied. */
     Optional<User> findFirstByUserType(UserType userType);
 }

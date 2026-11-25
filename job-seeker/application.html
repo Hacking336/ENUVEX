@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Application details — JSM</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/brand/jsm-favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/brand/jsm-icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/brand/jsm-icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="enuvex-app.css">
+    <script>
+        window.ENUVEX_PAGE = {
+            active: 'applications',
+            title: 'Application details',
+            subtitle: 'Your application, its interview and its recorded history'
+        };
+    </script>
+</head>
+<body>
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="page-head">
+                <div>
+                    <h2 id="pageTitle">Application details</h2>
+                    <p id="pageSubtitle">Loading your application…</p>
+                </div>
+                <div class="page-head-actions">
+                    <a class="btn-ghost" href="applications.html"><i class="fas fa-arrow-left"></i> All applications</a>
+                </div>
+            </div>
+
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load this application.</span>
+            </div>
+
+            <div id="detailBody">
+                <div class="loading">Loading application…</div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../assets/js/api.js"></script>
+<script src="enuvex-app.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var applicationId = new URLSearchParams(window.location.search).get('id');
+    var application = null;
+
+    function showError(message) {
+        var box = document.getElementById('pageError');
+        var text = document.getElementById('pageErrorText');
+        if (!box || !text) return;
+        text.textContent = message;
+        box.hidden = false;
+    }
+
+    function when(value) {
+        if (!value) return 'Time not recorded';
+        var date = new Date(value);
+        if (isNaN(date.getTime())) return 'Time not recorded';
+        return date.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) +
+            ' — ' + date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    }
+
+    function interviewTypeLabel(type) {
+        var value = String(type || '').toUpperCase();
+        if (value === 'ONLINE') return 'Online';
+        if (value === 'PHONE') return 'Phone';
+        return 'In person';
+    }
+
+    function salaryLine() {
+        var min = ENUVEX.money(application.salaryMin);
+        var max = ENUVEX.money(application.salaryMax);
+        if (min && max) return min + ' – ' + max;
+        if (min) return 'From ' + min;
+        if (max) return 'Up to ' + max;
+        return 'Not stated';
+    }
+
+    function interviewBox() {
+        var interview = application.interview;
+        if (!interview || interview.status === 'CANCELLED') return '';
+        var link = interview.meetingLink
+            ? `<div class="kv"><span>Meeting link</span><strong><a href="${ENUVEX.esc(interview.meetingLink)}" target="_blank" rel="noopener">${ENUVEX.esc(interview.meetingLink)}</a></strong></div>`
+            : '';
+        return `<section class="interview-box">
+            <h3><i class="fas fa-calendar-check"></i> Interview scheduled</h3>
+            <div class="kv-grid">
+                <div class="kv"><span>Date and time</span><strong>${ENUVEX.esc(when(interview.interviewAt))}</strong></div>
+                <div class="kv"><span>Type</span><strong>${ENUVEX.esc(interviewTypeLabel(interview.interviewType))}</strong></div>
+                <div class="kv"><span>Location</span><strong>${ENUVEX.esc(interview.location || '—')}</strong></div>
+                ${link}
+            </div>
+            ${interview.instructions ? `<p class="prose" style="margin-top: 12px;"><strong>Instructions:</strong> ${ENUVEX.esc(interview.instructions)}</p>` : ''}
+            ${interview.employerMessage ? `<div class="timeline-note">${ENUVEX.esc(interview.employerMessage)}</div>` : ''}
+        </section>`;
+    }
+
+    function timelineItem(event) {
+        var icon = event.recorded === false ? 'fa-clock' : 'fa-circle-check';
+        return `<li>
+            <span class="timeline-dot${event.recorded === false ? ' is-current' : ''}"><i class="fas ${icon}"></i></span>
+            <div class="timeline-title">${ENUVEX.esc(event.title || 'Application update')}</div>
+            <div class="timeline-time">${ENUVEX.esc(when(event.createdAt))}</div>
+            ${event.description ? `<div class="timeline-desc">${ENUVEX.esc(event.description)}</div>` : ''}
+            ${event.actorRole ? `<div class="timeline-actor"><i class="fas fa-user"></i>${ENUVEX.esc(event.actorRole === 'EMPLOYER' ? 'By employer' : event.actorRole === 'JOB_SEEKER' ? 'By you' : 'By platform')}${event.actorName ? ' · ' + ENUVEX.esc(event.actorName) : ''}</div>` : ''}
+            ${event.message && event.eventType !== 'STATUS_CHANGED' ? `<div class="timeline-note">${ENUVEX.esc(event.message)}</div>` : ''}
+        </li>`;
+    }
+
+    function render() {
+        var meta = ENUVEX.statusMeta(application.status);
+        document.getElementById('pageTitle').textContent = application.jobTitle || 'Application';
+        document.getElementById('pageSubtitle').textContent =
+            (application.companyName || 'Employer') + ' · applied ' + (ENUVEX.dateLabel(application.appliedAt) || '—');
+        document.title = (application.jobTitle || 'Application') + ' — JSM';
+
+        var jobHref = application.jobPostId
+            ? 'job-details.html?id=' + encodeURIComponent(application.jobPostId) : 'jobs.html';
+
+        var match = Number(application.matchPercentage);
+        var skills = '';
+        if ((application.matchedSkills && application.matchedSkills.length) || (application.missingSkills && application.missingSkills.length)) {
+            skills = `<section class="card panel" style="margin-bottom: 18px;">
+                <div class="panel-head"><h3><i class="fas fa-bullseye"></i> Skill match</h3>
+                    <span class="match-pill">${isFinite(match) ? Math.round(match) + '%' : '—'}</span></div>
+                <p class="muted" style="margin-bottom: 10px;">${ENUVEX.esc(application.matchClassification || '')}</p>
+                <div class="tag-list">
+                    ${(application.matchedSkills || []).map(function (skill) { return '<span class="chip chip-match"><i class="fas fa-check"></i> ' + ENUVEX.esc(skill) + '</span>'; }).join('')}
+                    ${(application.missingSkills || []).map(function (skill) { return '<span class="chip chip-miss"><i class="fas fa-xmark"></i> ' + ENUVEX.esc(skill) + '</span>'; }).join('')}
+                </div>
+            </section>`;
+        }
+
+        document.getElementById('detailBody').innerHTML = `
+            <section class="card panel" style="margin-bottom: 18px;">
+                <div class="panel-head">
+                    <h3><i class="fas fa-briefcase"></i> ${ENUVEX.esc(application.jobTitle || 'Job')}</h3>
+                    <span class="status ${meta.cls}">${ENUVEX.esc(meta.label)}</span>
+                </div>
+                <div class="kv-grid">
+                    <div class="kv"><span>Employer</span><strong>${ENUVEX.esc(application.companyName || '—')}</strong></div>
+                    <div class="kv"><span>Location</span><strong>${ENUVEX.esc((ENUVEX.municipalityLabel(application.municipality) || '—') + (application.barangay ? ', ' + application.barangay : ''))}</strong></div>
+                    <div class="kv"><span>Employment type</span><strong>${ENUVEX.esc(ENUVEX.typeLabel(application.employmentType) || 'Not stated')}</strong></div>
+                    <div class="kv"><span>Salary</span><strong>${ENUVEX.esc(salaryLine())}</strong></div>
+                    <div class="kv"><span>Applied on</span><strong>${ENUVEX.esc(ENUVEX.dateLabel(application.appliedAt) || '—')}</strong></div>
+                    <div class="kv"><span>Last update</span><strong>${ENUVEX.esc(ENUVEX.dateLabel(application.lastUpdatedAt) || '—')}</strong></div>
+                </div>
+                <div class="app-card-actions" style="margin-top: 16px;">
+                    <a class="btn-ghost btn-sm" href="${jobHref}"><i class="fas fa-eye"></i> View Job</a>
+                    ${application.canWithdraw ? '<button class="btn-danger btn-sm" type="button" id="withdrawBtn"><i class="fas fa-arrow-rotate-left"></i> Withdraw application</button>' : ''}
+                </div>
+            </section>
+
+            ${interviewBox()}
+            ${skills}
+
+            <section class="card panel">
+                <div class="panel-head"><h3><i class="fas fa-timeline"></i> Application timeline</h3></div>
+                ${(application.timeline && application.timeline.length)
+                    ? '<ul class="timeline">' + application.timeline.map(timelineItem).join('') + '</ul>'
+                    : '<p class="muted">No recorded events yet. The application date is shown above.</p>'}
+            </section>`;
+
+        var withdrawBtn = document.getElementById('withdrawBtn');
+        if (withdrawBtn) {
+            withdrawBtn.addEventListener('click', async function () {
+                if (!window.confirm('Withdraw this application? The employer will be notified and you cannot undo it.')) return;
+                withdrawBtn.disabled = true;
+                try {
+                    await ApiClient.withdrawApplication(application.id);
+                    ENUVEX.toast('Application withdrawn.', 'success');
+                    await load();
+                } catch (error) {
+                    ENUVEX.toast(error.message || 'Could not withdraw this application.', 'error');
+                    withdrawBtn.disabled = false;
+                }
+            });
+        }
+    }
+
+    async function load() {
+        if (!applicationId) {
+            document.getElementById('detailBody').innerHTML = `<div class="empty">
+                <i class="fas fa-file-circle-question"></i><strong>No application selected</strong>
+                <p>Open an application from your tracker.</p>
+                <a class="btn-solid btn-sm" href="applications.html">All applications</a></div>`;
+            return;
+        }
+        if (!window.ApiClient || !ApiClient.loadAuth()) {
+            document.getElementById('detailBody').innerHTML = `<div class="empty">
+                <i class="fas fa-lock"></i><strong>Sign in to view this application</strong>
+                <a class="btn-solid btn-sm" href="../../login.html">Sign in</a></div>`;
+            return;
+        }
+
+        var result = await ENUVEX.safe(ApiClient.getApplication(applicationId));
+        if (ENUVEX.failed(result)) {
+            showError(result.__error.message || 'Could not load this application.');
+            document.getElementById('detailBody').innerHTML = `<div class="empty">
+                <i class="fas fa-triangle-exclamation"></i><strong>Application unavailable</strong>
+                <p>It may belong to another account, or it was removed.</p>
+                <a class="btn-solid btn-sm" href="applications.html">All applications</a></div>`;
+            return;
+        }
+
+        application = result;
+        render();
+    }
+
+    document.addEventListener('DOMContentLoaded', load);
+})();
+</script>
+</body>
+</html>

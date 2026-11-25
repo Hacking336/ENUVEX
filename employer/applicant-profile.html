@@ -64,6 +64,7 @@
 
     var applicationId = null;
     var applicant = null;
+    var detail = null;
 
     function showError(message) {
         var box = document.getElementById('pageError');
@@ -89,20 +90,62 @@
     }
 
     function actions() {
-        var status = String(applicant.applicationStatus || 'APPLIED').toUpperCase();
+        var status = String(applicant.applicationStatus || 'SUBMITTED').toUpperCase();
         var map = [
-            { status: 'UNDER_REVIEW', label: 'Start review', cls: 'btn-soft', icon: 'fa-magnifying-glass', when: ['APPLIED'] },
-            { status: 'SHORTLISTED', label: 'Shortlist', cls: 'btn-ghost', icon: 'fa-star', when: ['APPLIED', 'UNDER_REVIEW', 'ACCEPTED'] },
-            { status: 'INTERVIEW', label: 'Schedule interview', cls: 'btn-soft', icon: 'fa-calendar-check', when: ['SHORTLISTED'] },
+            { status: 'REVIEWING', label: 'Start review', cls: 'btn-soft', icon: 'fa-magnifying-glass', when: ['SUBMITTED'] },
+            { status: 'SUBMITTED', label: 'Back to submitted', cls: 'btn-ghost', icon: 'fa-rotate-left', when: ['REVIEWING'] },
+            { status: 'REVIEWING', label: 'Back to review', cls: 'btn-ghost', icon: 'fa-rotate-left', when: ['SHORTLISTED'] },
+            { status: 'SHORTLISTED', label: 'Shortlist', cls: 'btn-ghost', icon: 'fa-star', when: ['SUBMITTED', 'REVIEWING', 'ACCEPTED', 'REJECTED'] },
             { status: 'ACCEPTED', label: 'Hire', cls: 'btn-solid', icon: 'fa-circle-check', when: ['SHORTLISTED', 'INTERVIEW'] },
-            { status: 'REJECTED', label: 'Reject', cls: 'btn-danger', icon: 'fa-xmark', when: ['APPLIED', 'UNDER_REVIEW', 'SHORTLISTED', 'INTERVIEW'] }
+            { status: 'REJECTED', label: 'Reject', cls: 'btn-danger', icon: 'fa-xmark', when: ['SUBMITTED', 'REVIEWING', 'SHORTLISTED', 'INTERVIEW'] }
         ];
-        return map.filter(function (action) {
+        var buttons = map.filter(function (action) {
             return action.when.indexOf(status) !== -1;
         }).map(function (action) {
             return `<button class="${action.cls} btn-sm" type="button" data-next="${action.status}">
                 <i class="fas ${action.icon}"></i> ${action.label}</button>`;
         }).join('');
+        if (status !== 'WITHDRAWN' && status !== 'ACCEPTED' && status !== 'REJECTED') {
+            buttons += `<a class="btn-soft btn-sm" href="applicants.html?applicationId=${encodeURIComponent(applicationId)}&mode=interview">
+                <i class="fas fa-calendar-plus"></i> ${detail && detail.interview ? 'Reschedule interview' : 'Schedule interview'}</a>`;
+        }
+        return buttons;
+    }
+
+    function timelineBlock() {
+        if (!detail || !detail.timeline || !detail.timeline.length) {
+            return '<p class="muted">No recorded history for this application yet.</p>';
+        }
+        return '<ul class="timeline">' + detail.timeline.map(function (event) {
+            var when = event.createdAt
+                ? new Date(event.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) +
+                    ' — ' + new Date(event.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+                : 'Time not recorded';
+            return `<li>
+                <span class="timeline-dot${event.recorded === false ? ' is-current' : ''}"><i class="fas fa-circle-check"></i></span>
+                <div class="timeline-title">${ROLE.esc(event.title || 'Application update')}</div>
+                <div class="timeline-time">${ROLE.esc(when)}</div>
+                ${event.description ? `<div class="timeline-desc">${ROLE.esc(event.description)}</div>` : ''}
+                ${event.actorName ? `<div class="timeline-actor"><i class="fas fa-user"></i>${ROLE.esc(event.actorName)} · ${ROLE.esc(event.actorRole || '')}</div>` : ''}
+                ${event.message ? `<div class="timeline-note">${ROLE.esc(event.message)}</div>` : ''}
+            </li>`;
+        }).join('') + '</ul>';
+    }
+
+    function interviewBlock() {
+        var interview = detail && detail.interview;
+        if (!interview || interview.status === 'CANCELLED') return '';
+        var when = new Date(interview.interviewAt);
+        return `<section class="interview-box">
+            <h3><i class="fas fa-calendar-check"></i> Interview scheduled</h3>
+            <div class="kv-grid">
+                <div class="kv"><span>Date and time</span><strong>${ROLE.esc(when.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) + ' at ' + when.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }))}</strong></div>
+                <div class="kv"><span>Type</span><strong>${ROLE.esc(String(interview.interviewType || '').replace('_', ' ').toLowerCase())}</strong></div>
+                <div class="kv"><span>Location</span><strong>${ROLE.esc(interview.location || '—')}</strong></div>
+                ${interview.meetingLink ? `<div class="kv"><span>Meeting link</span><strong>${ROLE.esc(interview.meetingLink)}</strong></div>` : ''}
+            </div>
+            ${interview.instructions ? `<p class="prose" style="margin-top: 10px;">${ROLE.esc(interview.instructions)}</p>` : ''}
+        </section>`;
     }
 
     function render() {
@@ -144,12 +187,14 @@
         </div>`;
 
         document.getElementById('profileBody').innerHTML = identity +
+            interviewBlock() +
             block('Contact and preferences', details) +
             block('Skills', chips(applicant.skills)) +
             block('Work experience', applicant.workExperience
                 ? '<p class="prose">' + ROLE.esc(applicant.workExperience) + '</p>'
                 : '<p class="muted">No work experience was provided.</p>') +
-            block('Certifications', chips(applicant.certifications));
+            block('Certifications', chips(applicant.certifications)) +
+            block('Application history', timelineBlock());
     }
 
     async function boot() {
@@ -173,6 +218,11 @@
             return String(item.applicationId) === String(applicationId);
         })[0];
 
+        if (applicant) {
+            var detailResult = await ROLE.safe(ApiClient.getApplication(applicationId));
+            if (!ROLE.failed(detailResult)) detail = detailResult;
+        }
+
         if (!applicant) {
             document.getElementById('profileBody').innerHTML = `<div class="empty">
                 <i class="fas fa-user-slash"></i>
@@ -194,6 +244,8 @@
                 await ApiClient.updateApplicationStatus(applicationId, next);
                 ROLE.toast('Applicant moved to ' + ROLE.statusMeta(next).label + '.', 'success');
                 applicant.applicationStatus = next;
+                var refreshed = await ROLE.safe(ApiClient.getApplication(applicationId));
+                if (!ROLE.failed(refreshed)) detail = refreshed;
                 render();
             } catch (error) {
                 ROLE.toast(error.message || 'Could not update this applicant.', 'error');

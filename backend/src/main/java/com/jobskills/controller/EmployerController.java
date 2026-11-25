@@ -109,34 +109,45 @@ public class EmployerController {
             applicationService.getJobApplicants(jobId, extractEmployerId(authentication), sortBy));
     }
 
+    /**
+     * The legacy applicant-status path the employer screens already call. It now
+     * goes through the same validated transition table and history as every other
+     * status change, and accepts an optional note for the timeline.
+     */
     @PutMapping("/applicants/{id}/status")
     public ResponseEntity<Map<String, String>> updateApplicantStatus(
-            @PathVariable Long id, @RequestParam ApplicationStatus status, Authentication authentication) {
-        applicationService.updateApplicationStatus(id, extractEmployerId(authentication), status);
+            @PathVariable Long id,
+            @RequestParam ApplicationStatus status,
+            @RequestParam(required = false) String message,
+            Authentication authentication) {
+        applicationService.updateStatus(id, extractUserId(authentication), status, message);
         return ResponseEntity.ok(Map.of("status", status.name()));
     }
 
     @PostMapping("/applicants/{id}/shortlist")
     public ResponseEntity<Map<String, String>> shortlist(@PathVariable Long id, Authentication authentication) {
-        applicationService.updateApplicationStatus(id, extractEmployerId(authentication), ApplicationStatus.SHORTLISTED);
+        applicationService.updateStatus(id, extractUserId(authentication), ApplicationStatus.SHORTLISTED, null);
         return ResponseEntity.ok(Map.of("status", "SHORTLISTED"));
     }
 
+    /** Creates a real interview invitation (the old version only set the status). */
     @PostMapping("/applicants/{id}/interview")
-    public ResponseEntity<Map<String, String>> scheduleInterview(@PathVariable Long id, Authentication authentication) {
-        applicationService.updateApplicationStatus(id, extractEmployerId(authentication), ApplicationStatus.INTERVIEW);
+    public ResponseEntity<Map<String, String>> scheduleInterview(@PathVariable Long id,
+                                                                @RequestBody InterviewRequest request,
+                                                                Authentication authentication) {
+        applicationService.scheduleInterview(id, extractUserId(authentication), request);
         return ResponseEntity.ok(Map.of("status", "INTERVIEW"));
     }
 
     @PostMapping("/applicants/{id}/hire")
     public ResponseEntity<Map<String, String>> hire(@PathVariable Long id, Authentication authentication) {
-        applicationService.updateApplicationStatus(id, extractEmployerId(authentication), ApplicationStatus.ACCEPTED);
+        applicationService.updateStatus(id, extractUserId(authentication), ApplicationStatus.ACCEPTED, null);
         return ResponseEntity.ok(Map.of("status", "ACCEPTED"));
     }
 
     @PostMapping("/applicants/{id}/reject")
     public ResponseEntity<Map<String, String>> reject(@PathVariable Long id, Authentication authentication) {
-        applicationService.updateApplicationStatus(id, extractEmployerId(authentication), ApplicationStatus.REJECTED);
+        applicationService.updateStatus(id, extractUserId(authentication), ApplicationStatus.REJECTED, null);
         return ResponseEntity.ok(Map.of("status", "REJECTED"));
     }
 

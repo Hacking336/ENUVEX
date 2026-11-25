@@ -73,19 +73,27 @@
                     </div>
                 </article>
                 <article class="metric">
-                    <div class="metric-icon"><i class="fas fa-hourglass-half"></i></div>
+                    <div class="metric-icon"><i class="fas fa-user-plus"></i></div>
                     <div>
-                        <div class="metric-value" id="metricPending">—</div>
-                        <div class="metric-label">Pending Review</div>
-                        <div class="metric-desc">Applied or under review</div>
+                        <div class="metric-value" id="metricNew">—</div>
+                        <div class="metric-label">New Applicants</div>
+                        <div class="metric-desc">Not yet reviewed</div>
                     </div>
                 </article>
                 <article class="metric">
-                    <div class="metric-icon"><i class="fas fa-circle-check"></i></div>
+                    <div class="metric-icon"><i class="fas fa-hourglass-half"></i></div>
                     <div>
-                        <div class="metric-value" id="metricHired">—</div>
-                        <div class="metric-label">Hired Candidates</div>
-                        <div class="metric-desc">Accepted applications</div>
+                        <div class="metric-value" id="metricReviewing">—</div>
+                        <div class="metric-label">Awaiting Review</div>
+                        <div class="metric-desc">Currently in review</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricInterviews">—</div>
+                        <div class="metric-label">Interviews</div>
+                        <div class="metric-desc">Applicants invited</div>
                     </div>
                 </article>
             </section>
@@ -111,6 +119,16 @@
                     </div>
                 </section>
             </div>
+
+            <section class="card panel" aria-labelledby="interviewsTitle" style="margin-top: 20px;">
+                <div class="panel-head">
+                    <h3 id="interviewsTitle"><i class="fas fa-calendar-check"></i> Upcoming interviews</h3>
+                    <a class="link-all" href="applicants.html">Manage applicants</a>
+                </div>
+                <div class="list-rows" id="interviewRows">
+                    <div class="loading">Loading interviews…</div>
+                </div>
+            </section>
         </main>
     </div>
 </div>
@@ -172,12 +190,14 @@
         document.getElementById('metricTotal').textContent = jobs.length;
         document.getElementById('metricActive').textContent = jobs.filter(isActive).length;
         document.getElementById('metricApplicants').textContent = applicants.length;
-        document.getElementById('metricPending').textContent = applicants.filter(function (applicant) {
-            var status = String(applicant.applicationStatus || '').toUpperCase();
-            return status === 'APPLIED' || status === 'UNDER_REVIEW';
+        document.getElementById('metricNew').textContent = applicants.filter(function (applicant) {
+            return String(applicant.applicationStatus || '').toUpperCase() === 'SUBMITTED';
         }).length;
-        document.getElementById('metricHired').textContent = applicants.filter(function (applicant) {
-            return String(applicant.applicationStatus || '').toUpperCase() === 'ACCEPTED';
+        document.getElementById('metricReviewing').textContent = applicants.filter(function (applicant) {
+            return String(applicant.applicationStatus || '').toUpperCase() === 'REVIEWING';
+        }).length;
+        document.getElementById('metricInterviews').textContent = applicants.filter(function (applicant) {
+            return String(applicant.applicationStatus || '').toUpperCase() === 'INTERVIEW';
         }).length;
 
         var jobRows = document.getElementById('jobRows');
@@ -190,6 +210,38 @@
             </div>`;
         } else {
             jobRows.innerHTML = jobs.slice(0, 5).map(function (job) { return jobRow(job, counts); }).join('');
+        }
+
+        var interviewRows = document.getElementById('interviewRows');
+        var upcoming = applicants.filter(function (applicant) {
+            return applicant.interview && applicant.interview.status !== 'CANCELLED'
+                && new Date(applicant.interview.interviewAt).getTime() >= Date.now() - 3600000;
+        }).sort(function (a, b) {
+            return new Date(a.interview.interviewAt) - new Date(b.interview.interviewAt);
+        });
+
+        if (!upcoming.length) {
+            interviewRows.innerHTML = `<div class="empty">
+                <i class="fas fa-calendar"></i>
+                <strong>No upcoming interviews</strong>
+                <p>Invite a shortlisted applicant from the applicants page.</p>
+            </div>`;
+        } else {
+            interviewRows.innerHTML = upcoming.slice(0, 5).map(function (applicant) {
+                var when = new Date(applicant.interview.interviewAt);
+                return `<div class="list-row">
+                    <span class="list-icon"><i class="fas fa-calendar-check"></i></span>
+                    <div class="list-body">
+                        <h4><a href="applicant-profile.html?applicationId=${encodeURIComponent(applicant.applicationId)}">${ROLE.esc(applicant.fullName || 'Applicant')}</a></h4>
+                        <div class="list-meta">
+                            <span><i class="fas fa-briefcase"></i>${ROLE.esc(applicant.jobTitle || '')}</span>
+                            <span><i class="fas fa-clock"></i>${ROLE.esc(when.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }))} at ${ROLE.esc(when.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }))}</span>
+                            <span><i class="fas fa-video"></i>${ROLE.esc(String(applicant.interview.interviewType || '').replace('_', ' ').toLowerCase())}</span>
+                        </div>
+                    </div>
+                    <div class="list-side"><a class="btn-ghost btn-sm" href="applicants.html?applicationId=${encodeURIComponent(applicant.applicationId)}&mode=interview">Reschedule</a></div>
+                </div>`;
+            }).join('');
         }
 
         var applicantRows = document.getElementById('applicantRows');
