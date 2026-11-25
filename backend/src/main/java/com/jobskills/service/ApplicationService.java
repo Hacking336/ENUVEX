@@ -20,6 +20,7 @@ public class ApplicationService {
     private final JobSeekerProfileRepository seekerRepository;
     private final EmployerProfileRepository employerRepository;
     private final JobPostRepository jobPostRepository;
+    private final MatchingEngine matchingEngine;
 
     /** Status changes are only allowed for the employer that owns the job. */
     @Transactional
@@ -40,15 +41,21 @@ public class ApplicationService {
             .collect(Collectors.toList());
     }
 
-    /** Applicants of one job. Only the employer that owns the job may read them. */
+    /**
+     * Applicants of one job. Only the employer that owns the job may read them.
+     *
+     * The match is recalculated here against the current job requirements and the
+     * applicant's current profile, so an edited job or profile never leaves a
+     * stale score on screen. The stored application score is kept untouched.
+     */
     public List<ApplicantDto> getJobApplicants(Long jobId, Long employerId, String sortBy) {
         JobPost job = jobPostRepository.findById(jobId)
             .orElseThrow(() -> new IllegalArgumentException("Job not found"));
         requireJobOwner(job, employerId);
 
         return applicationRepository.findByJobPostId(jobId).stream()
+            .map(application -> mapToApplicantDto(application, job))
             .sorted(comparatorFor(sortBy))
-            .map(this::mapToApplicantDto)
             .collect(Collectors.toList());
     }
 
@@ -68,27 +75,29 @@ public class ApplicationService {
         }
     }
 
-    private Comparator<JobApplication> comparatorFor(String sortBy) {
+    private Comparator<ApplicantDto> comparatorFor(String sortBy) {
         switch (sortBy == null ? "" : sortBy) {
             case "match":
-                return Comparator.comparingDouble((JobApplication a) ->
-                    a.getMatchPercentage() != null ? a.getMatchPercentage().doubleValue() : 0.0).reversed();
+                return Comparator.comparingDouble((ApplicantDto a) ->
+                    a.getMatchPercentage() != null ? a.getMatchPercentage() : 0.0).reversed();
             case "skills":
-                return Comparator.comparing((JobApplication a) -> a.getJobSeeker().getSkills(),
+                return Comparator.comparing(ApplicantDto::getSkills,
                     Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
             case "experience":
-                return Comparator.comparing((JobApplication a) -> a.getJobSeeker().getWorkExperience(),
+                return Comparator.comparing(ApplicantDto::getWorkExperience,
                     Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
             case "location":
-                return Comparator.comparing((JobApplication a) ->
-                        a.getJobSeeker().getMunicipality() == null ? null : a.getJobSeeker().getMunicipality().name(),
+                return Comparator.comparing((ApplicantDto a) ->
+                        a.getLocation() == null ? null : a.getLocation().name(),
                     Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
             case "availability":
-                return Comparator.comparing((JobApplication a) ->
-                        a.getJobSeeker().getAvailability() == null ? null : a.getJobSeeker().getAvailability().name(),
+                return Comparator.comparing(ApplicantDto::getAvailability,
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            case "name":
+                return Comparator.comparing(ApplicantDto::getFullName,
                     Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
             default:
-                return Comparator.comparing(JobApplication::getAppliedAt,
+                return Comparator.comparing(ApplicantDto::getAppliedAt,
                     Comparator.nullsLast(Comparator.reverseOrder()));
         }
     }
@@ -106,14 +115,14 @@ public class ApplicationService {
         return response;
     }
 
-    private ApplicantDto mapToApplicantDto(JobApplication application) {
+    private ApplicantDto mapToApplicantDto(JobApplication application, JobPost job) {
         JobSeekerProfile seeker = application.getJobSeeker();
         ApplicantDto dto = new ApplicantDto();
         dto.setApplicationId(application.getId());
         dto.setApplicationStatus(application.getApplicationStatus());
         dto.setAppliedAt(application.getAppliedAt());
-        dto.setJobPostId(application.getJobPost().getId());
-        dto.setJobTitle(application.getJobPost().getJobTitle());
+        dto.setJobPostId(job.getId());
+        dto.setJobTitle(job.getJobTitle());
         dto.setId(seeker.getId());
         dto.setFullName(seeker.getFullName());
         dto.setProfilePhoto(seeker.getProfilePhoto());
@@ -126,9 +135,14 @@ public class ApplicationService {
         dto.setAvailability(seeker.getAvailability() != null ? seeker.getAvailability().name() : null);
         dto.setEmploymentPreference(seeker.getEmploymentTypePreference());
         dto.setExpectedSalary(seeker.getExpectedSalaryMin());
-        dto.setMatchPercentage(
-            application.getMatchPercentage() != null ? application.getMatchPercentage().doubleValue() : null);
         dto.setContactNumber(seeker.getContactNumber());
+
+        MatchResultDto match = matchingEngine.calculateMatch(seeker, job);
+        dto.setMatchPercentage(match.getOverallMatch());
+        dto.setMatchClassification(match.getClassification());
+        dto.setMatchedSkills(match.getMatchedSkills());
+        dto.setMissingSkills(match.getMissingSkills());
+        dto.setMatchCriteria(match.getCriteria());
         return dto;
     }
 }

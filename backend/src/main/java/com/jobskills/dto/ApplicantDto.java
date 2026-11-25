@@ -7,6 +7,8 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class ApplicantDto {
@@ -31,5 +33,9 @@ public class ApplicantDto {
     private EmploymentType employmentPreference;
     private BigDecimal expectedSalary;
     private Double matchPercentage;
+    private String matchClassification;
+    private List<String> matchedSkills = new ArrayList<>();
+    private List<String> missingSkills = new ArrayList<>();
+    private List<MatchCriterionDto> matchCriteria = new ArrayList<>();
     private String contactNumber;
 }

@@ -23,6 +23,10 @@ public class JobSearchRequest {
     private Double radiusKm;
     private String experience;
     private String education;
+    /** Recommended-job band: excellent, strong, good or partial. Null means all. */
+    private String matchBand;
+    /** Explicit cut-off (0-100); overrides matchBand when both are sent. */
+    private Integer minMatchScore;
     private int page = 0;
     private int size = 20;
     private String sortBy = "createdAt";

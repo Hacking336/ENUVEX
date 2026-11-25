@@ -119,6 +119,108 @@
                     </div>
                 </section>
             </div>
+
+            <section class="card panel" aria-labelledby="matchTitle" style="margin-top: 20px;">
+                <div class="panel-head">
+                    <h3 id="matchTitle"><i class="fas fa-bullseye"></i> Matching analytics</h3>
+                    <span class="muted" id="matchScope">Counting matches…</span>
+                </div>
+
+                <form class="rv-toolbar" id="matchFilters" role="search">
+                    <div class="form-field">
+                        <label for="matchMunicipality">Municipality</label>
+                        <select id="matchMunicipality">
+                            <option value="">All municipalities</option>
+                            <option value="BASUD">Basud</option>
+                            <option value="DAET">Daet</option>
+                            <option value="VINZONS">Vinzons</option>
+                            <option value="LABO">Labo</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="matchType">Employment type</label>
+                        <select id="matchType">
+                            <option value="">All types</option>
+                            <option value="FULL_TIME">Full-time</option>
+                            <option value="PART_TIME">Part-time</option>
+                            <option value="CONTRACT">Contract</option>
+                            <option value="TEMPORARY">Temporary</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="matchFrom">Posted from</label>
+                        <input type="date" id="matchFrom">
+                    </div>
+                    <div class="form-field">
+                        <label for="matchTo">Posted to</label>
+                        <input type="date" id="matchTo">
+                    </div>
+                    <button class="btn-solid btn-sm" type="submit"><i class="fas fa-filter"></i> Apply</button>
+                </form>
+
+                <section class="metrics cols-3" aria-label="Matching metrics">
+                    <article class="metric">
+                        <div class="metric-icon"><i class="fas fa-briefcase"></i></div>
+                        <div>
+                            <div class="metric-value" id="matchActiveJobs">—</div>
+                            <div class="metric-label">Active Jobs Scored</div>
+                            <div class="metric-desc">Posts matching the filters above</div>
+                        </div>
+                    </article>
+                    <article class="metric">
+                        <div class="metric-icon"><i class="fas fa-star"></i></div>
+                        <div>
+                            <div class="metric-value" id="matchJobsWithSkills">—</div>
+                            <div class="metric-label">Jobs With Required Skills</div>
+                            <div class="metric-desc">Posts whose skills can be compared</div>
+                        </div>
+                    </article>
+                    <article class="metric">
+                        <div class="metric-icon"><i class="fas fa-percent"></i></div>
+                        <div>
+                            <div class="metric-value" id="matchAverage">—</div>
+                            <div class="metric-label">Average Match Score</div>
+                            <div class="metric-desc">Across every job × seeker pair</div>
+                        </div>
+                    </article>
+                    <article class="metric">
+                        <div class="metric-icon"><i class="fas fa-user-check"></i></div>
+                        <div>
+                            <div class="metric-value" id="matchProfiles">—</div>
+                            <div class="metric-label">Complete Profiles</div>
+                            <div class="metric-desc">Seekers at 80%+ matching data</div>
+                        </div>
+                    </article>
+                    <article class="metric">
+                        <div class="metric-icon"><i class="fas fa-calculator"></i></div>
+                        <div>
+                            <div class="metric-value" id="matchPairs">—</div>
+                            <div class="metric-label">Pairs Evaluated</div>
+                            <div class="metric-desc">Sample size behind the averages</div>
+                        </div>
+                    </article>
+                </section>
+
+                <div class="split" style="margin-top: 18px;">
+                    <div>
+                        <h4 class="match-subhead">Match score distribution</h4>
+                        <div class="bar-list" id="matchDistribution">
+                            <div class="loading">Loading distribution…</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="match-subhead">Most common skills</h4>
+                        <div id="matchSkills">
+                            <div class="loading">Loading skills…</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 class="match-subhead" style="margin-top: 18px;">Jobs receiving the most relevant matches</h4>
+                <div class="list-rows" id="matchTopJobs">
+                    <div class="loading">Loading job matches…</div>
+                </div>
+            </section>
         </main>
     </div>
 </div>
@@ -127,6 +229,7 @@
 <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
 <script src="../assets/js/api.js"></script>
+<script src="../assets/js/jsm-match.js"></script>
 <script src="../assets/js/role-app.js"></script>
 <script>
 (function () {
@@ -183,6 +286,110 @@
         }).join('');
     }
 
+    /* ---------- matching analytics -------------------------------------- */
+
+    function matchQuery() {
+        var params = new URLSearchParams();
+        var municipality = document.getElementById('matchMunicipality').value;
+        var type = document.getElementById('matchType').value;
+        var from = document.getElementById('matchFrom').value;
+        var to = document.getElementById('matchTo').value;
+        if (municipality) params.set('municipality', municipality);
+        if (type) params.set('employmentType', type);
+        if (from) params.set('from', from);
+        if (to) params.set('to', to);
+        return params.toString();
+    }
+
+    function renderDistribution(buckets) {
+        var container = document.getElementById('matchDistribution');
+        var rows = Array.isArray(buckets) ? buckets : [];
+        if (!rows.length) {
+            container.innerHTML = '<p class="panel-empty">No matches to count for these filters.</p>';
+            return;
+        }
+        var max = rows.reduce(function (top, row) { return Math.max(top, Number(row.count) || 0); }, 0);
+        container.innerHTML = rows.map(function (row) {
+            var width = max ? Math.round((Number(row.count) / max) * 100) : 0;
+            return '<div class="bar-row">'
+                + '<span class="bar-name">' + ROLE.esc(row.label) + '</span>'
+                + '<span class="bar-track"><span class="bar-fill" style="width: ' + width + '%"></span></span>'
+                + '<span class="bar-value">' + (Number(row.count) || 0) + '</span>'
+                + '</div>';
+        }).join('');
+    }
+
+    function renderSkills(matched, missing) {
+        var container = document.getElementById('matchSkills');
+        function group(title, icon, items, cls) {
+            if (!items || !items.length) {
+                return '<p class="panel-empty" style="padding: 8px 0;">No ' + ROLE.esc(title.toLowerCase()) + ' recorded.</p>';
+            }
+            return '<p class="match-skill-head"><i class="fas ' + icon + '"></i>' + ROLE.esc(title) + '</p>'
+                + '<div class="match-skill-list">' + items.map(function (item) {
+                    return '<span class="chip ' + cls + '">' + ROLE.esc(item.skill)
+                        + ' <b>' + (Number(item.count) || 0) + '</b></span>';
+                }).join('') + '</div>';
+        }
+        container.innerHTML = group('Most matched skills', 'fa-circle-check', matched, 'chip-match')
+            + group('Most missing skills', 'fa-circle-plus', missing, 'chip-missing');
+    }
+
+    function renderTopJobs(jobs) {
+        var container = document.getElementById('matchTopJobs');
+        var rows = Array.isArray(jobs) ? jobs : [];
+        if (!rows.length) {
+            container.innerHTML = '<p class="panel-empty">No active job has been scored for these filters.</p>';
+            return;
+        }
+        container.innerHTML = rows.map(function (job) {
+            var meta = [job.companyName, ROLE.municipalityLabel(job.municipality),
+                (Number(job.strongMatches) || 0) + ' seeker' + (Number(job.strongMatches) === 1 ? '' : 's') + ' at 60%+']
+                .filter(Boolean).join(' · ');
+            return '<div class="list-row">'
+                + '<div class="list-body">'
+                + '<h4>' + ROLE.esc(job.jobTitle || 'Job') + '</h4>'
+                + '<div class="list-meta"><span><i class="fas fa-circle-info"></i>' + ROLE.esc(meta) + '</span></div>'
+                + '</div>'
+                + '<div class="list-side">'
+                + (window.JSMMatch ? JSMMatch.pill(job.averageScore) : '')
+                + '<a class="btn-soft btn-sm" href="job-posts.html">Review</a>'
+                + '</div></div>';
+        }).join('');
+    }
+
+    async function loadMatching() {
+        var scope = document.getElementById('matchScope');
+        var query = matchQuery();
+        var result = await ROLE.safe(ApiClient.request('/admin/matching/stats' + (query ? '?' + query : '')));
+        if (ROLE.failed(result)) {
+            scope.textContent = 'Matching analytics could not be loaded.';
+            return;
+        }
+
+        var stats = result || {};
+        var pairs = Number(stats.pairsEvaluated) || 0;
+        var seekers = Number(stats.jobSeekers) || 0;
+        var jobs = Number(stats.activeJobs) || 0;
+
+        document.getElementById('matchActiveJobs').textContent = jobs;
+        document.getElementById('matchJobsWithSkills').textContent = Number(stats.jobsWithRequiredSkills) || 0;
+        document.getElementById('matchAverage').textContent = stats.averageMatchScore == null
+            ? '—' : stats.averageMatchScore + '%';
+        document.getElementById('matchProfiles').textContent = (Number(stats.jobSeekersWithCompleteProfiles) || 0)
+            + ' / ' + seekers;
+        document.getElementById('matchPairs').textContent = pairs;
+
+        scope.textContent = pairs
+            ? 'Counting ' + pairs + ' job × seeker combinations from ' + jobs + ' active job'
+                + (jobs === 1 ? '' : 's') + ' and ' + seekers + ' seeker profile' + (seekers === 1 ? '' : 's') + '.'
+            : 'No job and seeker rows to combine for these filters.';
+
+        renderDistribution(stats.distribution);
+        renderSkills(stats.mostMatchedSkills, stats.mostMissingSkills);
+        renderTopJobs(stats.topJobs);
+    }
+
     async function boot() {
         var results = await Promise.all([
             ROLE.safe(ApiClient.getAdminDashboard()),
@@ -210,6 +417,12 @@
 
         var reports = ROLE.failed(results[3]) ? null : results[3];
         renderBars(reports && reports.jobPostsByMunicipality ? reports.jobPostsByMunicipality : {});
+
+        document.getElementById('matchFilters').addEventListener('submit', function (event) {
+            event.preventDefault();
+            loadMatching();
+        });
+        await loadMatching();
     }
 
     document.addEventListener('enuvex:ready', boot, { once: true });

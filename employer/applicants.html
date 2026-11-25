@@ -90,6 +90,7 @@
 <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
 <script src="../assets/js/api.js"></script>
+<script src="../assets/js/jsm-match.js"></script>
 <script src="../assets/js/role-app.js"></script>
 <script>
 (function () {
@@ -132,6 +133,26 @@
         box.hidden = false;
     }
 
+    /** Matched/missing skills for this applicant against this job, from the server. */
+    function applicantMatch(applicant) {
+        var matched = Array.isArray(applicant.matchedSkills) ? applicant.matchedSkills : [];
+        var missing = Array.isArray(applicant.missingSkills) ? applicant.missingSkills : [];
+        if (!matched.length && !missing.length) return '';
+
+        var parts = [];
+        if (matched.length) {
+            parts.push('<span class="match-inline-label">Has</span>' + matched.slice(0, 4).map(function (skill) {
+                return '<span class="chip chip-match">' + ROLE.esc(skill) + '</span>';
+            }).join(''));
+        }
+        if (missing.length) {
+            parts.push('<span class="match-inline-label">Needs</span>' + missing.slice(0, 4).map(function (skill) {
+                return '<span class="chip chip-missing">' + ROLE.esc(skill) + '</span>';
+            }).join(''));
+        }
+        return '<div class="match-inline">' + parts.join('') + '</div>';
+    }
+
     function actionsFor(applicant) {
         var status = String(applicant.applicationStatus || 'APPLIED').toUpperCase();
         return (ACTIONS[status] || ACTIONS.APPLIED).map(function (action) {
@@ -161,9 +182,10 @@
                     <span><i class="fas fa-calendar"></i>Applied ${ROLE.esc(ROLE.dateLabel(applicant.appliedAt))}</span>
                     ${skills.length ? `<span><i class="fas fa-tags"></i>${ROLE.esc(skills.slice(0, 3).join(', '))}</span>` : ''}
                 </div>
+                ${applicantMatch(applicant)}
             </div>
             <div class="list-side">
-                ${isFinite(match) ? `<span class="match-pill ${matchCls}">${Math.round(match)}%</span>` : ''}
+                ${isFinite(match) && window.JSMMatch ? JSMMatch.pill(match) : (isFinite(match) ? `<span class="match-pill ${matchCls}">${Math.round(match)}%</span>` : '')}
                 <span class="status ${status.cls}">${ROLE.esc(status.label)}</span>
                 ${actionsFor(applicant)}
                 <a class="btn-soft btn-sm" href="applicant-profile.html?applicationId=${encodeURIComponent(applicant.applicationId || '')}">View profile</a>
@@ -174,7 +196,9 @@
     function visible() {
         var list = state.applicants.filter(function (applicant) {
             if (state.status !== 'ALL' && String(applicant.applicationStatus || '').toUpperCase() !== state.status) return false;
-            if (state.jobId !== 'ALL' && String(applicant.jobId) !== String(state.jobId)) return false;
+            // The applicant DTO carries the job as jobPostId; jobId never existed
+            // on it, so the job filter used to match nothing.
+            if (state.jobId !== 'ALL' && String(applicant.jobPostId) !== String(state.jobId)) return false;
             if (!state.query) return true;
             var haystack = [applicant.fullName, applicant.skills, applicant.barangay, applicant.jobTitle]
                 .filter(Boolean).join(' ').toLowerCase();

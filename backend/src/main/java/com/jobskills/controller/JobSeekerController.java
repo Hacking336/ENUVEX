@@ -5,6 +5,7 @@ import com.jobskills.dto.*;
 import com.jobskills.model.JobSeekerProfile;
 import com.jobskills.service.ApplicationService;
 import com.jobskills.service.JobService;
+import com.jobskills.service.MatchingEngine;
 import com.jobskills.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class JobSeekerController {
     private final UserService userService;
     private final JobService jobService;
     private final ApplicationService applicationService;
+    private final MatchingEngine matchingEngine;
 
     @GetMapping("/profile")
     public ResponseEntity<JobSeekerProfile> getProfile(Authentication authentication) {
@@ -49,6 +51,13 @@ public class JobSeekerController {
         return ResponseEntity.ok(Map.of("completion", userService.calculateProfileCompletion(profile)));
     }
 
+    /** Profile fields the matching engine uses, with what is still missing. */
+    @GetMapping("/profile/completeness")
+    public ResponseEntity<ProfileCompletenessDto> getProfileCompleteness(Authentication authentication) {
+        JobSeekerProfile profile = userService.getJobSeekerProfile(extractUserId(authentication));
+        return ResponseEntity.ok(matchingEngine.profileCompleteness(profile));
+    }
+
     @GetMapping("/jobs")
     public ResponseEntity<org.springframework.data.domain.Page<JobResponse>> searchJobs(
             JobSearchRequest search, Authentication authentication) {
@@ -65,13 +74,18 @@ public class JobSeekerController {
     @GetMapping("/recommended")
     public ResponseEntity<org.springframework.data.domain.Page<JobResponse>> getRecommended(
             JobSearchRequest search, Authentication authentication) {
-        search.setSortBy("matchPercentage");
-        return ResponseEntity.ok(jobService.searchJobs(search, extractUserId(authentication)));
+        return ResponseEntity.ok(jobService.recommendJobs(search, extractUserId(authentication)));
     }
 
     @GetMapping("/jobs/{id}")
     public ResponseEntity<JobResponse> getJobDetails(@PathVariable Long id, Authentication authentication) {
         return ResponseEntity.ok(jobService.getJobDetails(id, extractUserId(authentication)));
+    }
+
+    /** Score and per-criterion explanation for one job and the signed-in seeker. */
+    @GetMapping("/jobs/{id}/match")
+    public ResponseEntity<MatchResultDto> getJobMatch(@PathVariable Long id, Authentication authentication) {
+        return ResponseEntity.ok(jobService.getMatchDetails(id, extractUserId(authentication)));
     }
 
     @PostMapping("/apply")

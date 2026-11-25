@@ -297,7 +297,7 @@
                             <a class="job-title" href="job-details.html?id=${encodeURIComponent(job.id)}">${esc(job.jobTitle || 'Untitled role')}</a>
                             <div class="job-company">${esc(job.companyName || 'Employer')}</div>
                         </div>
-                        ${isFinite(match) && match > 0 ? `<span class="match-pill">${Math.round(match)}% match</span>` : ''}
+                        ${isFinite(match) && match > 0 && window.JSMMatch ? JSMMatch.pill(match) : ''}
                     </div>
                     <div class="job-meta">
                         ${location ? `<span><i class="fas fa-location-dot"></i>${esc(location)}</span>` : ''}
@@ -310,6 +310,7 @@
                         ${schedule ? `<span class="tag">${esc(schedule)}</span>` : ''}
                         ${skills.map(function (skill) { return `<span class="tag">${esc(skill)}</span>`; }).join('')}
                     </div>` : ''}
+                    ${window.JSMMatch ? JSMMatch.skillsBlock(job) + JSMMatch.explanation(job) : ''}
                 </div>
                 <div class="job-actions">
                     <button class="btn-solid btn-sm" type="button" data-apply="${esc(job.id)}">Apply Now</button>

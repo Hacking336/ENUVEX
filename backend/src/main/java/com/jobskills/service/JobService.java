@@ -130,32 +130,127 @@ public class JobService {
      */
     public Page<JobResponse> searchJobs(JobSearchRequest search, Long seekerUserId) {
         Specification<JobPost> spec = buildSpecification(search);
-        Sort sort = resolveSort(search);
+        JobSeekerProfile seeker = seekerUserId != null ? requireSeeker(seekerUserId) : null;
 
         if (search.getNearLatitude() != null || search.getNearLongitude() != null) {
-            return searchJobsNear(search, spec, seekerUserId);
+            return searchJobsNear(spec, search, seeker);
+        }
+
+        // Ranking and score filtering need the whole filtered set, so the sort is
+        // done on the server before the page is cut. The page size the browser
+        // asked for still applies, and the cap keeps a huge table from making one
+        // request expensive.
+        if (seeker != null && (isMatchSort(search) || minimumScore(search) != null)) {
+            return rankJobs(spec, search, seeker);
         }
 
         Pageable pageable = PageRequest.of(
             Math.max(search.getPage(), 0),
             Math.max(search.getSize(), 1),
-            sort);
+            resolveSort(search));
 
-        Page<JobPost> jobs = jobPostRepository.findAll(spec, pageable);
-        JobSeekerProfile seeker = seekerUserId != null ? requireSeeker(seekerUserId) : null;
+        return jobPostRepository.findAll(spec, pageable).map(job -> mapToResponse(job, seeker));
+    }
 
-        boolean sortByMatch = "matchPercentage".equalsIgnoreCase(search.getSortBy()) && seeker != null;
-        Page<JobResponse> page = jobs.map(job -> mapToResponse(job, seeker));
+    /**
+     * Recommended jobs for one seeker: every active job that passes the normal
+     * filters is scored, filtered by the requested match band and sorted from the
+     * highest match down, then paginated. Low matches are never hidden unless the
+     * seeker asks for a band.
+     */
+    public Page<JobResponse> recommendJobs(JobSearchRequest search, Long seekerUserId) {
+        JobSeekerProfile seeker = requireSeeker(seekerUserId);
+        // Always scored; the requested sort (best match by default) and any band
+        // filter are applied to the whole filtered set before it is paginated.
+        return rankJobs(buildSpecification(search), search, seeker);
+    }
 
-        if (sortByMatch) {
-            List<JobResponse> sorted = page.getContent().stream()
-                .sorted(Comparator.comparingDouble(
-                    (JobResponse response) -> response.getMatchPercentage() == null ? -1.0 : response.getMatchPercentage())
-                    .reversed())
-                .collect(Collectors.toList());
-            return new PageImpl<>(sorted, pageable, page.getTotalElements());
+    /** Score details and the per-criterion explanation for one job. */
+    public MatchResultDto getMatchDetails(Long jobId, Long seekerUserId) {
+        JobPost job = getJobById(jobId);
+        if (!job.isActive()) {
+            throw new IllegalArgumentException("Job is not active");
         }
-        return page;
+        return matchingEngine.calculateMatch(requireSeeker(seekerUserId), job);
+    }
+
+    private static final int MAX_RANKED_JOBS = 1000;
+
+    private Page<JobResponse> rankJobs(Specification<JobPost> spec, JobSearchRequest search,
+                                       JobSeekerProfile seeker) {
+        int size = Math.max(search.getSize(), 1);
+        int pageIndex = Math.max(search.getPage(), 0);
+        Integer minScore = minimumScore(search);
+
+        List<JobResponse> ranked = jobPostRepository
+            .findAll(spec, PageRequest.of(0, MAX_RANKED_JOBS, Sort.by(Sort.Direction.DESC, "createdAt")))
+            .stream()
+            .map(job -> mapToResponse(job, seeker))
+            .filter(response -> minScore == null
+                || (response.getMatchPercentage() != null && response.getMatchPercentage() >= minScore))
+            .sorted(rankingComparator(search))
+            .collect(Collectors.toList());
+
+        int from = Math.min(pageIndex * size, ranked.size());
+        int to = Math.min(from + size, ranked.size());
+        return new PageImpl<>(new ArrayList<>(ranked.subList(from, to)),
+            PageRequest.of(pageIndex, size), ranked.size());
+    }
+
+    /** Orders a scored candidate list by the seeker's chosen sort. */
+    private Comparator<JobResponse> rankingComparator(JobSearchRequest search) {
+        boolean ascending = "ASC".equalsIgnoreCase(search.getSortDir());
+        String sortBy = search.getSortBy() == null ? "createdAt" : search.getSortBy();
+        Comparator<JobResponse> comparator;
+
+        // Undisclosed values always sort last, whichever direction is chosen.
+        Comparator<BigDecimal> amountOrder = ascending
+            ? Comparator.naturalOrder() : Comparator.reverseOrder();
+        Comparator<String> textOrder = ascending
+            ? String.CASE_INSENSITIVE_ORDER : String.CASE_INSENSITIVE_ORDER.reversed();
+        Comparator<java.time.LocalDateTime> dateOrder = ascending
+            ? Comparator.naturalOrder() : Comparator.reverseOrder();
+
+        switch (sortBy) {
+            case "salaryMax":
+                comparator = Comparator.comparing(JobResponse::getSalaryMax,
+                    Comparator.nullsLast(amountOrder));
+                break;
+            case "salaryMin":
+                comparator = Comparator.comparing(JobResponse::getSalaryMin,
+                    Comparator.nullsLast(amountOrder));
+                break;
+            case "jobTitle":
+                comparator = Comparator.comparing(JobResponse::getJobTitle,
+                    Comparator.nullsLast(textOrder));
+                break;
+            case "createdAt":
+                comparator = Comparator.comparing(JobResponse::getCreatedAt,
+                    Comparator.nullsLast(dateOrder));
+                break;
+            default:
+                // Best match: the highest score first, newest first on a tie.
+                return Comparator
+                    .comparingDouble((JobResponse response) ->
+                        response.getMatchPercentage() == null ? -1.0 : response.getMatchPercentage())
+                    .reversed()
+                    .thenComparing(JobResponse::getCreatedAt,
+                        Comparator.nullsLast(Comparator.reverseOrder()));
+        }
+
+        return comparator
+            .thenComparing(JobResponse::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder()));
+    }
+
+    private boolean isMatchSort(JobSearchRequest search) {
+        return "matchPercentage".equalsIgnoreCase(search.getSortBy());
+    }
+
+    private Integer minimumScore(JobSearchRequest search) {
+        if (search.getMinMatchScore() != null) {
+            return Math.max(0, Math.min(100, search.getMinMatchScore()));
+        }
+        return MatchingEngine.minimumScoreForBand(search.getMatchBand());
     }
 
     /**
@@ -202,11 +297,11 @@ public class JobService {
      * Near Me search. Only jobs with real coordinates can be ranked by distance;
      * the seeker's position is used for this request and never stored.
      */
-    private Page<JobResponse> searchJobsNear(JobSearchRequest search, Specification<JobPost> spec, Long seekerUserId) {
+    private Page<JobResponse> searchJobsNear(Specification<JobPost> spec, JobSearchRequest search,
+                                             JobSeekerProfile seeker) {
         double[] point = requireCoordinates(search.getNearLatitude(), search.getNearLongitude());
         double radiusKm = radiusKm(search.getRadiusKm());
 
-        JobSeekerProfile seeker = seekerUserId != null ? requireSeeker(seekerUserId) : null;
         List<JobResponse> nearby = new ArrayList<>();
         for (JobPost job : jobPostRepository.findAll(spec)) {
             JobResponse response = mapToResponse(job, seeker);
@@ -218,6 +313,12 @@ public class JobService {
                 response.setDistanceKm(round(distance, 2));
                 nearby.add(response);
             }
+        }
+        // A match band applies to Near Me results too; distance still decides order.
+        Integer minScore = minimumScore(search);
+        if (minScore != null) {
+            nearby.removeIf(response -> response.getMatchPercentage() == null
+                || response.getMatchPercentage() < minScore);
         }
         nearby.sort(Comparator.comparing(JobResponse::getDistanceKm));
 
@@ -313,12 +414,7 @@ public class JobService {
         if (!job.isActive()) {
             throw new IllegalArgumentException("Job is not active");
         }
-        JobResponse response = mapToResponse(job);
-        if (seekerUserId != null) {
-            JobSeekerProfile seeker = requireSeeker(seekerUserId);
-            response.setMatchPercentage(matchingEngine.calculateMatch(seeker, job).getOverallMatch());
-        }
-        return response;
+        return mapToResponse(job, seekerUserId != null ? requireSeeker(seekerUserId) : null);
     }
 
     @Transactional
@@ -358,9 +454,7 @@ public class JobService {
                 response.setSavedAt(saved.getSavedAt());
                 JobPost job = saved.getJobPost();
                 response.setJobPostId(job.getId());
-                JobResponse jobResponse = mapToResponse(job);
-                jobResponse.setMatchPercentage(matchingEngine.calculateMatch(seeker, job).getOverallMatch());
-                response.setJob(jobResponse);
+                response.setJob(mapToResponse(job, seeker));
                 return response;
             })
             .collect(Collectors.toList());
@@ -424,10 +518,16 @@ public class JobService {
             .orElseThrow(() -> new IllegalArgumentException("No job seeker profile for the current account"));
     }
 
+    /** Adds the full, explainable match result for a signed-in seeker. */
     private JobResponse mapToResponse(JobPost job, JobSeekerProfile seeker) {
         JobResponse response = mapToResponse(job);
         if (seeker != null) {
-            response.setMatchPercentage(matchingEngine.calculateMatch(seeker, job).getOverallMatch());
+            MatchResultDto match = matchingEngine.calculateMatch(seeker, job);
+            response.setMatchPercentage(match.getOverallMatch());
+            response.setMatchClassification(match.getClassification());
+            response.setMatchedSkills(match.getMatchedSkills());
+            response.setMissingSkills(match.getMissingSkills());
+            response.setMatchCriteria(match.getCriteria());
         }
         return response;
     }

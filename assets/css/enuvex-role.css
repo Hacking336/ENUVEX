@@ -289,6 +289,32 @@
     border: 2px solid #CFE4D5;
 }
 
+.match-subhead {
+    margin: 0 0 10px;
+    font-family: var(--font-head, 'Poppins', sans-serif);
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #33495E;
+}
+.match-skill-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 10px 0 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #4C6274;
+}
+.match-skill-head i { color: var(--green, #2FA247); font-size: 11px; }
+.match-skill-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.match-skill-list .chip { font-size: 11px; }
+.match-skill-list .chip b { font-weight: 700; opacity: 0.75; }
+.chip-match { background: #E7F6E9; color: #237D33; border-color: #CFEBD4; }
+.chip-missing { background: #FCF3E4; color: #8A5F10; border-color: #F0DFC0; }
+.match-inline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
+.match-inline .chip { font-size: 10.5px; padding: 2px 8px; }
+.match-inline .match-inline-label { font-size: 10.5px; font-weight: 600; color: #7A8B9B; }
+
 .match-pill.mid { background: var(--amber-soft); color: var(--amber); border-color: #F1DFC0; }
 .match-pill.low { background: var(--navy-soft); color: #2C4D74; border-color: #DCE6F0; }
 

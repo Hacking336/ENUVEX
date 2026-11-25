@@ -1152,6 +1152,7 @@
                                             <span id="completionFill" style="width: 0%"></span>
                                         </div>
                                         <p id="completionHint">A complete profile helps JSM match you with better jobs.</p>
+                                        <ul class="completion-missing" id="completionMissing" hidden></ul>
                                     </div>
                                     <a class="btn-solid btn-sm" href="profile.html">Complete Profile</a>
                                 </section>
@@ -1308,6 +1309,7 @@
 <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
 <script src="../assets/js/api.js"></script>
+<script src="../assets/js/jsm-match.js"></script>
 <script>
 (function () {
     'use strict';
@@ -1468,7 +1470,7 @@
                                 '<a class="job-title" href="job-details.html?id=' + encodeURIComponent(job.id) + '">' + esc(job.jobTitle) + '</a>' +
                                 '<div class="job-company">' + esc(job.companyName || 'Employer') + '</div>' +
                             '</div>' +
-                            (isFinite(match) && match > 0 ? '<span class="match-pill">' + Math.round(match) + '% match</span>' : '') +
+                            (isFinite(match) && match > 0 && window.JSMMatch ? JSMMatch.pill(match) : '') +
                         '</div>' +
                         '<div class="job-meta">' +
                             (location ? '<span><i class="fas fa-location-dot"></i>' + esc(location) + '</span>' : '') +
@@ -1479,6 +1481,7 @@
                             (type ? '<span class="tag type">' + esc(type) + '</span>' : '') +
                             skills.map(function (skill) { return '<span class="tag">' + esc(skill) + '</span>'; }).join('') +
                         '</div>' : '') +
+                        (window.JSMMatch ? JSMMatch.skillsBlock(job) + JSMMatch.explanation(job) : '') +
                     '</div>' +
                     '<div class="job-actions">' +
                         '<button class="btn-solid btn-sm" type="button" data-apply="' + esc(job.id) + '">Apply Now</button>' +
@@ -1490,10 +1493,13 @@
         }).join('');
     }
 
-    function renderCompletion(completion) {
-        var value = Number(completion);
-        var hasValue = isFinite(value) && value >= 0;
-        var pct = hasValue ? Math.max(0, Math.min(100, Math.round(value))) : 0;
+    function renderCompletion(data) {
+        var raw = data && data.percentage != null
+            ? data.percentage
+            : (typeof data === 'number' ? data : null);
+        var hasValue = raw != null && isFinite(Number(raw)) && Number(raw) >= 0;
+        var pct = hasValue ? Math.max(0, Math.min(100, Math.round(Number(raw)))) : 0;
+        var missing = (data && Array.isArray(data.missing)) ? data.missing : [];
 
         document.getElementById('completionValue').textContent = hasValue ? pct + '%' : '—';
         document.getElementById('completionFill').style.width = pct + '%';
@@ -1504,12 +1510,25 @@
         if (!hasValue) {
             hint.textContent = 'Sign in to see your profile completion.';
         } else if (pct >= 100) {
-            hint.textContent = 'Your profile is complete — employers can see everything they need.';
+            hint.textContent = 'Your profile has everything the matching engine uses.';
         } else if (pct >= 70) {
             hint.textContent = 'Almost there. Add the remaining details to improve your matches.';
         } else {
             hint.textContent = 'A complete profile helps JSM match you with better jobs.';
         }
+
+        var list = document.getElementById('completionMissing');
+        if (!list) return;
+        if (!missing.length) {
+            list.hidden = true;
+            list.innerHTML = '';
+            return;
+        }
+        list.hidden = false;
+        list.innerHTML = '<li class="completion-missing-title">Improve your job matches:</li>' + missing.map(function (item) {
+            return '<li><a href="' + esc(item.href || 'profile.html') + '"><i class="fas fa-circle-plus"></i>'
+                + esc(item.label) + '</a></li>';
+        }).join('');
     }
 
     function renderOverview(applications) {
@@ -1625,15 +1644,15 @@
         userMunicipality = municipality;
 
         var results = await Promise.all([
-            safe(ApiClient.getProfileCompletion()),
-            safe(ApiClient.request('/job-seekers/recommended?page=0&size=12')),
+            safe(ApiClient.request('/job-seekers/profile/completeness')),
+            safe(ApiClient.request('/job-seekers/recommended?page=0&size=12&sortBy=matchPercentage&sortDir=DESC')),
             safe(ApiClient.request('/job-seekers/jobs?page=0&size=50' + (municipality ? '&municipality=' + encodeURIComponent(municipality) : ''))),
             safe(ApiClient.getSavedJobs()),
             safe(ApiClient.getApplications()),
             safe(ApiClient.request('/notifications'))
         ]);
 
-        var completion = failed(results[0]) ? null : (results[0] || {}).completion;
+        var completion = failed(results[0]) ? null : (results[0] || {});
         var recommendedPage = failed(results[1]) ? null : results[1];
         var nearbyPage = failed(results[2]) ? null : results[2];
         var saved = failed(results[3]) ? [] : (results[3] || []);

@@ -49,6 +49,7 @@
 <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
 <script src="../assets/js/api.js"></script>
+<script src="../assets/js/jsm-match.js"></script>
 <script src="enuvex-app.js"></script>
 <script>
 (function () {
@@ -80,7 +81,7 @@
                                 <h2 class="job-title" style="font-size: 21px;">${ENUVEX.esc(job.jobTitle || 'Job')}</h2>
                                 <div class="job-company" style="font-size: 14px;">${ENUVEX.esc(job.companyName || 'Employer')}</div>
                             </div>
-                            ${isFinite(match) && match > 0 ? `<span class="match-pill">${Math.round(match)}% match</span>` : ''}
+                            ${isFinite(match) && match > 0 && window.JSMMatch ? JSMMatch.pill(match) : ''}
                         </div>
                         <div class="job-meta" style="margin-top: 12px; font-size: 13px;">
                             ${location ? `<span><i class="fas fa-location-dot"></i>${ENUVEX.esc(location)}</span>` : ''}
@@ -106,6 +107,13 @@
 
             <div class="profile-grid">
                 <div class="profile-main">
+                    <section class="card panel">
+                        <div class="panel-head"><h3><i class="fas fa-bullseye"></i> Your Match</h3></div>
+                        ${window.JSMMatch
+                            ? JSMMatch.summaryLine(job) + JSMMatch.skillsBlock(job) + JSMMatch.explanation(job)
+                            : '<p class="panel-empty">Match details are unavailable on this page.</p>'}
+                    </section>
+
                     <section class="card panel">
                         <div class="panel-head"><h3><i class="fas fa-align-left"></i> Job Description</h3></div>
                         ${job.description

@@ -175,6 +175,18 @@
                         </div>
 
                         <div class="filter-group">
+                            <span class="filter-title">Match</span>
+                            <div class="checklist" id="matchBands">
+                                <label class="check"><input type="radio" name="matchBand" value="" checked> All matches</label>
+                                <label class="check"><input type="radio" name="matchBand" value="excellent"> Excellent Match (90%+)</label>
+                                <label class="check"><input type="radio" name="matchBand" value="strong"> Strong Match (75%+)</label>
+                                <label class="check"><input type="radio" name="matchBand" value="good"> Good Match (60%+)</label>
+                                <label class="check"><input type="radio" name="matchBand" value="partial"> Partial Match (40%+)</label>
+                            </div>
+                            <p class="filter-note">Filters your recommendation score only. Every job stays available under All Jobs.</p>
+                        </div>
+
+                        <div class="filter-group">
                             <label class="filter-title" for="skills">Skills</label>
                             <label class="field" for="skills">
                                 <i class="fas fa-star" aria-hidden="true"></i>
@@ -216,6 +228,10 @@
                             <button class="btn-soft btn-sm filter-open" id="filtersOpen" type="button">
                                 <i class="fas fa-sliders"></i> Filters
                             </button>
+                            <div class="map-mode" role="group" aria-label="Recommended jobs or all jobs">
+                                <button type="button" id="feedRecommended" class="is-active"><i class="fas fa-star"></i> Recommended</button>
+                                <button type="button" id="feedAll"><i class="fas fa-briefcase"></i> All Jobs</button>
+                            </div>
                             <label class="field select" for="sortSelect">
                                 <i class="fas fa-arrow-down-wide-short" aria-hidden="true"></i>
                                 <span class="visually-hidden">Sort results</span>
@@ -282,6 +298,7 @@
 <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
 <script src="../assets/js/api.js"></script>
+<script src="../assets/js/jsm-match.js"></script>
 <script src="../assets/js/jsm-map.js"></script>
 <script src="enuvex-app.js"></script>
 <script>
@@ -291,7 +308,8 @@
     var PAGE_SIZE = 12;
     var state = {
         jobs: [], page: 0, totalPages: 0, totalElements: 0, keyword: '', sort: 'match', view: 'list',
-        mode: 'list', near: null, geo: null, mapView: null, mapLayer: null, mapLoading: false
+        feed: 'recommended', mode: 'list', near: null, geo: null, mapView: null, mapLayer: null,
+        mapLoading: false
     };
 
     var el = {
@@ -350,6 +368,7 @@
         var skills = document.getElementById('skills').value.trim();
         var experience = document.getElementById('experience').value.trim();
         var education = document.getElementById('education').value.trim();
+        var matchBand = radioValue('matchBand');
 
         if (municipality) params.set('municipality', municipality);
         if (category) params.set('category', category);
@@ -361,6 +380,7 @@
         if (skills) params.set('skills', skills);
         if (experience) params.set('experience', experience);
         if (education) params.set('education', education);
+        if (matchBand) params.set('matchBand', matchBand);
 
         if (state.near) {
             params.set('nearLatitude', state.near.lat);
@@ -646,7 +666,12 @@
         var params = buildParams();
         state.keyword = el.keyword.value.trim();
 
-        var result = await ENUVEX.safe(ApiClient.request('/job-seekers/jobs?' + params.toString()));
+        // Recommended ranks every matching job by its real score; All Jobs keeps
+        // the plain listing (sorted by match only when Best Match is chosen).
+        var endpoint = state.feed === 'recommended'
+            ? '/job-seekers/recommended?'
+            : '/job-seekers/jobs?';
+        var result = await ENUVEX.safe(ApiClient.request(endpoint + params.toString()));
         if (ENUVEX.failed(result)) {
             el.pageError.hidden = false;
             el.pageErrorText.textContent = result.__error.message || 'Could not load jobs right now.';
@@ -676,6 +701,16 @@
     function closeFilters() {
         el.filters.classList.remove('is-open');
         el.drawerOverlay.classList.remove('is-visible');
+    }
+
+    function setFeed(feed) {
+        state.feed = feed;
+        document.getElementById('feedRecommended').classList.toggle('is-active', feed === 'recommended');
+        document.getElementById('feedAll').classList.toggle('is-active', feed === 'all');
+        if (feed === 'recommended' && state.sort === 'match') {
+            el.sortSelect.value = 'match';
+        }
+        try { localStorage.setItem('jsm_jobs_feed', feed); } catch (e) { /* storage unavailable */ }
     }
 
     function applyView(view) {
@@ -708,7 +743,11 @@
         try {
             var savedView = localStorage.getItem('enuvex_jobs_view');
             if (savedView === 'grid') applyView('grid');
+            if (localStorage.getItem('jsm_jobs_feed') === 'all') setFeed('all');
         } catch (e) { /* storage unavailable */ }
+
+        var initialBand = param('matchBand');
+        if (initialBand) setRadio('matchBand', initialBand);
 
         el.searchForm.addEventListener('submit', function (event) {
             event.preventDefault();
@@ -728,6 +767,7 @@
             el.keyword.value = '';
             state.sort = 'match';
             el.sortSelect.value = 'match';
+            setFeed('recommended');
             setNear(null);
             closeFilters();
             refreshBarangays();
@@ -740,6 +780,19 @@
         el.sortSelect.addEventListener('change', function () {
             state.sort = this.value;
             search();
+        });
+
+        document.getElementById('feedRecommended').addEventListener('click', function () {
+            setFeed('recommended');
+            search();
+        });
+        document.getElementById('feedAll').addEventListener('click', function () {
+            setFeed('all');
+            search();
+        });
+
+        el.filterForm.addEventListener('change', function (event) {
+            if (event.target && event.target.name === 'matchBand') search();
         });
 
         document.getElementById('viewList').addEventListener('click', function () { applyView('list'); });
