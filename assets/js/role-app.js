@@ -27,6 +27,7 @@
             { id: 'employers', href: 'employers.html', icon: 'fa-building-circle-check', label: 'Employer Verification', short: 'Verify' },
             { id: 'job-posts', href: 'job-posts.html', icon: 'fa-briefcase', label: 'Job Management', short: 'Jobs' },
             { id: 'geography', href: 'geography.html', icon: 'fa-map-location-dot', label: 'Geographic Map', short: 'Map' },
+            { id: 'skills', href: 'skills.html', icon: 'fa-chart-line', label: 'Skills Analytics', short: 'Skills' },
             { id: 'reports', href: 'reports.html', icon: 'fa-chart-column', label: 'Reports & Analytics', short: 'Reports' }
         ]
     };
@@ -285,6 +286,7 @@
                <a href="employers.html"><i class="fas fa-building-circle-check"></i> Employer Verification</a>
                <a href="job-posts.html"><i class="fas fa-briefcase"></i> Job Management</a>
                <a href="geography.html"><i class="fas fa-map-location-dot"></i> Geographic Map</a>
+               <a href="skills.html"><i class="fas fa-chart-line"></i> Skills Analytics</a>
                <a href="reports.html"><i class="fas fa-chart-column"></i> Reports &amp; Analytics</a>`;
 
         header.innerHTML = `

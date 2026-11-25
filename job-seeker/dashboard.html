@@ -1041,6 +1041,9 @@
                 <a class="side-link" href="applications.html">
                     <i class="fas fa-file-alt"></i> <span>Applications</span>
                 </a>
+                <a class="side-link" href="skills.html">
+                    <i class="fas fa-chart-line"></i> <span>Skills &amp; Career</span>
+                </a>
                 <a class="side-link" href="saved-jobs.html">
                     <i class="fas fa-bookmark"></i> <span>Saved Jobs</span>
                 </a>
@@ -1238,6 +1241,17 @@
                             <div class="job-list" id="recommendedJobs" aria-live="polite">
                                 <div class="loading">Loading recommended jobs…</div>
                             </div>
+                        </div>
+                    </section>
+
+                    <!-- Skills gap teaser -->
+                    <section aria-labelledby="skillsTeaserTitle">
+                        <div class="section-head">
+                            <h2 id="skillsTeaserTitle">Improve Your Job Matches</h2>
+                            <a class="link-all" href="skills.html">View skills analysis <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                        <div class="card" id="skillsTeaser" style="padding: 16px 18px;">
+                            <div class="loading">Checking skills demand…</div>
                         </div>
                     </section>
 
@@ -1696,7 +1710,8 @@
             safe(ApiClient.request('/job-seekers/jobs?page=0&size=50' + (municipality ? '&municipality=' + encodeURIComponent(municipality) : ''))),
             safe(ApiClient.getSavedJobs()),
             safe(ApiClient.getApplications()),
-            safe(ApiClient.request('/notifications'))
+            safe(ApiClient.request('/notifications')),
+            safe(ApiClient.getSkillsAnalysis())
         ]);
 
         var completion = failed(results[0]) ? null : (results[0] || {});
@@ -1705,6 +1720,7 @@
         var saved = failed(results[3]) ? [] : (results[3] || []);
         var applications = failed(results[4]) ? [] : (results[4] || []);
         var notifications = failed(results[5]) ? [] : (results[5] || []);
+        var skillsAnalysis = failed(results[6]) ? null : (results[6] || null);
 
         state.jobs = (recommendedPage && recommendedPage.content) || [];
         state.nearby = (nearbyPage && nearbyPage.content) || [];
@@ -1728,6 +1744,36 @@
         renderNotifications(state.notifications);
         renderJobs('recommendedJobs', state.jobs.slice(0, 4), 'No recommendations yet. Complete your profile to improve matching.');
         renderJobs('nearbyJobs', nearbyJobsFor(municipality), 'No nearby jobs posted yet in your municipality.');
+        renderSkillsTeaser(skillsAnalysis);
+    }
+
+    /** Concise, real-demand skills prompt; full working lives on skills.html. */
+    function renderSkillsTeaser(analysis) {
+        var box = document.getElementById('skillsTeaser');
+        if (!box) return;
+        if (!analysis) {
+            box.innerHTML = '<p class="panel-empty">Add skills to your profile to see which ones could unlock more jobs.</p>' +
+                '<a class="btn-solid btn-sm" href="skills.html" style="margin-top: 8px; display: inline-flex;">View skills analysis</a>';
+            return;
+        }
+        var totals = analysis.totals || {};
+        var rows = (analysis.unlockSkills && analysis.unlockSkills.length)
+            ? analysis.unlockSkills.slice(0, 3)
+            : (analysis.needSkills || []).slice(0, 3);
+        if (!rows.length) {
+            box.innerHTML = '<p class="panel-empty">Your profile covers every skill listed by active postings in your area.</p>' +
+                '<a class="btn-solid btn-sm" href="skills.html" style="margin-top: 8px; display: inline-flex;">View skills analysis</a>';
+            return;
+        }
+        var listed = '<ol style="margin: 12px 0 0; padding-left: 20px; display: grid; gap: 7px;">' + rows.map(function (row) {
+            return '<li><strong>' + esc(row.skill) + '</strong> — ' + Number(row.areaJobCount) + ' job' +
+                (Number(row.areaJobCount) === 1 ? '' : 's') + ' require it' +
+                (row.opportunityJobs ? ', could unlock ' + Number(row.opportunityJobs) : '') + '</li>';
+        }).join('') + '</ol>';
+        box.innerHTML = '<p style="margin: 0; font-size: 13px; color: #4A6273;">You have <strong>' + Number(totals.mySkills) +
+            ' skills</strong> in your profile. ' + rows.length + ' skill' + (rows.length === 1 ? '' : 's') +
+            ' appear frequently in jobs in your area and could improve your matches.</p>' + listed +
+            '<a class="btn-solid btn-sm" href="skills.html" style="margin-top: 12px; display: inline-flex;">View skills analysis</a>';
     }
 
     /* ---------- Interactions ---------- */

@@ -3,9 +3,14 @@ package com.jobskills.controller;
 import com.jobskills.config.CustomUserDetails;
 import com.jobskills.dto.*;
 import com.jobskills.model.JobSeekerProfile;
+import com.jobskills.model.enums.EmploymentType;
+import com.jobskills.model.enums.JobCategory;
+import com.jobskills.model.enums.Municipality;
 import com.jobskills.service.ApplicationService;
 import com.jobskills.service.JobService;
 import com.jobskills.service.MatchingEngine;
+import com.jobskills.service.SkillsAnalyticsService;
+import com.jobskills.service.SkillsGapService;
 import com.jobskills.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +33,8 @@ public class JobSeekerController {
     private final JobService jobService;
     private final ApplicationService applicationService;
     private final MatchingEngine matchingEngine;
+    private final SkillsGapService skillsGapService;
+    private final SkillsAnalyticsService skillsAnalyticsService;
 
     @GetMapping("/profile")
     public ResponseEntity<JobSeekerProfile> getProfile(Authentication authentication) {
@@ -101,6 +108,65 @@ public class JobSeekerController {
     @GetMapping("/applications")
     public ResponseEntity<List<ApplicationResponse>> getApplications(Authentication authentication) {
         return ResponseEntity.ok(applicationService.getSeekerApplications(extractUserId(authentication)));
+    }
+
+    /* ---------- skills gap analysis ---------------------------------- */
+
+    @GetMapping("/skills-analysis")
+    public ResponseEntity<SkillsAnalysisDto> skillsAnalysis(
+            @RequestParam(required = false) Municipality municipality,
+            @RequestParam(required = false) String barangay,
+            @RequestParam(required = false) EmploymentType employmentType,
+            @RequestParam(required = false) JobCategory category,
+            @RequestParam(required = false) Integer days,
+            Authentication authentication) {
+        return ResponseEntity.ok(skillsGapService.analyse(extractUserId(authentication),
+            municipality, barangay, employmentType, category, days));
+    }
+
+    @GetMapping("/skills-demand")
+    public ResponseEntity<SkillsAnalyticsDto> skillsDemand(
+            @RequestParam(required = false) Municipality municipality,
+            @RequestParam(required = false) String barangay,
+            @RequestParam(required = false) EmploymentType employmentType,
+            @RequestParam(required = false) JobCategory category,
+            @RequestParam(required = false) Integer days) {
+        return ResponseEntity.ok(skillsAnalyticsService.demand(municipality, barangay,
+            employmentType, category, days));
+    }
+
+    @PostMapping("/skills-simulation")
+    public ResponseEntity<SimulationResultDto> simulateSkills(
+            @RequestBody SimulationRequest request, Authentication authentication) {
+        return ResponseEntity.ok(skillsGapService.simulate(extractUserId(authentication), request));
+    }
+
+    @GetMapping("/career-opportunities")
+    public ResponseEntity<CareerOpportunitiesDto> careerOpportunities(
+            @RequestParam(required = false) Municipality municipality,
+            @RequestParam(required = false) JobCategory category,
+            Authentication authentication) {
+        return ResponseEntity.ok(skillsGapService.careers(extractUserId(authentication),
+            municipality, category));
+    }
+
+    @GetMapping("/learning-interests")
+    public ResponseEntity<List<LearningInterestDto>> learningInterests(Authentication authentication) {
+        return ResponseEntity.ok(skillsGapService.interests(extractUserId(authentication)));
+    }
+
+    @PostMapping("/learning-interests")
+    public ResponseEntity<LearningInterestDto> addLearningInterest(
+            @RequestParam String skill, Authentication authentication) {
+        return ResponseEntity.status(201)
+            .body(skillsGapService.addInterest(extractUserId(authentication), skill));
+    }
+
+    @DeleteMapping("/learning-interests")
+    public ResponseEntity<Map<String, String>> removeLearningInterest(
+            @RequestParam String skill, Authentication authentication) {
+        skillsGapService.removeInterest(extractUserId(authentication), skill);
+        return ResponseEntity.ok(Map.of("status", "removed"));
     }
 
     @PostMapping("/saved")

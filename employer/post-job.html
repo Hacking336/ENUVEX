@@ -107,8 +107,10 @@
                         </div>
                         <div class="form-field span-2">
                             <label for="requiredSkills">Required skills</label>
-                            <input type="text" id="requiredSkills" placeholder="Comma separated, e.g. Customer Service, Cashier, Inventory">
-                            <p class="form-note">These skills drive the match percentage shown to applicants.</p>
+                            <input type="text" id="requiredSkills" list="employerSkillList" placeholder="Comma separated, e.g. Customer Service, Cashier, Inventory">
+                            <datalist id="employerSkillList"></datalist>
+                            <p class="form-note">These skills drive the match percentage shown to applicants. Pick from existing skills where possible so one skill does not become several spellings.</p>
+                            <div id="employerSkillSuggestions" class="chips" style="margin-top: 8px;"></div>
                         </div>
                     </div>
                 </section>
@@ -253,6 +255,38 @@
     var pinMarker = null;
 
     function field(id) { return document.getElementById(id); }
+
+    /**
+     * Existing skills from real postings and profiles, so an employer can reuse
+     * a normalized skill instead of inventing a near-duplicate spelling.
+     */
+    function loadSkillSuggestions() {
+        if (!window.ApiClient || !ApiClient.loadAuth()) return;
+        ApiClient.getSkillCatalog(null, 30).then(function (rows) {
+            var box = document.getElementById('employerSkillSuggestions');
+            var list = document.getElementById('employerSkillList');
+            if (!box || !list) return;
+            var usable = (rows || []).filter(function (row) { return Number(row.jobCount) > 0 || Number(row.seekerCount) > 0; });
+            list.innerHTML = usable.map(function (row) {
+                return '<option value="' + ROLE.esc(row.skill) + '"></option>';
+            }).join('');
+            box.innerHTML = usable.slice(0, 8).map(function (row) {
+                return '<button class="btn-soft btn-sm" type="button" data-suggest-skill="' + ROLE.esc(row.skill) + '">' +
+                    '<i class="fas fa-plus"></i> ' + ROLE.esc(row.skill) + '</button>';
+            }).join('');
+            box.addEventListener('click', function (event) {
+                var button = event.target.closest('[data-suggest-skill]');
+                if (!button) return;
+                var input = field('requiredSkills');
+                var skills = input.value.split(',').map(function (skill) { return skill.trim(); }).filter(Boolean);
+                var skill = button.dataset.suggestSkill;
+                if (!skills.some(function (entry) { return entry.toLowerCase() === skill.toLowerCase(); })) {
+                    skills.push(skill);
+                }
+                input.value = skills.join(', ');
+            });
+        }).catch(function () { /* suggestions are optional */ });
+    }
 
     function showError(message) {
         var box = field('pageError');
@@ -634,6 +668,8 @@
             clearPin(!!editingId);
             ROLE.toast('Workplace pin removed from this form.', 'success');
         });
+
+        loadSkillSuggestions();
 
         document.getElementById('jobForm').addEventListener('submit', async function (event) {
             event.preventDefault();

@@ -1524,3 +1524,229 @@ img { max-width: 100%; }
     .app-card-actions { width: 100%; }
     .app-card-actions .btn-ghost, .app-card-actions .btn-soft { flex: 1 1 auto; justify-content: center; }
 }
+
+/* ==========================================================================
+   Skills gap, career guidance and local demand
+   ========================================================================== */
+
+.skills-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 310px;
+    gap: 18px;
+    align-items: start;
+    margin-top: 18px;
+}
+.skills-main, .skills-side { display: grid; gap: 18px; min-width: 0; }
+.skills-side { position: sticky; top: 92px; }
+
+.panel-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.panel-note { margin: 8px 0 0; font-size: 12.5px; line-height: 1.55; color: #6C7F90; }
+.panel-note + .panel-note { margin-top: 4px; }
+.hint { font-size: 12px; color: #7A8B9B; }
+.mini-select {
+    padding: 7px 9px;
+    border: 1px solid #E3EAF0;
+    border-radius: 8px;
+    background: #FFFFFF;
+    font-family: inherit;
+    font-size: 12.5px;
+    color: #102B4C;
+    max-width: 190px;
+}
+
+.my-skill-list { display: grid; gap: 8px; }
+.my-skill {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid #E3EAF0;
+    border-radius: 10px;
+    background: #FBFDFC;
+}
+.my-skill strong { display: block; font-size: 13.5px; color: #102B4C; }
+.my-skill small { display: block; margin-top: 2px; font-size: 11.5px; color: #7A8B9B; }
+.icon-btn.tiny { width: 28px; height: 28px; min-width: 28px; font-size: 11px; }
+
+.skill-add { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.skill-add input {
+    flex: 1 1 240px; min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid #E3EAF0;
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 13px;
+    color: #102B4C;
+}
+.skill-add input:focus { outline: 2px solid rgba(47, 162, 71, 0.25); border-color: #2FA247; }
+
+.suggested-wrap { margin-top: 18px; padding-top: 14px; border-top: 1px solid #E3EAF0; }
+.suggested-wrap h4 { margin: 0 0 9px; font-size: 12.5px; font-weight: 600; color: #3D5163; }
+.suggest-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 10px;
+    border: 1px dashed #BFDCC6;
+    border-radius: 999px;
+    background: #F4FAF5;
+    font-family: inherit;
+    font-size: 12px;
+    color: #25853A;
+    cursor: pointer;
+}
+.suggest-chip:hover { background: #EAF5EC; border-style: solid; }
+.suggest-chip span { color: #6C7F90; font-size: 11px; }
+
+.skill-cards { display: grid; gap: 12px; margin-top: 12px; }
+.skill-card {
+    padding: 14px 15px;
+    border: 1px solid #E3EAF0;
+    border-radius: 12px;
+    background: #FFFFFF;
+}
+.skill-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.skill-card-head h4 { margin: 0; font-size: 15px; color: #102B4C; }
+.skill-card-meta { margin: 3px 0 0; font-size: 12px; color: #6C7F90; }
+.priority {
+    flex: 0 0 auto;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+.priority.p-high { background: #FDF0EE; color: #B03A2E; border: 1px solid #F2D3CC; }
+.priority.p-medium { background: #FCF6E7; color: #8A5F10; border: 1px solid #EFE0BC; }
+.priority.p-low { background: #EFF4F8; color: #4A6273; border: 1px solid #DCE7EF; }
+.priority-meter { height: 6px; margin: 10px 0 6px; border-radius: 999px; background: #EDF3F7; overflow: hidden; }
+.priority-meter span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2FA247, #25853A); }
+.priority-score { margin: 0; font-size: 12px; color: #4A6273; }
+.skill-why { margin: 7px 0 0; font-size: 12.5px; line-height: 1.55; color: #5B6B7C; }
+.skill-card-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
+.skill-card-actions .btn-sm { padding: 6px 10px; font-size: 11.5px; }
+.btn-soft.is-on { background: #EAF5EC; border-color: #BFDCC6; color: #25853A; }
+
+.analysis-note { margin-top: 12px; padding: 11px 13px; border: 1px solid #DCE7EF; border-radius: 10px; background: #F7FBFD; }
+.analysis-note p { margin: 0; font-size: 12.5px; line-height: 1.55; color: #4A6273; }
+.analysis-note p + p { margin-top: 5px; }
+.analysis-note i { color: #2FA247; margin-right: 5px; }
+
+.table-scroll { overflow-x: auto; margin-top: 10px; }
+.skills-table { width: 100%; border-collapse: collapse; min-width: 560px; font-size: 12.5px; }
+.skills-table th {
+    padding: 8px 10px; text-align: left; font-size: 11px; letter-spacing: 0.03em;
+    text-transform: uppercase; color: #7A8B9B; border-bottom: 1px solid #E3EAF0; white-space: nowrap;
+}
+.skills-table td { padding: 9px 10px; border-bottom: 1px solid #EEF3F7; color: #3D5163; }
+.skills-table tr:last-child td { border-bottom: 0; }
+.skills-table strong { color: #102B4C; }
+
+.demand-filters { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) auto; gap: 10px; align-items: end; }
+.demand-filters .field label { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 600; color: #6C7F90; }
+.demand-filters .field input, .demand-filters .field select {
+    width: 100%; padding: 8px 9px; border: 1px solid #E3EAF0; border-radius: 8px;
+    font-family: inherit; font-size: 12.5px; color: #102B4C; background: #FFFFFF;
+}
+.demand-filters .btn-solid { height: 36px; }
+.demand-block { margin-top: 18px; padding-top: 14px; border-top: 1px solid #E3EAF0; }
+.demand-block h4 { margin: 0 0 4px; font-size: 13px; color: #102B4C; }
+.demand-columns-inner { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 10px; }
+.demand-col { padding: 11px 12px; border: 1px solid #E3EAF0; border-radius: 10px; background: #FBFDFC; }
+.demand-col h5 { margin: 0 0 7px; font-size: 12.5px; color: #25853A; }
+.demand-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.demand-col li { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: #4A6273; }
+.demand-col li strong { color: #102B4C; }
+
+.sim-actions { display: flex; gap: 8px; margin-top: 10px; }
+.chips-selectable { min-height: 34px; align-items: center; }
+.selected-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 10px; border: 1px solid #BFDCC6; border-radius: 999px;
+    background: #EAF5EC; color: #25853A; font-family: inherit; font-size: 12px; cursor: pointer;
+}
+.selected-chip i { font-size: 10px; }
+.sim-status {
+    margin-top: 14px; padding: 9px 12px; border-radius: 9px;
+    background: #FFF8E8; border: 1px solid #F0E0B8; color: #7A5A10; font-size: 12px;
+}
+.sim-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top: 12px; }
+.sim-metrics > div { padding: 10px 12px; border: 1px solid #E3EAF0; border-radius: 10px; background: #FBFDFC; }
+.sim-metrics span { display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.03em; color: #7A8B9B; }
+.sim-metrics strong { display: block; margin-top: 3px; font-size: 18px; color: #102B4C; }
+.sim-section { margin-top: 16px; }
+.sim-section h4 { margin: 0 0 8px; font-size: 13px; color: #102B4C; }
+.sim-job { padding: 10px 12px; border: 1px solid #E3EAF0; border-radius: 10px; background: #FFFFFF; margin-bottom: 8px; }
+.sim-job-main { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; }
+.sim-job-main a { color: #102B4C; font-size: 13px; }
+.sim-job-main small { font-size: 11.5px; color: #7A8B9B; }
+.sim-scores { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
+.sim-scores .now { font-size: 11.5px; color: #6C7F90; }
+.sim-scores .potential {
+    padding: 3px 8px; border-radius: 999px; background: #EAF5EC; border: 1px dashed #A9D3B3;
+    font-size: 10.5px; font-weight: 600; color: #25853A;
+}
+.sim-scores .delta { font-size: 12px; font-weight: 700; color: #2FA247; }
+.sim-scores .delta.up { color: #25853A; }
+.sim-missing { margin: 7px 0 0; font-size: 11.5px; color: #8A5F10; }
+
+.career-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; margin-top: 12px; }
+.career-card { padding: 15px; border: 1px solid #E3EAF0; border-radius: 12px; background: #FFFFFF; display: flex; flex-direction: column; gap: 10px; }
+.career-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.career-head h4 { margin: 0; font-size: 15px; color: #102B4C; }
+.career-head span { font-size: 11.5px; color: #6C7F90; white-space: nowrap; }
+.career-meta { margin: 0; font-size: 12px; color: #6C7F90; }
+.career-label { margin: 0 0 5px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; color: #7A8B9B; }
+.career-two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.chip-ok { background: #EAF5EC; color: #25853A; border-color: #CFEBD4; }
+.chip-gap { background: #FCF3E4; color: #8A5F10; border-color: #F0DFC0; }
+.career-examples { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.career-examples li { display: flex; flex-direction: column; font-size: 12px; }
+.career-examples a { color: #102B4C; font-weight: 500; }
+.career-examples span { font-size: 11px; color: #7A8B9B; }
+.career-card .btn-ghost { align-self: flex-start; }
+
+.interest-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0; border-bottom: 1px solid #EEF3F7; font-size: 13px; color: #3D5163; }
+.interest-row:last-child { border-bottom: 0; }
+.interest-row > div { display: flex; gap: 4px; }
+.plain-list { margin: 8px 0 0; padding-left: 18px; font-size: 12.5px; line-height: 1.6; color: #4A6273; }
+.plain-list li + li { margin-top: 5px; }
+
+.modal-wide { max-width: 720px; width: 100%; }
+.skill-detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.skill-detail-head h4 { margin: 0; font-size: 18px; color: #102B4C; }
+.skill-detail-head p { margin: 4px 0 0; font-size: 12.5px; color: #6C7F90; line-height: 1.5; }
+.skill-detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin: 14px 0; }
+.skill-detail-grid > div { padding: 9px 11px; border: 1px solid #E3EAF0; border-radius: 9px; background: #FBFDFC; }
+.skill-detail-grid span { display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.03em; color: #7A8B9B; }
+.skill-detail-grid strong { display: block; margin-top: 2px; font-size: 15px; color: #102B4C; }
+#skillModalBody h5 { margin: 15px 0 6px; font-size: 12.5px; color: #102B4C; }
+.skill-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 16px; padding-top: 13px; border-top: 1px solid #E3EAF0; }
+
+.resource-list { display: grid; gap: 9px; }
+.resource { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 11px 12px; border: 1px solid #E3EAF0; border-radius: 10px; background: #FFFFFF; }
+.resource h5 { margin: 0; font-size: 13px; color: #102B4C; }
+.resource p { margin: 3px 0 0; font-size: 12px; color: #6C7F90; }
+.resource .resource-desc { color: #4A6273; line-height: 1.5; }
+.resource-meta { font-size: 11px !important; color: #7A8B9B !important; }
+.tag-free { padding: 1px 6px; border-radius: 999px; background: #EAF5EC; color: #25853A; font-weight: 600; }
+
+@media (max-width: 1180px) {
+    .skills-layout { grid-template-columns: 1fr; }
+    .skills-side { position: static; }
+}
+@media (max-width: 900px) {
+    .demand-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .demand-filters .btn-solid { grid-column: 1 / -1; }
+    .career-two { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+    .skills-metrics { grid-template-columns: 1fr; }
+    .career-grid { grid-template-columns: 1fr; }
+    .modal-wide { max-width: 100%; }
+    .skill-detail-actions .btn-solid, .skill-detail-actions .btn-soft, .skill-detail-actions .btn-ghost { width: 100%; }
+    .resource { flex-direction: column; }
+}
+
+/* Grid items default to min-width:auto, which let the wide demand table force
+   the whole mobile page wider than the viewport. Keep the page at viewport
+   width and let each table scroll inside its own card instead. */
+.skills-main > *,
+.skills-side > * { min-width: 0; }
+.table-scroll { max-width: 100%; }

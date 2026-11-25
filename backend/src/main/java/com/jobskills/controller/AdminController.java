@@ -28,6 +28,7 @@ public class AdminController {
     private final EmployerProfileRepository employerRepository;
     private final JobPostRepository jobPostRepository;
     private final JobApplicationRepository applicationRepository;
+    private final SkillsAnalyticsService skillsAnalyticsService;
 
     @GetMapping("/dashboard")
     public ResponseEntity<DashboardStatsDto> getDashboard() {
@@ -162,6 +163,50 @@ public class AdminController {
             counts.put(status.name(), applicationRepository.countByApplicationStatus(status));
         }
         return counts;
+    }
+
+    /* ---------- skills analytics and learning resources --------------- */
+
+    @GetMapping("/skills-analytics")
+    public ResponseEntity<SkillsAnalyticsDto> getSkillsAnalytics(
+            @RequestParam(required = false) Municipality municipality,
+            @RequestParam(required = false) EmploymentType employmentType,
+            @RequestParam(required = false) JobCategory category,
+            @RequestParam(required = false) Integer days) {
+        return ResponseEntity.ok(skillsAnalyticsService.analytics(municipality, employmentType, category, days));
+    }
+
+    @GetMapping("/skills-demand")
+    public ResponseEntity<SkillsAnalyticsDto> getSkillsDemand(
+            @RequestParam(required = false) Municipality municipality,
+            @RequestParam(required = false) String barangay,
+            @RequestParam(required = false) EmploymentType employmentType,
+            @RequestParam(required = false) JobCategory category,
+            @RequestParam(required = false) Integer days) {
+        return ResponseEntity.ok(skillsAnalyticsService.demand(municipality, barangay,
+            employmentType, category, days));
+    }
+
+    @GetMapping("/learning-resources")
+    public ResponseEntity<List<LearningResource>> getLearningResources() {
+        return ResponseEntity.ok(skillsAnalyticsService.allResources());
+    }
+
+    @PostMapping("/learning-resources")
+    public ResponseEntity<LearningResource> createLearningResource(@RequestBody LearningResourceRequest request) {
+        return ResponseEntity.status(201).body(skillsAnalyticsService.createResource(request));
+    }
+
+    @PutMapping("/learning-resources/{id}")
+    public ResponseEntity<LearningResource> updateLearningResource(
+            @PathVariable Long id, @RequestBody LearningResourceRequest request) {
+        return ResponseEntity.ok(skillsAnalyticsService.updateResource(id, request));
+    }
+
+    @DeleteMapping("/learning-resources/{id}")
+    public ResponseEntity<Map<String, String>> deleteLearningResource(@PathVariable Long id) {
+        skillsAnalyticsService.deleteResource(id);
+        return ResponseEntity.ok(Map.of("status", "deleted"));
     }
 
     @GetMapping("/municipalities")

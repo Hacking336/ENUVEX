@@ -401,6 +401,92 @@ const ApiClient = {
 
     async getAdminCategories() {
         return this.request('/admin/categories');
+    },
+
+    /* ---------- skills gap and career guidance ----------------------- */
+
+    async getSkillsAnalysis(params = {}) {
+        const query = new URLSearchParams(params).toString();
+        return this.request(`/job-seekers/skills-analysis${query ? '?' + query : ''}`);
+    },
+
+    async getSkillsDemand(params = {}) {
+        const query = new URLSearchParams(params).toString();
+        return this.request(`/job-seekers/skills-demand${query ? '?' + query : ''}`);
+    },
+
+    async simulateSkills(skills, threshold) {
+        return this.request('/job-seekers/skills-simulation', {
+            method: 'POST',
+            body: JSON.stringify({ skills: skills, threshold: threshold })
+        });
+    },
+
+    async getCareerOpportunities(params = {}) {
+        const query = new URLSearchParams(params).toString();
+        return this.request(`/job-seekers/career-opportunities${query ? '?' + query : ''}`);
+    },
+
+    async getLearningInterests() {
+        return this.request('/job-seekers/learning-interests');
+    },
+
+    async addLearningInterest(skill) {
+        return this.request(`/job-seekers/learning-interests?skill=${encodeURIComponent(skill)}`, {
+            method: 'POST'
+        });
+    },
+
+    async removeLearningInterest(skill) {
+        return this.request(`/job-seekers/learning-interests?skill=${encodeURIComponent(skill)}`, {
+            method: 'DELETE'
+        });
+    },
+
+    async getSkillCatalog(q, limit) {
+        const params = new URLSearchParams();
+        if (q) params.set('q', q);
+        if (limit) params.set('limit', String(limit));
+        const query = params.toString();
+        return this.request(`/skills/catalog${query ? '?' + query : ''}`);
+    },
+
+    async getSkillResources(skill) {
+        return this.request(`/skills/resources?skill=${encodeURIComponent(skill)}`);
+    },
+
+    async getAdminSkillsAnalytics(params = {}) {
+        const query = new URLSearchParams(params).toString();
+        return this.request(`/admin/skills-analytics${query ? '?' + query : ''}`);
+    },
+
+    async getAdminSkillsDemand(params = {}) {
+        const query = new URLSearchParams(params).toString();
+        return this.request(`/admin/skills-demand${query ? '?' + query : ''}`);
+    },
+
+    async getAdminLearningResources() {
+        return this.request('/admin/learning-resources');
+    },
+
+    async createLearningResource(payload) {
+        return this.request('/admin/learning-resources', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    },
+
+    async updateLearningResource(id, payload) {
+        return this.request(`/admin/learning-resources/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload)
+        });
+    },
+
+    async deleteLearningResource(id) {
+        return this.request(`/admin/learning-resources/${encodeURIComponent(id)}`, {
+            method: 'DELETE'
+        });
     }
 };
 

@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Skills Analytics — JSM</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/brand/jsm-favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/brand/jsm-icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/brand/jsm-icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../job-seeker/enuvex-app.css">
+    <link rel="stylesheet" href="../assets/css/enuvex-role.css">
+    <script>
+        window.ENUVEX_PAGE = {
+            active: 'skills',
+            title: 'Skills Analytics',
+            subtitle: 'Demand from active postings compared with recorded seeker supply'
+        };
+    </script>
+</head>
+<body data-role="admin">
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="page-head">
+                <div>
+                    <h2>Skills demand and supply</h2>
+                    <p>Every figure is counted from the database. No sample, projection or invented trend is used.</p>
+                </div>
+                <div class="page-head-actions">
+                    <button class="btn-solid" type="button" id="addResourceBtn"><i class="fas fa-circle-plus"></i> Add learning resource</button>
+                </div>
+            </div>
+
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load skills analytics.</span>
+            </div>
+
+            <form class="demand-filters" id="adminFilters" style="margin-bottom: 18px;">
+                <div class="field">
+                    <label for="filterMunicipality">Municipality</label>
+                    <select id="filterMunicipality">
+                        <option value="">All</option>
+                        <option value="BASUD">Basud</option>
+                        <option value="DAET">Daet</option>
+                        <option value="VINZONS">Vinzons</option>
+                        <option value="LABO">Labo</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="filterType">Employment type</label>
+                    <select id="filterType">
+                        <option value="">Any</option>
+                        <option value="FULL_TIME">Full-time</option>
+                        <option value="PART_TIME">Part-time</option>
+                        <option value="CONTRACT">Contract</option>
+                        <option value="TEMPORARY">Temporary</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="filterCategory">Job category</label>
+                    <select id="filterCategory"><option value="">Any</option></select>
+                </div>
+                <div class="field">
+                    <label for="filterDays">Date posted</label>
+                    <select id="filterDays">
+                        <option value="">Any time</option>
+                        <option value="7">Last 7 days</option>
+                        <option value="30">Last 30 days</option>
+                        <option value="90">Last 90 days</option>
+                    </select>
+                </div>
+                <button class="btn-solid" type="submit"><i class="fas fa-filter"></i> Apply</button>
+            </form>
+
+            <section class="metrics" aria-label="Skills metrics">
+                <div class="metric">
+                    <div class="metric-icon"><i class="fas fa-layer-group"></i></div>
+                    <div class="metric-value" id="metricSkills">—</div>
+                    <div class="metric-label">Unique required skills</div>
+                    <div class="metric-desc">In the filtered active postings</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-icon"><i class="fas fa-briefcase"></i></div>
+                    <div class="metric-value" id="metricJobs">—</div>
+                    <div class="metric-label">Active postings</div>
+                    <div class="metric-desc" id="metricJobsDesc">—</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-icon"><i class="fas fa-circle-question"></i></div>
+                    <div class="metric-value" id="metricMissing">—</div>
+                    <div class="metric-label">Postings without skills</div>
+                    <div class="metric-desc">Left out of the skill percentage</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-icon"><i class="fas fa-users"></i></div>
+                    <div class="metric-value" id="metricSeekers">—</div>
+                    <div class="metric-label">Seeker profiles</div>
+                    <div class="metric-desc" id="metricSeekersDesc">—</div>
+                </div>
+            </section>
+
+            <p class="panel-note" id="trendNote"></p>
+
+            <section class="card panel" style="margin-top: 18px;">
+                <div class="panel-head">
+                    <h3><i class="fas fa-chart-simple"></i> Most Frequently Required</h3>
+                </div>
+                <p class="panel-note">Demand counts active postings, not vacancies. Available positions are reported separately in the supply/demand table.</p>
+                <div class="table-scroll" id="mostRequired"></div>
+            </section>
+
+            <section class="card panel" style="margin-top: 18px;">
+                <div class="panel-head">
+                    <h3><i class="fas fa-users"></i> Most commonly recorded by job seekers</h3>
+                </div>
+                <p class="panel-note">Supply is the number of profiles that record the skill, once per profile. No seeker identity is exposed.</p>
+                <div class="table-scroll" id="seekerTopSkills"></div>
+            </section>
+
+            <section class="card panel" style="margin-top: 18px;">
+                <div class="panel-head">
+                    <h3><i class="fas fa-scale-balanced"></i> Demand compared with seeker supply</h3>
+                </div>
+                <p class="panel-note" id="methodNote"></p>
+                <div class="table-scroll" id="supplyDemand"></div>
+            </section>
+
+            <section class="card panel" style="margin-top: 18px;">
+                <div class="panel-head">
+                    <h3><i class="fas fa-map-location-dot"></i> Skills by municipality</h3>
+                </div>
+                <div id="byMunicipality" class="demand-columns"></div>
+            </section>
+
+            <section class="card panel" style="margin-top: 18px;">
+                <div class="panel-head">
+                    <h3><i class="fas fa-clock"></i> Skills by employment type</h3>
+                </div>
+                <div id="byEmploymentType" class="demand-columns"></div>
+            </section>
+
+            <section class="card panel" style="margin-top: 18px;">
+                <div class="panel-head">
+                    <h3><i class="fas fa-graduation-cap"></i> Learning resources</h3>
+                    <div class="panel-actions">
+                        <span class="hint" id="resourceCount"></span>
+                    </div>
+                </div>
+                <p class="panel-note">
+                    Only real resources an administrator has verified belong here. Seekers see an honest
+                    “no verified learning resources” message for any skill without an entry.
+                </p>
+                <div class="table-scroll" id="resourceTable"></div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<div class="modal" id="resourceModal" hidden>
+    <div class="modal-card modal-wide" role="dialog" aria-modal="true" aria-labelledby="resourceModalTitle">
+        <div class="modal-head">
+            <h3 id="resourceModalTitle">Add learning resource</h3>
+            <button class="icon-btn" id="closeResourceModal" type="button" aria-label="Close"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="alert" id="resourceError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="resourceErrorText"></span>
+            </div>
+            <div class="field-grid">
+                <div class="field">
+                    <label for="resourceSkill">Skill taught *</label>
+                    <input id="resourceSkill" list="resourceSkills" placeholder="e.g. Microsoft Excel" autocomplete="off">
+                    <datalist id="resourceSkills"></datalist>
+                </div>
+                <div class="field">
+                    <label for="resourceProvider">Provider *</label>
+                    <input id="resourceProvider" placeholder="Training centre or school">
+                </div>
+                <div class="field field-full">
+                    <label for="resourceTitle">Course title *</label>
+                    <input id="resourceTitle" placeholder="Exact course title">
+                </div>
+                <div class="field field-full">
+                    <label for="resourceUrl">Resource URL *</label>
+                    <input id="resourceUrl" type="url" placeholder="https://…">
+                </div>
+                <div class="field">
+                    <label for="resourceCost">Cost (₱)</label>
+                    <input id="resourceCost" type="number" min="0" step="1" placeholder="Leave empty if not stated">
+                </div>
+                <div class="field">
+                    <label for="resourceDuration">Duration</label>
+                    <input id="resourceDuration" placeholder="e.g. 40 hours">
+                </div>
+                <div class="field">
+                    <label for="resourceAvailability">Availability</label>
+                    <input id="resourceAvailability" placeholder="e.g. Enrolment open until March">
+                </div>
+                <div class="field">
+                    <label for="resourceVerified">Date verified</label>
+                    <input id="resourceVerified" type="date">
+                </div>
+                <div class="field">
+                    <label for="resourceFree">Free or paid</label>
+                    <select id="resourceFree">
+                        <option value="false">Paid</option>
+                        <option value="true">Free</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="resourceOnline">Mode</label>
+                    <select id="resourceOnline">
+                        <option value="true">Online</option>
+                        <option value="false">In person</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="resourceActive">Visible to seekers</label>
+                    <select id="resourceActive">
+                        <option value="true">Active</option>
+                        <option value="false">Hidden</option>
+                    </select>
+                </div>
+                <div class="field field-full">
+                    <label for="resourceDescription">Description</label>
+                    <textarea id="resourceDescription" rows="3" placeholder="What the course covers, in the provider's terms."></textarea>
+                </div>
+            </div>
+            <div class="form-actions" style="margin-top: 14px;">
+                <button class="btn-soft" type="button" id="cancelResource">Cancel</button>
+                <button class="btn-solid" type="button" id="saveResource"><i class="fas fa-floppy-disk"></i> Save resource</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/role-app.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var CATEGORIES = {
+        RETAIL_STORE: 'Retail / Store', SALES: 'Sales', FOOD_SERVICE_RESTAURANT: 'Food Service / Restaurant',
+        HOSPITALITY_TOURISM: 'Hospitality / Tourism', OFFICE_ADMINISTRATION: 'Office / Administration',
+        ACCOUNTING_FINANCE: 'Accounting / Finance', HEALTHCARE: 'Healthcare',
+        EDUCATION_TUTORING: 'Education / Tutoring', CONSTRUCTION_SKILLED_TRADES: 'Construction / Skilled Trades',
+        AGRICULTURE: 'Agriculture', FISHERIES: 'Fisheries', MANUFACTURING: 'Manufacturing',
+        LOGISTICS_DELIVERY: 'Logistics / Delivery', TRANSPORTATION: 'Transportation',
+        AUTOMOTIVE_MECHANICAL: 'Automotive / Mechanical', CUSTOMER_SERVICE: 'Customer Service',
+        SECURITY: 'Security', GENERAL_LABOR: 'General Labor', IT_TECHNOLOGY: 'IT / Technology', OTHER: 'Other'
+    };
+    var MUNICIPALITIES = { BASUD: 'Basud', DAET: 'Daet', VINZONS: 'Vinzons', LABO: 'Labo' };
+    var TYPES = { FULL_TIME: 'Full-time', PART_TIME: 'Part-time', CONTRACT: 'Contract', TEMPORARY: 'Temporary' };
+
+    var state = { analytics: null, resources: [], editing: null };
+    var el = {};
+
+    function esc(value) { return ROLE.esc(value); }
+    function num(value) { return Number(value) || 0; }
+
+    function showError(message) {
+        document.getElementById('pageError').hidden = false;
+        document.getElementById('pageErrorText').textContent = message;
+    }
+
+    function filters() {
+        var params = {};
+        var municipality = document.getElementById('filterMunicipality').value;
+        var type = document.getElementById('filterType').value;
+        var category = document.getElementById('filterCategory').value;
+        var days = document.getElementById('filterDays').value;
+        if (municipality) params.municipality = municipality;
+        if (type) params.employmentType = type;
+        if (category) params.category = category;
+        if (days) params.days = days;
+        return params;
+    }
+
+    function table(rows, columns, emptyText) {
+        if (!rows || !rows.length) return '<p class="panel-empty">' + esc(emptyText) + '</p>';
+        return '<table class="skills-table"><thead><tr>' +
+            columns.map(function (column) { return '<th>' + esc(column.label) + '</th>'; }).join('') +
+            '</tr></thead><tbody>' + rows.map(function (row) {
+                return '<tr>' + columns.map(function (column) {
+                    return '<td>' + column.render(row) + '</td>';
+                }).join('') + '</tr>';
+            }).join('') + '</tbody></table>';
+    }
+
+    function demandColumns(map, labelMap) {
+        var keys = Object.keys(map || {});
+        if (!keys.length) return '<p class="panel-empty">No data.</p>';
+        return '<div class="demand-columns-inner">' + keys.map(function (key) {
+            var rows = map[key] || [];
+            return '<div class="demand-col"><h5>' + esc(labelMap[key] || key) + '</h5>' +
+                (rows.length ? '<ul>' + rows.slice(0, 8).map(function (row) {
+                    return '<li><span>' + esc(row.skill) + '</span><strong>' + num(row.jobCount) + '</strong></li>';
+                }).join('') + '</ul>' : '<p class="hint">No listed skills.</p>') + '</div>';
+        }).join('') + '</div>';
+    }
+
+    function render() {
+        var data = state.analytics;
+        if (!data) return;
+        var totals = data.totals || {};
+        document.getElementById('metricSkills').textContent = num(totals.totalUniqueSkills != null ? totals.totalUniqueSkills : totals.uniqueSkills);
+        document.getElementById('metricJobs').textContent = num(totals.activeJobs);
+        document.getElementById('metricJobsDesc').textContent = num(totals.jobsWithSkills) + ' list required skills';
+        document.getElementById('metricMissing').textContent = num(totals.jobsWithoutSkills);
+        document.getElementById('metricSeekers').textContent = num(totals.totalSeekers);
+        document.getElementById('metricSeekersDesc').textContent = num(totals.seekersWithSkills) + ' have skills recorded';
+        document.getElementById('trendNote').textContent = data.trendNote || '';
+        document.getElementById('methodNote').textContent = (data.methodology && data.methodology.gap) || '';
+
+        document.getElementById('mostRequired').innerHTML = table(data.mostRequired, [
+            { label: 'Skill', render: function (row) { return '<strong>' + esc(row.skill) + '</strong>'; } },
+            { label: 'Postings', render: function (row) { return num(row.jobCount); } },
+            { label: 'Share', render: function (row) { return row.sharePercent == null ? '—' : row.sharePercent + '%'; } },
+            { label: 'Seekers with it', render: function (row) { return num(row.seekerCount); } },
+            { label: 'Most common category', render: function (row) { return esc(row.commonCategoryLabel || '—'); } }
+        ], 'No active postings list required skills in this filter.');
+
+        var bySupply = (data.supplyDemand || []).slice().sort(function (a, b) {
+            return num(b.supplySeekers) - num(a.supplySeekers) || num(b.demandPostings) - num(a.demandPostings);
+        }).slice(0, 10);
+        document.getElementById('seekerTopSkills').innerHTML = table(bySupply, [
+            { label: 'Skill', render: function (row) { return '<strong>' + esc(row.skill) + '</strong>'; } },
+            { label: 'Seekers with it', render: function (row) { return num(row.supplySeekers); } },
+            { label: 'Postings requiring it', render: function (row) { return num(row.demandPostings); } },
+            { label: 'Signal', render: function (row) {
+                return row.imbalance === 'SHORTAGE' ? 'Demand exceeds recorded supply'
+                    : row.imbalance === 'SURPLUS' ? 'Recorded supply exceeds demand'
+                    : 'Balanced';
+            } }
+        ], 'No seeker skills recorded yet.');
+
+        document.getElementById('supplyDemand').innerHTML = table(data.supplyDemand, [
+            { label: 'Skill', render: function (row) { return '<strong>' + esc(row.skill) + '</strong>'; } },
+            { label: 'Demand (postings)', render: function (row) { return num(row.demandPostings); } },
+            { label: 'Positions offered', render: function (row) { return num(row.positionsOffered); } },
+            { label: 'Supply (profiles)', render: function (row) { return num(row.supplySeekers); } },
+            { label: 'Gap', render: function (row) {
+                var gap = num(row.gap);
+                return (gap > 0 ? '+' : '') + gap;
+            } },
+            { label: 'Signal', render: function (row) {
+                var cls = row.imbalance === 'SHORTAGE' ? 'p-high' : row.imbalance === 'SURPLUS' ? 'p-low' : 'p-medium';
+                return '<span class="priority ' + cls + '">' + esc(row.imbalance) + '</span>';
+            } }
+        ], 'No skills recorded in postings or profiles yet.');
+
+        document.getElementById('byMunicipality').innerHTML = demandColumns(data.byMunicipality, MUNICIPALITIES);
+        document.getElementById('byEmploymentType').innerHTML = demandColumns(data.byEmploymentType, TYPES);
+
+        var datalist = document.getElementById('resourceSkills');
+        datalist.innerHTML = (data.mostRequired || []).map(function (row) {
+            return '<option value="' + esc(row.skill) + '"></option>';
+        }).join('');
+    }
+
+    function resourceTable() {
+        var rows = state.resources || [];
+        document.getElementById('resourceCount').textContent = rows.length + ' entr' + (rows.length === 1 ? 'y' : 'ies');
+        document.getElementById('resourceTable').innerHTML = table(rows, [
+            { label: 'Course', render: function (row) {
+                return '<strong>' + esc(row.title) + '</strong><br><span class="hint">' + esc(row.provider) + '</span>';
+            } },
+            { label: 'Skill', render: function (row) { return esc(row.skillName); } },
+            { label: 'Cost', render: function (row) {
+                if (row.free) return 'Free';
+                return row.cost == null ? 'Not stated' : '₱' + num(row.cost);
+            } },
+            { label: 'Mode', render: function (row) { return row.online ? 'Online' : 'In person'; } },
+            { label: 'Verified', render: function (row) { return esc(row.verifiedAt || '—'); } },
+            { label: 'Visible', render: function (row) {
+                return row.active ? '<span class="priority p-low">ACTIVE</span>' : '<span class="priority p-medium">HIDDEN</span>';
+            } },
+            { label: 'Actions', render: function (row) {
+                return '<button class="btn-soft btn-sm" type="button" data-edit-resource="' + row.id + '">Edit</button> ' +
+                    '<button class="btn-danger btn-sm" type="button" data-delete-resource="' + row.id + '">Delete</button>';
+            } }
+        ], 'No learning resources have been added yet. Seekers see an honest “no verified learning resources” message.');
+    }
+
+    async function load() {
+        document.getElementById('pageError').hidden = true;
+        try {
+            state.analytics = await ApiClient.getAdminSkillsAnalytics(filters());
+            render();
+        } catch (error) {
+            showError(error.message || 'Could not load skills analytics.');
+        }
+        try {
+            state.resources = await ApiClient.getAdminLearningResources();
+            resourceTable();
+        } catch (error) {
+            document.getElementById('resourceTable').innerHTML =
+                '<p class="panel-empty">' + esc(error.message || 'Could not load learning resources.') + '</p>';
+        }
+    }
+
+    function openResource(resource) {
+        state.editing = resource || null;
+        document.getElementById('resourceModalTitle').textContent = resource ? 'Edit learning resource' : 'Add learning resource';
+        document.getElementById('resourceError').hidden = true;
+        document.getElementById('resourceSkill').value = resource ? resource.skillName : '';
+        document.getElementById('resourceProvider').value = resource ? resource.provider : '';
+        document.getElementById('resourceTitle').value = resource ? resource.title : '';
+        document.getElementById('resourceUrl').value = resource ? resource.url : '';
+        document.getElementById('resourceCost').value = resource && resource.cost != null ? resource.cost : '';
+        document.getElementById('resourceDuration').value = resource ? (resource.duration || '') : '';
+        document.getElementById('resourceAvailability').value = resource ? (resource.availability || '') : '';
+        document.getElementById('resourceVerified').value = resource ? (resource.verifiedAt || '') : '';
+        document.getElementById('resourceFree').value = resource && resource.free ? 'true' : 'false';
+        document.getElementById('resourceOnline').value = resource && resource.online === false ? 'false' : 'true';
+        document.getElementById('resourceActive').value = resource && resource.active === false ? 'false' : 'true';
+        document.getElementById('resourceDescription').value = resource ? (resource.description || '') : '';
+        document.getElementById('resourceModal').hidden = false;
+        document.body.style.overflow = 'hidden';
+        document.getElementById('resourceSkill').focus();
+    }
+
+    function closeResource() {
+        document.getElementById('resourceModal').hidden = true;
+        document.body.style.overflow = '';
+        state.editing = null;
+    }
+
+    async function saveResource() {
+        var payload = {
+            skillName: document.getElementById('resourceSkill').value.trim(),
+            provider: document.getElementById('resourceProvider').value.trim(),
+            title: document.getElementById('resourceTitle').value.trim(),
+            url: document.getElementById('resourceUrl').value.trim(),
+            duration: document.getElementById('resourceDuration').value.trim(),
+            availability: document.getElementById('resourceAvailability').value.trim(),
+            description: document.getElementById('resourceDescription').value.trim(),
+            free: document.getElementById('resourceFree').value === 'true',
+            online: document.getElementById('resourceOnline').value === 'true',
+            active: document.getElementById('resourceActive').value === 'true'
+        };
+        var cost = document.getElementById('resourceCost').value.trim();
+        if (cost) payload.cost = Number(cost);
+        var verified = document.getElementById('resourceVerified').value;
+        if (verified) payload.verifiedAt = verified;
+
+        var button = document.getElementById('saveResource');
+        button.disabled = true;
+        document.getElementById('resourceError').hidden = true;
+        try {
+            if (state.editing) await ApiClient.updateLearningResource(state.editing.id, payload);
+            else await ApiClient.createLearningResource(payload);
+            closeResource();
+            ROLE.toast('Learning resource saved.', 'success');
+            state.resources = await ApiClient.getAdminLearningResources();
+            resourceTable();
+            state.analytics = await ApiClient.getAdminSkillsAnalytics(filters());
+            render();
+        } catch (error) {
+            document.getElementById('resourceError').hidden = false;
+            document.getElementById('resourceErrorText').textContent = error.message || 'Could not save the resource.';
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+    function wire() {
+        document.getElementById('filterCategory').innerHTML = '<option value="">Any</option>' +
+            Object.keys(CATEGORIES).map(function (key) {
+                return '<option value="' + key + '">' + esc(CATEGORIES[key]) + '</option>';
+            }).join('');
+
+        document.getElementById('adminFilters').addEventListener('submit', function (event) {
+            event.preventDefault();
+            load();
+        });
+        document.getElementById('addResourceBtn').addEventListener('click', function () { openResource(null); });
+        document.getElementById('closeResourceModal').addEventListener('click', closeResource);
+        document.getElementById('cancelResource').addEventListener('click', closeResource);
+        document.getElementById('saveResource').addEventListener('click', saveResource);
+        document.getElementById('resourceModal').addEventListener('click', function (event) {
+            if (event.target === this) closeResource();
+        });
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && !document.getElementById('resourceModal').hidden) closeResource();
+        });
+
+        document.addEventListener('click', async function (event) {
+            var edit = event.target.closest('[data-edit-resource]');
+            if (edit) {
+                var resource = state.resources.find(function (entry) {
+                    return String(entry.id) === String(edit.dataset.editResource);
+                });
+                if (resource) openResource(resource);
+                return;
+            }
+            var remove = event.target.closest('[data-delete-resource]');
+            if (remove) {
+                var entry = state.resources.find(function (item) {
+                    return String(item.id) === String(remove.dataset.deleteResource);
+                });
+                if (!entry) return;
+                if (!window.confirm('Delete the learning resource "' + entry.title + '"? Seekers will no longer see it.')) return;
+                try {
+                    await ApiClient.deleteLearningResource(entry.id);
+                    ROLE.toast('Learning resource deleted.', 'info');
+                    state.resources = await ApiClient.getAdminLearningResources();
+                    resourceTable();
+                } catch (error) {
+                    ROLE.toast(error.message || 'Could not delete the resource.', 'error');
+                }
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!window.ApiClient || !ApiClient.loadAuth()) {
+            showError('Sign in as an administrator to view skills analytics.');
+            return;
+        }
+        wire();
+        load();
+    });
+})();
+</script>
+</body>
+</html>

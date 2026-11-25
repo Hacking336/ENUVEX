@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Skills & Career — JSM</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/brand/jsm-favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/brand/jsm-icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/brand/jsm-icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="enuvex-app.css">
+    <script>
+        window.ENUVEX_PAGE = {
+            active: 'skills',
+            title: 'Skills & Career',
+            subtitle: 'See what employers ask for and what could unlock more jobs'
+        };
+    </script>
+</head>
+<body>
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load your skills analysis.</span>
+            </div>
+
+            <div class="page-intro">
+                <h2>Skills gap analysis</h2>
+                <p>
+                    Every number on this page comes from active job postings and your own profile.
+                    Official match scores come from the JSM matching engine; anything labelled
+                    <strong>POTENTIAL MATCH — SIMULATION</strong> is a what-if and never changes your profile.
+                </p>
+            </div>
+
+            <section class="metrics skills-metrics" aria-label="Skills overview">
+                <div class="metric">
+                    <div class="metric-icon"><i class="fas fa-star"></i></div>
+                    <div class="metric-value" id="metricMySkills">—</div>
+                    <div class="metric-label">Skills in your profile</div>
+                    <div class="metric-desc" id="metricMySkillsDesc">Loading…</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-icon"><i class="fas fa-briefcase"></i></div>
+                    <div class="metric-value" id="metricAreaJobs">—</div>
+                    <div class="metric-label">Active jobs in your area</div>
+                    <div class="metric-desc" id="metricAreaJobsDesc">Loading…</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-icon"><i class="fas fa-bullseye"></i></div>
+                    <div class="metric-value" id="metricMatching">—</div>
+                    <div class="metric-label">Jobs you match now</div>
+                    <div class="metric-desc" id="metricMatchingDesc">At the 60% match line</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-icon"><i class="fas fa-arrow-trend-up"></i></div>
+                    <div class="metric-value" id="metricMissing">—</div>
+                    <div class="metric-label">Skills you could add</div>
+                    <div class="metric-desc" id="metricMissingDesc">Required by real area postings</div>
+                </div>
+            </section>
+
+            <div class="skills-layout">
+                <div class="skills-main">
+                    <section class="card panel" aria-labelledby="mySkillsTitle">
+                        <div class="panel-head">
+                            <h3 id="mySkillsTitle"><i class="fas fa-user-check"></i> My Skills</h3>
+                            <div class="panel-actions">
+                                <button class="btn-soft btn-sm" type="button" id="editSkillsBtn"><i class="fas fa-pen"></i> Edit all</button>
+                            </div>
+                        </div>
+                        <div id="mySkillsBox"><p class="panel-empty">Loading your skills…</p></div>
+
+                        <div class="skill-add">
+                            <label class="visually-hidden" for="skillInput">Add a skill</label>
+                            <input id="skillInput" list="skillSuggestions" placeholder="Add a skill you genuinely have, e.g. Customer Service" autocomplete="off">
+                            <datalist id="skillSuggestions"></datalist>
+                            <button class="btn-solid btn-sm" type="button" id="addSkillBtn"><i class="fas fa-plus"></i> Add skill</button>
+                        </div>
+                        <p class="panel-note">
+                            Only add skills you actually have. Suggested skills are shown separately and are never added automatically.
+                        </p>
+
+                        <div class="suggested-wrap">
+                            <h4><i class="fas fa-wand-magic-sparkles"></i> Suggested from active postings</h4>
+                            <div id="suggestedSkills" class="chips chips-suggest"><span class="hint">Loading suggestions…</span></div>
+                        </div>
+                    </section>
+
+                    <section class="card panel" aria-labelledby="needTitle">
+                        <div class="panel-head">
+                            <h3 id="needTitle"><i class="fas fa-list-check"></i> Skills You Need</h3>
+                            <div class="panel-actions">
+                                <select id="analysisMunicipality" class="mini-select" aria-label="Area for gap analysis">
+                                    <option value="">My municipality</option>
+                                    <option value="BASUD">Basud</option>
+                                    <option value="DAET">Daet</option>
+                                    <option value="VINZONS">Vinzons</option>
+                                    <option value="LABO">Labo</option>
+                                </select>
+                                <select id="analysisType" class="mini-select" aria-label="Employment type for gap analysis">
+                                    <option value="">Any employment type</option>
+                                    <option value="FULL_TIME">Full-time</option>
+                                    <option value="PART_TIME">Part-time</option>
+                                    <option value="CONTRACT">Contract</option>
+                                    <option value="TEMPORARY">Temporary</option>
+                                </select>
+                            </div>
+                        </div>
+                        <p class="panel-note" id="analysisScope">Loading the area scope…</p>
+                        <div id="needSkillsBox" class="skill-cards"><div class="loading">Loading gaps…</div></div>
+                        <div id="analysisNotes"></div>
+                    </section>
+
+                    <section class="card panel" aria-labelledby="simTitle" id="simulator">
+                        <div class="panel-head">
+                            <h3 id="simTitle"><i class="fas fa-flask"></i> Job Opportunity Simulator</h3>
+                            <div class="panel-actions">
+                                <select id="simThreshold" class="mini-select" aria-label="Match threshold">
+                                    <option value="40">40% — Partial</option>
+                                    <option value="60" selected>60% — Good</option>
+                                    <option value="75">75% — Strong</option>
+                                    <option value="90">90% — Excellent</option>
+                                </select>
+                            </div>
+                        </div>
+                        <p class="panel-note">
+                            Choose skills you are curious about. The simulator adds them to a temporary copy of your profile,
+                            reruns the existing matching engine, and never saves anything.
+                        </p>
+                        <div id="simSelection" class="chips chips-selectable"></div>
+                        <div class="sim-actions">
+                            <button class="btn-solid btn-sm" type="button" id="runSimBtn" disabled><i class="fas fa-play"></i> Run simulation</button>
+                            <button class="btn-soft btn-sm" type="button" id="clearSimBtn">Clear</button>
+                        </div>
+                        <div id="simResults"></div>
+                    </section>
+
+                    <section class="card panel" aria-labelledby="careerTitle">
+                        <div class="panel-head">
+                            <h3 id="careerTitle"><i class="fas fa-route"></i> Career Opportunities</h3>
+                            <div class="panel-actions">
+                                <select id="careerMunicipality" class="mini-select" aria-label="Area for career groups">
+                                    <option value="">All covered municipalities</option>
+                                    <option value="BASUD">Basud</option>
+                                    <option value="DAET">Daet</option>
+                                    <option value="VINZONS">Vinzons</option>
+                                    <option value="LABO">Labo</option>
+                                </select>
+                            </div>
+                        </div>
+                        <p class="panel-note">
+                            Groups use the job category recorded by employers on their real postings. No occupation
+                            classification is invented.
+                        </p>
+                        <div id="careerBox" class="career-grid"><div class="loading">Loading career groups…</div></div>
+                    </section>
+
+                    <section class="card panel" aria-labelledby="demandTitle">
+                        <div class="panel-head">
+                            <h3 id="demandTitle"><i class="fas fa-chart-simple"></i> Local Skills Demand</h3>
+                        </div>
+                        <form id="demandForm" class="demand-filters">
+                            <div class="field">
+                                <label for="demandMunicipality">Municipality</label>
+                                <select id="demandMunicipality">
+                                    <option value="">All</option>
+                                    <option value="BASUD">Basud</option>
+                                    <option value="DAET">Daet</option>
+                                    <option value="VINZONS">Vinzons</option>
+                                    <option value="LABO">Labo</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="demandBarangay">Barangay</label>
+                                <input id="demandBarangay" placeholder="Any barangay">
+                            </div>
+                            <div class="field">
+                                <label for="demandType">Employment type</label>
+                                <select id="demandType">
+                                    <option value="">Any</option>
+                                    <option value="FULL_TIME">Full-time</option>
+                                    <option value="PART_TIME">Part-time</option>
+                                    <option value="CONTRACT">Contract</option>
+                                    <option value="TEMPORARY">Temporary</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="demandCategory">Job category</label>
+                                <select id="demandCategory"><option value="">Any</option></select>
+                            </div>
+                            <div class="field">
+                                <label for="demandDays">Date posted</label>
+                                <select id="demandDays">
+                                    <option value="">Any time</option>
+                                    <option value="7">Last 7 days</option>
+                                    <option value="30">Last 30 days</option>
+                                    <option value="90">Last 90 days</option>
+                                </select>
+                            </div>
+                            <button class="btn-solid btn-sm" type="submit"><i class="fas fa-filter"></i> Apply</button>
+                        </form>
+
+                        <p class="panel-note" id="demandScope"></p>
+                        <div class="demand-block">
+                            <h4>Most Frequently Required</h4>
+                            <div id="demandTable" class="table-scroll"></div>
+                        </div>
+                        <div class="demand-block">
+                            <h4>Skills by Municipality</h4>
+                            <div id="demandByMunicipality" class="demand-columns"></div>
+                        </div>
+                        <div class="demand-block">
+                            <h4>Skills by Employment Type</h4>
+                            <div id="demandByType" class="demand-columns"></div>
+                        </div>
+                    </section>
+                </div>
+
+                <aside class="skills-side">
+                    <section class="card panel" aria-labelledby="interestTitle">
+                        <div class="panel-head">
+                            <h3 id="interestTitle"><i class="fas fa-bookmark"></i> Learning List</h3>
+                        </div>
+                        <p class="panel-note">Private to you. These skills are not added to your profile.</p>
+                        <div id="interestBox"><p class="panel-empty">No skills saved yet.</p></div>
+                    </section>
+
+                    <section class="card panel" aria-labelledby="adviceTitle">
+                        <div class="panel-head">
+                            <h3 id="adviceTitle"><i class="fas fa-circle-info"></i> How this works</h3>
+                        </div>
+                        <ul class="plain-list">
+                            <li><strong>Local demand (50%)</strong> — how many active postings in your area require the skill.</li>
+                            <li><strong>Opportunity impact (30%)</strong> — how many jobs reach the match line with that skill.</li>
+                            <li><strong>Preference relevance (20%)</strong> — how many of those postings fit your municipality or preferred employment type.</li>
+                        </ul>
+                        <p class="panel-note">
+                            If a factor cannot be calculated from stored data, it is left out and the remaining weights
+                            are renormalized. Priority is a recommendation ranking, not a guarantee of employment.
+                        </p>
+                    </section>
+                </aside>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div class="modal" id="skillModal" hidden>
+    <div class="modal-card modal-wide" role="dialog" aria-modal="true" aria-labelledby="skillModalTitle">
+        <div class="modal-head">
+            <h3 id="skillModalTitle">Skill details</h3>
+            <button class="icon-btn" id="closeSkillModal" type="button" aria-label="Close"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="modal-body" id="skillModalBody"><div class="loading">Loading…</div></div>
+    </div>
+</div>
+
+<div class="modal" id="editModal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="editSkillsTitle">
+        <div class="modal-head">
+            <h3 id="editSkillsTitle">Edit my skills</h3>
+            <button class="icon-btn" id="closeEditModal" type="button" aria-label="Close"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="field">
+                <label for="editSkillsArea">Skills, separated by commas</label>
+                <textarea id="editSkillsArea" rows="5"></textarea>
+                <p class="hint">Remove anything you no longer want to show, or add skills you genuinely have.</p>
+            </div>
+            <div class="form-actions" style="margin-top: 14px;">
+                <button class="btn-soft" type="button" id="cancelEditSkills">Cancel</button>
+                <button class="btn-solid" type="button" id="saveEditSkills"><i class="fas fa-floppy-disk"></i> Save skills</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../assets/js/api.js"></script>
+<script src="enuvex-app.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var CATEGORIES = {
+        RETAIL_STORE: 'Retail / Store', SALES: 'Sales', FOOD_SERVICE_RESTAURANT: 'Food Service / Restaurant',
+        HOSPITALITY_TOURISM: 'Hospitality / Tourism', OFFICE_ADMINISTRATION: 'Office / Administration',
+        ACCOUNTING_FINANCE: 'Accounting / Finance', HEALTHCARE: 'Healthcare',
+        EDUCATION_TUTORING: 'Education / Tutoring', CONSTRUCTION_SKILLED_TRADES: 'Construction / Skilled Trades',
+        AGRICULTURE: 'Agriculture', FISHERIES: 'Fisheries', MANUFACTURING: 'Manufacturing',
+        LOGISTICS_DELIVERY: 'Logistics / Delivery', TRANSPORTATION: 'Transportation',
+        AUTOMOTIVE_MECHANICAL: 'Automotive / Mechanical', CUSTOMER_SERVICE: 'Customer Service',
+        SECURITY: 'Security', GENERAL_LABOR: 'General Labor', IT_TECHNOLOGY: 'IT / Technology', OTHER: 'Other'
+    };
+    var MUNICIPALITIES = { BASUD: 'Basud', DAET: 'Daet', VINZONS: 'Vinzons', LABO: 'Labo' };
+    var TYPES = { FULL_TIME: 'Full-time', PART_TIME: 'Part-time', CONTRACT: 'Contract', TEMPORARY: 'Temporary' };
+
+    var state = {
+        profile: null,
+        analysis: null,
+        demand: null,
+        careers: null,
+        interests: [],
+        catalog: [],
+        selected: [],
+        simulation: null,
+        openSkill: null,
+        saving: false
+    };
+
+    var el = {
+        pageError: document.getElementById('pageError'),
+        pageErrorText: document.getElementById('pageErrorText')
+    };
+
+    function esc(value) { return ENUVEX.esc(value); }
+    function num(value) { return Number(value) || 0; }
+    function label(map, key) { return key ? (map[key] || key) : '—'; }
+
+    function showError(message) {
+        el.pageError.hidden = false;
+        el.pageErrorText.textContent = message;
+    }
+
+    function noteList(notes) {
+        if (!notes || !notes.length) return '';
+        return '<div class="analysis-note">' + notes.map(function (note) {
+            return '<p><i class="fas fa-circle-info"></i> ' + esc(note) + '</p>';
+        }).join('') + '</div>';
+    }
+
+    /* ---------------- profile skills ---------------- */
+
+    function skillsArray(raw) {
+        return String(raw || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+    }
+
+    function profilePayload(skills) {
+        var p = state.profile || {};
+        var data = {
+            fullName: p.fullName,
+            contactNumber: p.contactNumber || '',
+            municipality: p.municipality,
+            barangay: p.barangay || '',
+            educationLevel: p.educationLevel || '',
+            courseField: p.courseField || '',
+            employmentTypePreference: p.employmentTypePreference || '',
+            preferredWorkSchedule: p.preferredWorkSchedule || '',
+            availability: p.availability || '',
+            skills: skills.join(', '),
+            workExperience: p.workExperience || '',
+            certifications: p.certifications || ''
+        };
+        if (p.expectedSalaryMin) data.expectedSalaryMin = Number(p.expectedSalaryMin);
+        if (p.expectedSalaryMax) data.expectedSalaryMax = Number(p.expectedSalaryMax);
+        return data;
+    }
+
+    async function saveSkills(skills) {
+        if (state.saving) return false;
+        state.saving = true;
+        try {
+            var updated = await ApiClient.updateJobSeekerProfile(profilePayload(skills), null);
+            if (updated) state.profile = updated;
+            else state.profile.skills = skills.join(', ');
+            ENUVEX.toast('Skills updated.', 'success');
+            await Promise.all([loadAnalysis(), loadCareers(), loadInterests()]);
+            return true;
+        } catch (error) {
+            ENUVEX.toast(error.message || 'Could not save your skills.', 'error');
+            return false;
+        } finally {
+            state.saving = false;
+        }
+    }
+
+    async function addSkill(raw, fromSuggestion) {
+        var skill = String(raw || '').replace(/\s+/g, ' ').trim();
+        if (!skill) return;
+        var mine = skillsArray(state.profile && state.profile.skills);
+        var exists = mine.some(function (s) { return s.toLowerCase() === skill.toLowerCase(); });
+        if (exists) {
+            ENUVEX.toast('That skill is already in your profile.', 'info');
+            return;
+        }
+        if (!window.confirm('Add "' + skill + '" to your profile?\n\nOnly add skills you genuinely have. Employers may ask about them.')) {
+            return;
+        }
+        var ok = await saveSkills(mine.concat([skill]));
+        if (ok) {
+            document.getElementById('skillInput').value = '';
+            if (fromSuggestion) ENUVEX.toast('Skill added to your profile.', 'success');
+        }
+    }
+
+    async function removeSkill(skill) {
+        if (!window.confirm('Remove "' + skill + '" from your profile?')) return;
+        var mine = skillsArray(state.profile && state.profile.skills).filter(function (s) {
+            return s.toLowerCase() !== skill.toLowerCase();
+        });
+        await saveSkills(mine);
+    }
+
+    function renderMySkills() {
+        var mine = skillsArray(state.profile && state.profile.skills);
+        var box = document.getElementById('mySkillsBox');
+        if (!mine.length) {
+            box.innerHTML = '<p class="panel-empty">No skills in your profile yet. Add the skills you genuinely have so JSM can show accurate gaps.</p>';
+            return;
+        }
+        var rows = (state.analysis && state.analysis.haveSkills) || [];
+        box.innerHTML = '<div class="my-skill-list">' + mine.map(function (skill) {
+            var row = rows.find(function (r) { return r.skill.toLowerCase() === skill.toLowerCase(); });
+            var count = row ? num(row.jobCount) : 0;
+            return '<span class="my-skill">' +
+                '<span><strong>' + esc(skill) + '</strong><small>' + count + ' active job' + (count === 1 ? '' : 's') + ' require it</small></span>' +
+                '<button class="icon-btn tiny" type="button" data-remove-skill="' + esc(skill) + '" aria-label="Remove ' + esc(skill) + '"><i class="fas fa-xmark"></i></button>' +
+            '</span>';
+        }).join('') + '</div>';
+    }
+
+    function renderSuggested() {
+        var mine = skillsArray(state.profile && state.profile.skills).map(function (s) { return s.toLowerCase(); });
+        var box = document.getElementById('suggestedSkills');
+        var rows = (state.catalog || []).filter(function (row) {
+            return num(row.jobCount) > 0 && mine.indexOf(String(row.skill).toLowerCase()) === -1;
+        }).slice(0, 10);
+        if (!rows.length) {
+            box.innerHTML = '<span class="hint">No unlisted skills appear in active postings right now.</span>';
+            return;
+        }
+        box.innerHTML = rows.map(function (row) {
+            return '<button class="suggest-chip" type="button" data-add-skill="' + esc(row.skill) + '" title="Add if you genuinely have it">' +
+                '<i class="fas fa-plus"></i> ' + esc(row.skill) + ' <span>' + num(row.jobCount) + '</span></button>';
+        }).join('');
+    }
+
+    function renderCatalogDatalist() {
+        var list = document.getElementById('skillSuggestions');
+        list.innerHTML = (state.catalog || []).map(function (row) {
+            return '<option value="' + esc(row.skill) + '"></option>';
+        }).join('');
+    }
+
+    /* ---------------- analysis ---------------- */
+
+    function priorityBadge(priority) {
+        var cls = priority === 'HIGH' ? 'p-high' : priority === 'MEDIUM' ? 'p-medium' : 'p-low';
+        return '<span class="priority ' + cls + '">' + esc(priority) + '</span>';
+    }
+
+    function factorLine(row) {
+        return (row.factors || []).map(function (factor) {
+            return esc(factor.explanation);
+        }).join(' ');
+    }
+
+    function skillCard(row) {
+        var interested = !!row.learningInterest;
+        return '<article class="skill-card">' +
+            '<div class="skill-card-head"><div><h4>' + esc(row.skill) + '</h4>' +
+                '<p class="skill-card-meta">' + num(row.areaJobCount) + ' active posting' + (num(row.areaJobCount) === 1 ? '' : 's') +
+                ' require it &middot; ' + (row.sharePercent == null ? '—' : row.sharePercent + '% of area postings') + '</p></div>' +
+                priorityBadge(row.priority) + '</div>' +
+            '<div class="priority-meter" aria-hidden="true"><span style="width:' + Math.max(2, Math.min(100, num(row.priorityScore))) + '%"></span></div>' +
+            '<p class="priority-score">Priority score <strong>' + num(row.priorityScore) + '/100</strong>' +
+                (row.opportunityJobs ? ' &middot; could unlock <strong>' + num(row.opportunityJobs) + '</strong> job' + (num(row.opportunityJobs) === 1 ? '' : 's') : '') + '</p>' +
+            '<p class="skill-why">' + factorLine(row) + '</p>' +
+            '<div class="skill-card-actions">' +
+                '<button class="btn-ghost btn-sm" type="button" data-skill-details="' + esc(row.skillKey) + '"><i class="fas fa-circle-info"></i> Details</button>' +
+                '<button class="btn-soft btn-sm" type="button" data-simulate="' + esc(row.skill) + '"><i class="fas fa-flask"></i> Simulate</button>' +
+                '<button class="btn-soft btn-sm' + (interested ? ' is-on' : '') + '" type="button" data-interest="' + esc(row.skill) + '"><i class="fas fa-bookmark"></i> ' + (interested ? 'Saved' : 'Learn') + '</button>' +
+            '</div>' +
+        '</article>';
+    }
+
+    function renderAnalysis() {
+        var data = state.analysis;
+        if (!data) return;
+        var totals = data.totals || {};
+        document.getElementById('metricMySkills').textContent = num(totals.mySkills);
+        document.getElementById('metricMySkillsDesc').textContent = (data.seeker && data.seeker.municipalityLabel) || 'Your profile';
+        document.getElementById('metricAreaJobs').textContent = num(totals.areaJobs);
+        document.getElementById('metricAreaJobsDesc').textContent = (data.filters && data.filters.municipalityLabel) || 'Selected area';
+        document.getElementById('metricMatching').textContent = num(totals.currentMatchingJobs);
+        document.getElementById('metricMatchingDesc').textContent = 'At the ' + num(data.matchThreshold) + '% match line';
+        document.getElementById('metricMissing').textContent = num(totals.missingSkills);
+        document.getElementById('metricMissingDesc').textContent = 'Required by real area postings';
+
+        document.getElementById('analysisScope').textContent =
+            'Area: ' + ((data.filters && data.filters.municipalityLabel) || '—') +
+            ((data.filters && data.filters.employmentTypeLabel) ? ' · ' + data.filters.employmentTypeLabel : '') +
+            ' · ' + num(totals.jobsWithSkills) + ' posting' + (num(totals.jobsWithSkills) === 1 ? '' : 's') + ' list required skills' +
+            (totals.averageMatchScore == null ? '' : ' · your average official match there is ' + totals.averageMatchScore + '%');
+
+        renderMySkills();
+        renderSuggested();
+
+        var need = data.needSkills || [];
+        document.getElementById('needSkillsBox').innerHTML = need.length
+            ? need.map(skillCard).join('')
+            : '<p class="panel-empty">No missing skills found for this area. Either your profile covers every listed requirement, or the postings here do not list skills.</p>';
+
+        document.getElementById('analysisNotes').innerHTML = noteList(data.notes);
+
+        var demandBox = document.getElementById('suggestedSkills');
+        if (demandBox && state.catalog.length) renderCatalogDatalist();
+    }
+
+    async function loadAnalysis() {
+        var params = {};
+        var municipality = document.getElementById('analysisMunicipality').value;
+        var type = document.getElementById('analysisType').value;
+        if (municipality) params.municipality = municipality;
+        if (type) params.employmentType = type;
+        try {
+            state.analysis = await ApiClient.getSkillsAnalysis(params);
+            renderAnalysis();
+            if (state.selected.length) runSimulation(false);
+        } catch (error) {
+            showError(error.message || 'Could not load your skills analysis.');
+        }
+    }
+
+    /* ---------------- local demand ---------------- */
+
+    function demandParams() {
+        var params = {};
+        var municipality = document.getElementById('demandMunicipality').value;
+        var barangay = document.getElementById('demandBarangay').value.trim();
+        var type = document.getElementById('demandType').value;
+        var category = document.getElementById('demandCategory').value;
+        var days = document.getElementById('demandDays').value;
+        if (municipality) params.municipality = municipality;
+        if (barangay) params.barangay = barangay;
+        if (type) params.employmentType = type;
+        if (category) params.category = category;
+        if (days) params.days = days;
+        return params;
+    }
+
+    function demandTable(rows) {
+        if (!rows || !rows.length) return '<p class="panel-empty">No postings in this filter list required skills.</p>';
+        return '<table class="skills-table"><thead><tr>' +
+            '<th>Skill</th><th>Postings</th><th>Share</th><th>Most common category</th><th>Top municipality</th>' +
+            '</tr></thead><tbody>' + rows.map(function (row) {
+                var topMunicipality = '';
+                var best = 0;
+                Object.keys(row.byMunicipality || {}).forEach(function (name) {
+                    if (num(row.byMunicipality[name]) > best) { best = num(row.byMunicipality[name]); topMunicipality = name; }
+                });
+                return '<tr><td><strong>' + esc(row.skill) + '</strong></td>' +
+                    '<td>' + num(row.jobCount) + '</td>' +
+                    '<td>' + (row.sharePercent == null ? '—' : row.sharePercent + '%') + '</td>' +
+                    '<td>' + esc(row.commonCategoryLabel || '—') + '</td>' +
+                    '<td>' + esc(topMunicipality || '—') + '</td></tr>';
+            }).join('') + '</tbody></table>';
+    }
+
+    function demandColumns(map, labelMap) {
+        var keys = Object.keys(map || {});
+        if (!keys.length) return '<p class="panel-empty">No data.</p>';
+        return '<div class="demand-columns-inner">' + keys.map(function (key) {
+            var rows = map[key] || [];
+            return '<div class="demand-col"><h5>' + esc(labelMap[key] || key) + '</h5>' +
+                (rows.length ? '<ul>' + rows.slice(0, 6).map(function (row) {
+                    return '<li><span>' + esc(row.skill) + '</span><strong>' + num(row.jobCount) + '</strong></li>';
+                }).join('') + '</ul>' : '<p class="hint">No listed skills.</p>') + '</div>';
+        }).join('') + '</div>';
+    }
+
+    function renderDemand() {
+        var data = state.demand;
+        if (!data) return;
+        var totals = data.totals || {};
+        document.getElementById('demandScope').textContent =
+            num(totals.activeJobs) + ' active posting' + (num(totals.activeJobs) === 1 ? '' : 's') +
+            ' in this filter · ' + num(totals.jobsWithSkills) + ' list required skills · ' +
+            num(totals.uniqueSkills) + ' unique skills. ' + (data.trendNote || '');
+        document.getElementById('demandTable').innerHTML = demandTable(data.mostRequired);
+        document.getElementById('demandByMunicipality').innerHTML =
+            demandColumns(data.byMunicipality, MUNICIPALITIES);
+        document.getElementById('demandByType').innerHTML =
+            demandColumns(data.byEmploymentType, TYPES);
+    }
+
+    async function loadDemand() {
+        try {
+            state.demand = await ApiClient.getSkillsDemand(demandParams());
+            renderDemand();
+        } catch (error) {
+            document.getElementById('demandTable').innerHTML =
+                '<p class="panel-empty">' + esc(error.message || 'Could not load skills demand.') + '</p>';
+        }
+    }
+
+    /* ---------------- simulator ---------------- */
+
+    function renderSelection() {
+        var box = document.getElementById('simSelection');
+        box.innerHTML = state.selected.length
+            ? state.selected.map(function (skill) {
+                return '<button class="selected-chip" type="button" data-unselect="' + esc(skill) + '">' +
+                    esc(skill) + ' <i class="fas fa-xmark"></i></button>';
+            }).join('')
+            : '<span class="hint">No skills selected. Use “Simulate” on a recommended skill or add one below.</span>';
+        document.getElementById('runSimBtn').disabled = state.selected.length === 0;
+    }
+
+    function addSelected(skill) {
+        var exists = state.selected.some(function (s) { return s.toLowerCase() === skill.toLowerCase(); });
+        if (!exists) state.selected.push(skill);
+        renderSelection();
+    }
+
+    function simJob(row, tone) {
+        return '<div class="sim-job">' +
+            '<div class="sim-job-main"><a href="job-details.html?id=' + encodeURIComponent(row.id) + '"><strong>' + esc(row.jobTitle) + '</strong></a>' +
+                '<small>' + esc(row.companyName || 'Employer') + ' · ' + esc(label(MUNICIPALITIES, row.municipality)) +
+                (row.employmentType ? ' · ' + esc(label(TYPES, row.employmentType)) : '') + '</small></div>' +
+            '<div class="sim-scores">' +
+                '<span class="now">Now ' + num(row.currentScore) + '%</span>' +
+                '<span class="potential">POTENTIAL MATCH — SIMULATION ' + num(row.potentialScore) + '%</span>' +
+                '<span class="delta ' + (tone || '') + '">' + (num(row.delta) >= 0 ? '+' : '') + num(row.delta) + '</span>' +
+            '</div>' +
+            (row.remainingMissingSkills && row.remainingMissingSkills.length
+                ? '<p class="sim-missing">Still required: ' + row.remainingMissingSkills.map(esc).join(', ') + '</p>' : '') +
+        '</div>';
+    }
+
+    function renderSimulation() {
+        var box = document.getElementById('simResults');
+        var data = state.simulation;
+        if (!data) { box.innerHTML = ''; return; }
+        var unlocked = data.newlyUnlocked || [];
+        var improvedBelow = data.improvedButBelowThreshold || [];
+
+        box.innerHTML =
+            '<div class="sim-status">Simulation only — your official match scores and profile are unchanged.</div>' +
+            '<div class="sim-metrics">' +
+                '<div><span>Matching now</span><strong>' + num(data.currentMatchingJobs) + '</strong></div>' +
+                '<div><span>Potential matching</span><strong>' + num(data.potentialMatchingJobs) + '</strong></div>' +
+                '<div><span>Additional jobs</span><strong>+' + num(data.additionalMatchingJobs) + '</strong></div>' +
+                '<div><span>Average match now</span><strong>' + num(data.currentAverageScore) + '%</strong></div>' +
+                '<div><span>Average in simulation</span><strong>' + num(data.potentialAverageScore) + '%</strong></div>' +
+                '<div><span>Average gain</span><strong>' + (num(data.averageScoreGain) >= 0 ? '+' : '') + num(data.averageScoreGain) + '</strong></div>' +
+            '</div>' +
+            '<div class="sim-section"><h4><i class="fas fa-lock-open"></i> Newly unlocked (' + unlocked.length + ')</h4>' +
+                (unlocked.length ? unlocked.map(function (row) { return simJob(row, 'up'); }).join('')
+                    : '<p class="panel-empty">No job reaches the ' + num(data.threshold) + '% line from this selection alone.</p>') +
+            '</div>' +
+            '<div class="sim-section"><h4><i class="fas fa-arrow-trend-up"></i> Score improves but still below the line (' + improvedBelow.length + ')</h4>' +
+                (improvedBelow.length ? improvedBelow.slice(0, 10).map(function (row) { return simJob(row); }).join('')
+                    : '<p class="panel-empty">None in this selection.</p>') +
+            '</div>' +
+            (data.remainingGaps && data.remainingGaps.length
+                ? '<div class="sim-section"><h4><i class="fas fa-list-check"></i> Still commonly required in unlocked jobs</h4><div class="chips">' +
+                    data.remainingGaps.map(function (gap) {
+                        return '<span class="chip">' + esc(gap.skill) + ' · ' + num(gap.jobs) + '</span>';
+                    }).join('') + '</div></div>'
+                : '') +
+            '<p class="panel-note">' + esc(data.explanation || '') + '</p>';
+    }
+
+    async function runSimulation(showErrors) {
+        if (!state.selected.length) return;
+        var button = document.getElementById('runSimBtn');
+        button.disabled = true;
+        try {
+            state.simulation = await ApiClient.simulateSkills(state.selected, Number(document.getElementById('simThreshold').value));
+            renderSimulation();
+        } catch (error) {
+            if (showErrors !== false) ENUVEX.toast(error.message || 'Could not run the simulation.', 'error');
+        } finally {
+            button.disabled = state.selected.length === 0;
+        }
+    }
+
+    /* ---------------- careers ---------------- */
+
+    function renderCareers() {
+        var data = state.careers;
+        if (!data) return;
+        var box = document.getElementById('careerBox');
+        var groups = data.groups || [];
+        if (!groups.length) {
+            box.innerHTML = '<p class="panel-empty">No active postings match this filter, so no career groups can be shown.</p>' +
+                noteList(data.notes);
+            return;
+        }
+        box.innerHTML = groups.map(function (group) {
+            return '<article class="career-card">' +
+                '<div class="career-head"><h4>' + esc(group.label) + '</h4><span>' + num(group.jobCount) + ' active job' + (num(group.jobCount) === 1 ? '' : 's') + '</span></div>' +
+                '<p class="career-meta">' +
+                    (group.averageMatchScore == null ? 'Match not calculable' : 'Your average official match: <strong>' + group.averageMatchScore + '%</strong>') +
+                    (group.municipalities && group.municipalities.length ? ' · ' + group.municipalities.map(esc).join(', ') : '') +
+                '</p>' +
+                '<div class="career-skills"><p class="career-label">Commonly required</p><div class="chips">' +
+                    (group.topSkills || []).map(function (skill) {
+                        return '<span class="chip">' + esc(skill.skill) + ' · ' + num(skill.jobCount) + '</span>';
+                    }).join('') + '</div></div>' +
+                '<div class="career-two"><div><p class="career-label">You already have</p><div class="chips">' +
+                    ((group.yourSkills || []).length ? group.yourSkills.map(function (skill) {
+                        return '<span class="chip chip-ok">' + esc(skill) + '</span>';
+                    }).join('') : '<span class="hint">None of the common ones yet</span>') + '</div></div>' +
+                '<div><p class="career-label">You may develop</p><div class="chips">' +
+                    ((group.missingSkills || []).length ? group.missingSkills.map(function (skill) {
+                        return '<span class="chip chip-gap">' + esc(skill) + '</span>';
+                    }).join('') : '<span class="hint">Nothing missing</span>') + '</div></div></div>' +
+                ((group.examples || []).length ? '<ul class="career-examples">' + group.examples.map(function (job) {
+                    return '<li><a href="job-details.html?id=' + encodeURIComponent(job.id) + '">' + esc(job.jobTitle) + '</a>' +
+                        '<span>' + esc(job.companyName || '') + ' · ' + esc(label(MUNICIPALITIES, job.municipality)) +
+                        (job.matchPercentage == null ? '' : ' · ' + job.matchPercentage + '% match') + '</span></li>';
+                }).join('') + '</ul>' : '') +
+                '<a class="btn-ghost btn-sm" href="' + esc(group.searchUrl || 'jobs.html') + '"><i class="fas fa-magnifying-glass"></i> Explore jobs</a>' +
+            '</article>';
+        }).join('');
+    }
+
+    async function loadCareers() {
+        var municipality = document.getElementById('careerMunicipality').value;
+        var params = municipality ? { municipality: municipality } : {};
+        try {
+            state.careers = await ApiClient.getCareerOpportunities(params);
+            renderCareers();
+        } catch (error) {
+            document.getElementById('careerBox').innerHTML =
+                '<p class="panel-empty">' + esc(error.message || 'Could not load career opportunities.') + '</p>';
+        }
+    }
+
+    /* ---------------- learning list and skill details ---------------- */
+
+    function renderInterests() {
+        var box = document.getElementById('interestBox');
+        box.innerHTML = state.interests.length ? state.interests.map(function (item) {
+            return '<div class="interest-row"><span>' + esc(item.skill) + '</span>' +
+                '<div><button class="icon-btn tiny" type="button" data-simulate="' + esc(item.skill) + '" aria-label="Simulate ' + esc(item.skill) + '"><i class="fas fa-flask"></i></button>' +
+                '<button class="icon-btn tiny" type="button" data-remove-interest="' + esc(item.skill) + '" aria-label="Remove ' + esc(item.skill) + '"><i class="fas fa-trash"></i></button></div></div>';
+        }).join('') : '<p class="panel-empty">No skills saved yet. Use “Learn” on a recommended skill.</p>';
+    }
+
+    async function loadInterests() {
+        try {
+            state.interests = await ApiClient.getLearningInterests();
+            renderInterests();
+        } catch (error) {
+            document.getElementById('interestBox').innerHTML =
+                '<p class="panel-empty">' + esc(error.message || 'Could not load your learning list.') + '</p>';
+        }
+    }
+
+    async function toggleInterest(skill) {
+        var existing = state.interests.some(function (item) { return item.skillKey === skill.toLowerCase(); });
+        try {
+            if (existing) {
+                await ApiClient.removeLearningInterest(skill);
+                ENUVEX.toast('Removed from your learning list.', 'info');
+            } else {
+                await ApiClient.addLearningInterest(skill);
+                ENUVEX.toast('Saved to your private learning list.', 'success');
+            }
+            await Promise.all([loadInterests(), loadAnalysis()]);
+            if (state.openSkill) openSkill(state.openSkill);
+        } catch (error) {
+            ENUVEX.toast(error.message || 'Could not update your learning list.', 'error');
+        }
+    }
+
+    function findSkill(key) {
+        if (!key) return null;
+        var needle = String(key).toLowerCase();
+        var all = [].concat(
+            (state.analysis && state.analysis.needSkills) || [],
+            (state.analysis && state.analysis.haveSkills) || []
+        );
+        return all.find(function (row) { return String(row.skillKey).toLowerCase() === needle; }) || null;
+    }
+
+    function resourcesHtml(resources, skill) {
+        if (!resources || !resources.length) {
+            return '<p class="panel-empty">No verified learning resources are currently available for this skill.</p>' +
+                '<p class="panel-note">A general next step: ask your local PESO office or TESDA training center what short courses ' +
+                'are currently offered for this skill. That is a suggestion for where to ask, not a course listing.</p>';
+        }
+        return '<div class="resource-list">' + resources.map(function (resource) {
+            return '<article class="resource">' +
+                '<div><h5>' + esc(resource.title) + '</h5>' +
+                '<p>' + esc(resource.provider) + (resource.duration ? ' · ' + esc(resource.duration) : '') + '</p>' +
+                (resource.description ? '<p class="resource-desc">' + esc(resource.description) + '</p>' : '') +
+                '<p class="resource-meta">' +
+                    (resource.free ? '<span class="tag-free">Free</span>' : (resource.cost != null ? '₱' + num(resource.cost) : 'Cost not stated')) +
+                    ' · ' + (resource.online ? 'Online' : 'In person') +
+                    (resource.availability ? ' · ' + esc(resource.availability) : '') +
+                    (resource.verifiedAt ? ' · verified ' + esc(resource.verifiedAt) : '') +
+                '</p></div>' +
+                '<a class="btn-ghost btn-sm" href="' + esc(resource.url) + '" target="_blank" rel="noopener noreferrer"><i class="fas fa-arrow-up-right-from-square"></i> Open</a>' +
+            '</article>';
+        }).join('') + '</div>';
+    }
+
+    async function openSkill(key) {
+        var row = findSkill(key);
+        if (!row) return;
+        state.openSkill = key;
+        var modal = document.getElementById('skillModal');
+        var body = document.getElementById('skillModalBody');
+        document.getElementById('skillModalTitle').textContent = row.skill;
+        modal.hidden = false;
+        document.body.style.overflow = 'hidden';
+
+        var mine = skillsArray(state.profile && state.profile.skills).some(function (skill) {
+            return skill.toLowerCase() === String(row.skill).toLowerCase();
+        });
+        var interested = (state.interests || []).some(function (item) {
+            return String(item.skillKey).toLowerCase() === String(row.skillKey).toLowerCase();
+        });
+
+        body.innerHTML =
+            '<div class="skill-detail-head">' +
+                '<div><h4>' + esc(row.skill) + '</h4>' +
+                '<p>' + num(row.areaJobCount) + ' active posting' + (num(row.areaJobCount) === 1 ? '' : 's') + ' in your selected area require it' +
+                (row.sharePercent == null ? '' : ' (' + row.sharePercent + '% of area postings that list skills)') + '.</p></div>' +
+                priorityBadge(row.priority) +
+            '</div>' +
+            '<div class="skill-detail-grid">' +
+                '<div><span>Priority score</span><strong>' + num(row.priorityScore) + '/100</strong></div>' +
+                '<div><span>Postings area / total</span><strong>' + num(row.areaJobCount) + ' / ' + num(row.totalJobCount) + '</strong></div>' +
+                '<div><span>Jobs it could unlock</span><strong>' + num(row.opportunityJobs) + '</strong></div>' +
+                '<div><span>Jobs with a score gain</span><strong>' + num(row.improvedJobs) + '</strong></div>' +
+            '</div>' +
+            '<h5>Why this ranks here</h5><ul class="plain-list">' + (row.factors || []).map(function (factor) {
+                return '<li><strong>' + esc(factor.label) + ' (' + num(factor.weight) + '%)</strong> — ' + esc(factor.explanation) + '</li>';
+            }).join('') + '</ul>' +
+            '<h5>Demand by municipality</h5><div class="chips">' +
+                Object.keys(row.byMunicipality || {}).map(function (name) {
+                    return '<span class="chip">' + esc(name) + ' · ' + num(row.byMunicipality[name]) + '</span>';
+                }).join('') + '</div>' +
+            '<h5>Demand by employment type</h5><div class="chips">' +
+                Object.keys(row.byEmploymentType || {}).map(function (name) {
+                    return '<span class="chip">' + esc(name) + ' · ' + num(row.byEmploymentType[name]) + '</span>';
+                }).join('') + '</div>' +
+            ((row.relatedSkills || []).length ? '<h5>Commonly associated skills</h5><div class="chips">' +
+                row.relatedSkills.map(function (skill) { return '<span class="chip">' + esc(skill) + '</span>'; }).join('') + '</div>' : '') +
+            ((row.sampleJobs || []).length ? '<h5>Jobs where this skill changes your score</h5>' + row.sampleJobs.map(function (job) {
+                return simJob(job);
+            }).join('') : '') +
+            '<h5>Verified learning resources</h5>' +
+            '<div id="resourceBox"><div class="loading">Loading resources…</div></div>' +
+            '<div class="skill-detail-actions">' +
+                '<button class="btn-soft btn-sm" type="button" data-simulate-detail="' + esc(row.skill) + '"><i class="fas fa-flask"></i> Simulate acquiring it</button>' +
+                '<button class="btn-soft btn-sm' + (interested ? ' is-on' : '') + '" type="button" data-interest="' + esc(row.skill) + '"><i class="fas fa-bookmark"></i> ' + (interested ? 'In learning list' : 'Add to learning list') + '</button>' +
+                (mine ? '<span class="hint">Already in your profile.</span>'
+                    : '<button class="btn-solid btn-sm" type="button" data-add-skill="' + esc(row.skill) + '"><i class="fas fa-user-check"></i> I have this skill</button>') +
+            '</div>';
+
+        try {
+            var resources = await ApiClient.getSkillResources(row.skill);
+            var box = document.getElementById('resourceBox');
+            if (box) box.innerHTML = resourcesHtml(resources, row.skill);
+        } catch (error) {
+            var box2 = document.getElementById('resourceBox');
+            if (box2) box2.innerHTML = '<p class="panel-empty">' + esc(error.message || 'Could not load learning resources.') + '</p>';
+        }
+    }
+
+    /* ---------------- init ---------------- */
+
+    function wire() {
+        document.getElementById('demandCategory').innerHTML = '<option value="">Any</option>' +
+            Object.keys(CATEGORIES).map(function (key) {
+                return '<option value="' + key + '">' + esc(CATEGORIES[key]) + '</option>';
+            }).join('');
+
+        document.getElementById('addSkillBtn').addEventListener('click', function () {
+            addSkill(document.getElementById('skillInput').value, false);
+        });
+        document.getElementById('skillInput').addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') { event.preventDefault(); addSkill(this.value, false); }
+        });
+
+        document.getElementById('editSkillsBtn').addEventListener('click', function () {
+            document.getElementById('editSkillsArea').value = skillsArray(state.profile && state.profile.skills).join(', ');
+            document.getElementById('editModal').hidden = false;
+            document.body.style.overflow = 'hidden';
+        });
+        function closeEdit() {
+            document.getElementById('editModal').hidden = true;
+            document.body.style.overflow = '';
+        }
+        document.getElementById('closeEditModal').addEventListener('click', closeEdit);
+        document.getElementById('cancelEditSkills').addEventListener('click', closeEdit);
+        document.getElementById('saveEditSkills').addEventListener('click', async function () {
+            var skills = skillsArray(document.getElementById('editSkillsArea').value);
+            var ok = await saveSkills(skills);
+            if (ok) closeEdit();
+        });
+        document.getElementById('editModal').addEventListener('click', function (event) {
+            if (event.target === this) closeEdit();
+        });
+
+        document.getElementById('analysisMunicipality').addEventListener('change', loadAnalysis);
+        document.getElementById('analysisType').addEventListener('change', loadAnalysis);
+        document.getElementById('careerMunicipality').addEventListener('change', loadCareers);
+        document.getElementById('demandForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            loadDemand();
+        });
+
+        document.getElementById('runSimBtn').addEventListener('click', function () { runSimulation(true); });
+        document.getElementById('clearSimBtn').addEventListener('click', function () {
+            state.selected = [];
+            state.simulation = null;
+            renderSelection();
+            document.getElementById('simResults').innerHTML = '';
+        });
+        document.getElementById('simThreshold').addEventListener('change', function () {
+            if (state.selected.length) runSimulation(true);
+        });
+
+        document.getElementById('closeSkillModal').addEventListener('click', function () {
+            document.getElementById('skillModal').hidden = true;
+            document.body.style.overflow = '';
+            state.openSkill = null;
+        });
+        document.getElementById('skillModal').addEventListener('click', function (event) {
+            if (event.target === this) {
+                this.hidden = true;
+                document.body.style.overflow = '';
+                state.openSkill = null;
+            }
+        });
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                document.getElementById('skillModal').hidden = true;
+                document.getElementById('editModal').hidden = true;
+                document.body.style.overflow = '';
+            }
+        });
+
+        document.addEventListener('click', async function (event) {
+            var target = event.target.closest('[data-add-skill],[data-remove-skill],[data-simulate],[data-simulate-detail],[data-skill-details],[data-interest],[data-remove-interest],[data-unselect]');
+            if (!target) return;
+
+            if (target.dataset.addSkill) { addSkill(target.dataset.addSkill, true); return; }
+            if (target.dataset.removeSkill) { removeSkill(target.dataset.removeSkill); return; }
+            if (target.dataset.unselect) {
+                state.selected = state.selected.filter(function (skill) { return skill !== target.dataset.unselect; });
+                renderSelection();
+                return;
+            }
+            if (target.dataset.simulate) {
+                addSelected(target.dataset.simulate);
+                document.getElementById('simulator').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                runSimulation(true);
+                return;
+            }
+            if (target.dataset.simulateDetail) {
+                addSelected(target.dataset.simulateDetail);
+                document.getElementById('skillModal').hidden = true;
+                document.body.style.overflow = '';
+                document.getElementById('simulator').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                runSimulation(true);
+                return;
+            }
+            if (target.dataset.skillDetails) { openSkill(target.dataset.skillDetails); return; }
+            if (target.dataset.interest) { toggleInterest(target.dataset.interest); return; }
+            if (target.dataset.removeInterest) {
+                try {
+                    await ApiClient.removeLearningInterest(target.dataset.removeInterest);
+                    ENUVEX.toast('Removed from your learning list.', 'info');
+                    await Promise.all([loadInterests(), loadAnalysis()]);
+                } catch (error) {
+                    ENUVEX.toast(error.message || 'Could not update the learning list.', 'error');
+                }
+            }
+        });
+    }
+
+    async function load() {
+        if (!window.ApiClient || !ApiClient.loadAuth()) {
+            showError('Sign in to view your skills analysis.');
+            return;
+        }
+        el.pageError.hidden = true;
+        try {
+            state.profile = await ApiClient.getProfile();
+        } catch (error) {
+            showError(error.message || 'Could not load your profile.');
+            return;
+        }
+
+        try {
+            state.catalog = await ApiClient.getSkillCatalog(null, 50);
+        } catch (error) {
+            state.catalog = [];
+        }
+        renderCatalogDatalist();
+
+        await Promise.all([loadAnalysis(), loadDemand(), loadCareers(), loadInterests()]);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        wire();
+        load();
+    });
+})();
+</script>
+</body>
+</html>
