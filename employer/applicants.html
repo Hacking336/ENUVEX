@@ -181,6 +181,7 @@
                     <span><i class="fas fa-location-dot"></i>${ROLE.esc(ROLE.municipalityLabel(applicant.location) || 'Not set')}${applicant.barangay ? ', ' + ROLE.esc(applicant.barangay) : ''}</span>
                     <span><i class="fas fa-calendar"></i>Applied ${ROLE.esc(ROLE.dateLabel(applicant.appliedAt))}</span>
                     ${skills.length ? `<span><i class="fas fa-tags"></i>${ROLE.esc(skills.slice(0, 3).join(', '))}</span>` : ''}
+                    ${applicant.education ? `<span><i class="fas fa-graduation-cap"></i>${ROLE.esc(applicant.education)}</span>` : ''}
                 </div>
                 ${applicantMatch(applicant)}
             </div>
