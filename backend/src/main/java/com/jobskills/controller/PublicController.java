@@ -21,10 +21,28 @@ public class PublicController {
     private final JobPostRepository jobPostRepository;
     private final JobSeekerProfileRepository seekerRepository;
     private final EmployerProfileRepository employerRepository;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
+    /**
+     * Readiness, not just liveness: the service is only reported UP when a query
+     * against PostgreSQL succeeds. The answer carries no host, credential or
+     * stack trace, so it is safe to serve publicly.
+     */
     @GetMapping("/health")
     public ResponseEntity<Map<String, String>> health() {
-        return ResponseEntity.ok(Map.of("status", "UP"));
+        Map<String, String> body = new LinkedHashMap<>();
+        boolean databaseUp;
+        try {
+            Integer one = jdbcTemplate.queryForObject("select 1", Integer.class);
+            databaseUp = one != null && one == 1;
+        } catch (RuntimeException e) {
+            databaseUp = false;
+        }
+        body.put("status", databaseUp ? "UP" : "DEGRADED");
+        body.put("database", databaseUp ? "UP" : "DOWN");
+        return databaseUp
+            ? ResponseEntity.ok(body)
+            : ResponseEntity.status(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE).body(body);
     }
 
     @GetMapping("/municipalities")

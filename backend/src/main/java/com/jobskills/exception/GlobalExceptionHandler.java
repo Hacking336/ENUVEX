@@ -72,6 +72,43 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
     }
 
+    /** A method this route does not support (GET on a write-only path) is a 405. */
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Map<String, Object>> handleMethodNotSupported(
+            org.springframework.web.HttpRequestMethodNotSupportedException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", "This action is not supported for this address");
+        body.put("status", HttpStatus.METHOD_NOT_ALLOWED.value());
+        body.put("timestamp", LocalDateTime.now());
+        return new ResponseEntity<>(body, HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
+    /** A body that is not valid JSON, or a missing multipart part, is a 400. */
+    @ExceptionHandler({org.springframework.http.converter.HttpMessageNotReadableException.class,
+        org.springframework.web.multipart.support.MissingServletRequestPartException.class,
+        org.springframework.web.multipart.MultipartException.class,
+        org.springframework.web.HttpMediaTypeNotSupportedException.class})
+    public ResponseEntity<Map<String, Object>> handleBadRequestFormat(Exception ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", "The request could not be read. Check the format of the values you sent.");
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("timestamp", LocalDateTime.now());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    /** A database constraint the request would break (unique email, bad reference) is a 409. */
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleIntegrity(
+            org.springframework.dao.DataIntegrityViolationException ex) {
+        org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class)
+            .warn("Data integrity violation", ex);
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", "That change conflicts with data already recorded.");
+        body.put("status", HttpStatus.CONFLICT.value());
+        body.put("timestamp", LocalDateTime.now());
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
+    }
+
     /** An unknown page or file is a 404, not a server fault. */
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(NoResourceFoundException ex) {

@@ -21,6 +21,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JobService {
 
+    /** Largest page a client may request; keeps one call from loading a table. */
+    private static final int MAX_PAGE_SIZE = 100;
+
+    private static int clampSize(int requested) {
+        return Math.min(Math.max(requested, 1), MAX_PAGE_SIZE);
+    }
+
+    private static int clampPage(int requested) {
+        return Math.max(requested, 0);
+    }
+
     /** Columns a client is allowed to sort by. Anything else falls back to createdAt. */
     private static final Set<String> SORTABLE_COLUMNS =
         Set.of("createdAt", "jobTitle", "salaryMin", "salaryMax", "availablePositions");
@@ -209,8 +220,8 @@ public class JobService {
         }
 
         Pageable pageable = PageRequest.of(
-            Math.max(search.getPage(), 0),
-            Math.max(search.getSize(), 1),
+            clampPage(search.getPage()),
+            clampSize(search.getSize()),
             resolveSort(search));
 
         return jobPostRepository.findAll(spec, pageable).map(job -> mapToResponse(job, seeker));
@@ -245,8 +256,8 @@ public class JobService {
 
     private Page<JobResponse> rankJobs(Specification<JobPost> spec, JobSearchRequest search,
                                        JobSeekerProfile seeker) {
-        int size = Math.max(search.getSize(), 1);
-        int pageIndex = Math.max(search.getPage(), 0);
+        int size = clampSize(search.getSize());
+        int pageIndex = clampPage(search.getPage());
         Integer minScore = minimumScore(search);
 
         List<JobResponse> ranked = jobPostRepository
@@ -389,8 +400,8 @@ public class JobService {
         }
         nearby.sort(Comparator.comparing(JobResponse::getDistanceKm));
 
-        int size = Math.max(search.getSize(), 1);
-        int page = Math.max(search.getPage(), 0);
+        int size = clampSize(search.getSize());
+        int page = clampPage(search.getPage());
         int from = Math.min(page * size, nearby.size());
         int to = Math.min(from + size, nearby.size());
         return new PageImpl<>(nearby.subList(from, to), PageRequest.of(page, size), nearby.size());

@@ -299,7 +299,8 @@ public class AdminController {
     public ResponseEntity<Page<AdminJobPostDto>> getAllJobPosts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "200") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100),
+            Sort.by(Sort.Direction.DESC, "createdAt"));
         return ResponseEntity.ok(jobPostRepository.findAll(pageable).map(this::mapJobPost));
     }
 

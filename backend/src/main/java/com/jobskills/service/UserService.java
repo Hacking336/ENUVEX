@@ -30,6 +30,16 @@ public class UserService {
     private final UploadedFileRepository uploadedFileRepository;
     private final NotificationService notificationService;
 
+    /**
+     * Secret that unlocks the name-only administrator sign-in ("admin" /
+     * "admin++"). Empty means the shortcut is disabled and administrators sign
+     * in with their email and password like every other account. It must never
+     * have a built-in default: a default in the repository is a public key to
+     * the highest privilege account.
+     */
+    @org.springframework.beans.factory.annotation.Value("${jsm.admin.access-code:}")
+    private String adminAccessCode;
+
     /** Labels the registration forms send, mapped to the business type enum. */
     private static final Map<String, BusinessType> BUSINESS_TYPE_LABELS = Map.ofEntries(
         Map.entry("retail/store", BusinessType.RETAIL_STORE),
@@ -143,13 +153,23 @@ public class UserService {
     public AuthResponse login(String email, String password) {
         String normalizedEmail = normalizeEmail(email);
 
-        // Admin login takes a name only: "admin" or "admin++" with no password.
-        // Job seekers and employers always sign in with email + password.
-        boolean isAdminNameLogin = (normalizedEmail.equals("admin") || normalizedEmail.equals("admin++"))
-            && (password == null || password.trim().isEmpty());
+        // "admin" / "admin++" is an administrator shortcut, not a free pass: the
+        // account it resolves to is only signed in when the caller also presents
+        // the access code configured in JSM_ADMIN_ACCESS_CODE. Without that
+        // variable the shortcut is refused, so a public deployment can never be
+        // taken over by typing a known name.
+        boolean isAdminNameLogin = normalizedEmail.equals("admin") || normalizedEmail.equals("admin++");
 
         User user;
         if (isAdminNameLogin) {
+            if (adminAccessCode == null || adminAccessCode.isBlank()) {
+                throw new IllegalArgumentException(
+                    "Administrator sign-in with a name is disabled. Sign in with your admin email and password.");
+            }
+            if (!constantTimeEquals(adminAccessCode, password)) {
+                throw new IllegalArgumentException("Invalid admin credentials");
+            }
+
             // The seeded admin account uses a real email, so resolve it by role
             // unless the typed name happens to match an account's email.
             user = userRepository.findByEmail(normalizedEmail)
@@ -362,6 +382,16 @@ public class UserService {
 
     private String normalizeEnum(String raw) {
         return raw.trim().toUpperCase().replace(" ", "_").replace("-", "_").replace("/", "_");
+    }
+
+    /** Length-safe comparison so the access code cannot be guessed byte by byte. */
+    private boolean constantTimeEquals(String expected, String supplied) {
+        if (supplied == null) {
+            return false;
+        }
+        return java.security.MessageDigest.isEqual(
+            expected.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+            supplied.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     }
 
     private String normalizeEmail(String email) {

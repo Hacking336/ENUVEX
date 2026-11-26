@@ -127,6 +127,18 @@ public class SecurityConfig {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
+            // Baseline browser hardening. A full Content-Security-Policy is not
+            // enabled because the pages use inline scripts, and a policy strict
+            // enough to matter would break them; the headers below apply to
+            // every response without changing behaviour.
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.deny())
+                .contentTypeOptions(org.springframework.security.config.Customizer.withDefaults())
+                .referrerPolicy(referrer -> referrer.policy(
+                    org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy
+                        .STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                .permissionsPolicyHeader(permissions -> permissions.policy(
+                    "geolocation=(self), camera=(), microphone=(), payment=()")))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             // Missing or invalid token answers 401, not 403, so the frontend can
             // tell "log in again" apart from "not allowed".

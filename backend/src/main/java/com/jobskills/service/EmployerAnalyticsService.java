@@ -983,7 +983,11 @@ public class EmployerAnalyticsService {
             && (employerId.equals(employer.getId())
                 || (employer.getUser() != null && employerId.equals(employer.getUser().getId())));
         if (!owns) {
-            throw new RuntimeException("This job belongs to another employer");
+            // A cross-tenant read is an authorization failure (403), not a server
+            // fault: the generic 500 handler used to answer this, which hid the
+            // real cause from the client and the log.
+            throw new org.springframework.security.access.AccessDeniedException(
+                "This job belongs to another employer");
         }
     }
 

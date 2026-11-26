@@ -121,7 +121,7 @@
                     <h3><i class="fas fa-chart-bar"></i> Job Posting Performance</h3>
                 </div>
                 <div class="panel-body">
-                    <div class="table-responsive">
+                    <div class="table-wrap">
                         <table class="data-table">
                             <thead>
                                 <tr>
@@ -311,7 +311,7 @@
                 <div class="panel-body">
                     <p>Select a job posting to analyze applicant skills:</p>
                     <div class="select-container">
-                        <select id="jobSelect" onchange="loadSkillsAnalysis(this.value)">
+                        <select id="jobSelect" aria-label="Job post to analyse" onchange="loadSkillsAnalysis(this.value)">
                             <option value="">— Select a job —</option>
                             <!-- Options loaded via JavaScript -->
                         </select>
@@ -412,502 +412,18 @@
 <script src="../assets/js/api.js"></script>
 <script src="../assets/js/role-app.js"></script>
 <script>
-/* Global state */
-var currentEmployerId = null;
-var allApplications = [];
-var allJobPosts = [];
-
-/* Wait for auth to load, then fetch analytics */
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if user is authenticated as employer
-    var userType = localStorage.getItem('jsm_user_type');
-    if (!userType || userType !== 'employer') {
-        window.location.href = 'login.html';
-        return;
-    }
-
-    // Get employer ID from user data
-    var userId = localStorage.getItem('jsm_user_id');
-    if (userId) {
-        currentEmployerId = parseInt(userId);
-        fetchAnalytics();
-    } else {
-        // Try to load from API
-        loadEmployerData();
-    }
-});
-
-/* Load employer data and populate job selector */
-function loadEmployerData() {
-    ROLE.loadEmployerData().then(function(data) {
-        if (data.error) {
-            showError(data.error);
-            return;
-        }
-        currentEmployerId = data.employerId;
-        fetchAnalytics();
-        populateJobSelector(data.jobs);
-    }).catch(function(err) {
-        showError('Failed to load employer data: ' + err.message);
-    });
-}
-
-/* Show error message */
-function showError(message) {
-    var box = document.getElementById('pageError');
-    var text = document.getElementById('pageErrorText');
-    if (box && text) {
-        text.textContent = message;
-        box.hidden = false;
-    }
-}
-
-/* Populate job selector for skills analysis */
-function populateJobSelector(jobs) {
-    var select = document.getElementById('jobSelect');
-    if (!select) return;
-
-    // Clear existing options (keep first placeholder)
-    select.innerHTML = '<option value="">— Select a job —</option>';
-
-    allJobPosts = jobs || [];
-
-    allJobPosts.forEach(function(job) {
-        var option = document.createElement('option');
-        option.value = job.id;
-        option.textContent = job.jobTitle + ' (' + (job.municipality ? job.municipality.name + ', ' : '') + (job.barangay || '') + ')';
-        select.appendChild(option);
-    });
-}
-
-/* Fetch all analytics data */
-function fetchAnalytics() {
-    if (!currentEmployerId) return;
-
-    // Fetch overview metrics
-    fetchOverview();
-
-    // Fetch funnel data
-    fetchFunnel();
-
-    // Fetch response metrics
-    fetchResponseMetrics();
-
-    // Fetch matching insights
-    fetchMatchingInsights();
-
-    // Fetch job performance data
-    fetchJobPerformance();
-
-    // Fetch geographic insights
-    fetchGeographicInsights();
-
-    // Fetch recruitment insights
-    fetchRecruitmentInsights();
-
-    // Load jobs for selector and performance table
-    fetchJobsForSelector();
-}
-
-/* Fetch overview metrics */
-function fetchOverview() {
-    if (!currentEmployerId) return;
-
-    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
-
-    fetch('/api/employers/analytics/overview?employerId=' + currentEmployerId + '&dateRange=' + dateRange)
-        .then(function(response) {
-            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
-            return response.json();
-        })
-        .then(function(dto) {
-            document.getElementById('metricTotal').textContent = dto.totalJobPosts || 0;
-            document.getElementById('metricActive').textContent = dto.activeJobPosts || 0;
-            document.getElementById('metricApplicants').textContent = dto.totalApplicants || 0;
-            document.getElementById('metricNew').textContent = dto.newApplicants || 0;
-            document.getElementById('metricReviewing').textContent = dto.applicantsUnderReview || 0;
-            document.getElementById('metricInterviews').textContent = dto.interviewedApplicants || 0;
-            document.getElementById('metricAccepted').textContent = dto.acceptedApplicants || 0;
-            document.getElementById('metricRejected').textContent = dto.rejectedApplicants || 0;
-            document.getElementById('metricUpcomingInterviews').textContent = dto.upcomingInterviews || 0;
-        })
-        .catch(function(err) {
-            console.error('Error fetching overview:', err);
-        });
-}
-
-/* Fetch funnel data */
-function fetchFunnel() {
-    if (!currentEmployerId) return;
-
-    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
-
-    fetch('/api/employers/analytics/funnel?employerId=' + currentEmployerId + '&dateRange=' + dateRange)
-        .then(function(response) {
-            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
-            return response.json();
-        })
-        .then(function(dto) {
-            document.getElementById('funnel-received').textContent = dto.applicationsReceived || 0;
-            document.getElementById('funnel-reviewing').textContent = dto.reviewing || 0;
-            document.getElementById('funnel-shortlisted').textContent = dto.shortlisted || 0;
-            document.getElementById('funnel-interviewed').textContent = dto.interviewed || 0;
-            document.getElementById('funnel-accepted').textContent = dto.accepted || 0;
-            document.getElementById('funnel-rejected').textContent = dto.rejected || 0;
-
-            // Conversion rates
-            var convReceived = dto.conversionRates?.[0] || 0;
-            var convReviewing = dto.conversionRates?.[1] || 0;
-            var convShortlisted = dto.conversionRates?.[2] || 0;
-            var convInterview = dto.conversionRates?.[3] || 0;
-
-            document.getElementById('conv-received-to-reviewing').textContent = convReceived.toFixed(1) + '%';
-            document.getElementById('conv-reviewing-to-shortlisted').textContent = convReviewing.toFixed(1) + '%';
-            document.getElementById('conv-shortlisted-to-interview').textContent = convShortlisted.toFixed(1) + '%';
-            document.getElementById('conv-interview-to-offer').textContent = convInterview.toFixed(1) + '%';
-
-            // Drop-offs
-            var appsReceived = dto.applicationsReceived || 0;
-            var reviewing = dto.reviewing || 0;
-            var shortlisted = dto.shortlisted || 0;
-            var interviewed = dto.interviewed || 0;
-            var accepted = dto.accepted || 0;
-            var rejected = dto.rejected || 0;
-
-            document.getElementById('drop-received').textContent = (appsReceived - reviewing);
-            document.getElementById('drop-reviewing').textContent = (reviewing - shortlisted);
-            document.getElementById('drop-shortlisted').textContent = (shortlisted - interviewed);
-            document.getElementById('drop-interview').textContent = (interviewed - accepted) + (interviewed - rejected);
-        })
-        .catch(function(err) {
-            console.error('Error fetching funnel:', err);
-        });
-}
-
-/* Fetch response metrics */
-function fetchResponseMetrics() {
-    if (!currentEmployerId) return;
-
-    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
-
-    fetch('/api/employers/analytics/metrics?employerId=' + currentEmployerId + '&dateRange=' + dateRange)
-        .then(function(response) {
-            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
-            return response.json();
-        })
-        .then(function(dto) {
-            // Time to review
-            if (dto.timeToReviewAvailable) {
-                document.getElementById('timeToReviewAvg').textContent = formatDays(dto.timeToReviewAvg);
-                document.getElementById('timeToReviewMedian').textContent = formatDays(dto.timeToReviewMedian);
-            }
-
-            // Time to shortlist
-            if (dto.timeToShortlistAvailable) {
-                document.getElementById('timeToShortlistAvg').textContent = formatDays(dto.timeToShortlistAvg);
-                document.getElementById('timeToShortlistMedian').textContent = formatDays(dto.timeToShortlistMedian);
-            }
-
-            // Time to interview
-            if (dto.timeToInterviewAvailable) {
-                document.getElementById('timeToInterviewAvg').textContent = formatDays(dto.timeToInterviewAvg);
-                document.getElementById('timeToInterviewMedian').textContent = formatDays(dto.timeToInterviewMedian);
-            }
-
-            // Time to decision
-            if (dto.timeToDecisionAvailable) {
-                document.getElementById('timeToDecisionAvg').textContent = formatDays(dto.timeToDecisionAvg);
-                document.getElementById('timeToDecisionMedian').textContent = formatDays(dto.timeToDecisionMedian);
-            }
-        })
-        .catch(function(err) {
-            console.error('Error fetching response metrics:', err);
-        });
-}
-
-/* Format days to human readable */
-function formatDays(days) {
-    if (days < 1) return '< 1 day';
-    var d = Math.floor(days);
-    var h = Math.floor((days % 1) * 24);
-    return d + ' day' + (d !== 1 ? 's' : '') + (h > 0 ? ' ' + h + ' hours' : '');
-}
-
-/* Fetch matching insights */
-function fetchMatchingInsights() {
-    if (!currentEmployerId) return;
-
-    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
-
-    fetch('/api/employers/analytics/matching?employerId=' + currentEmployerId + '&dateRange=' + dateRange)
-        .then(function(response) {
-            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
-            return response.json();
-        })
-        .then(function(dto) {
-            document.getElementById('avgMatchScore').textContent = Math.round(dto.averageMatchScore) + '%';
-            document.getElementById('highestMatch').textContent = Math.round(dto.highestMatch) + '%';
-
-            // Score distribution
-            var dist = dto.scoreDistribution || {};
-            var total = dto.excellentMatches + dto.strongMatches + dto.goodMatches + dto.partialMatches + dto.lowMatches || 1;
-
-            document.getElementById('excellentCount').textContent = dto.excellentMatches;
-            document.getElementById('strongCount').textContent = dto.strongMatches;
-            document.getElementById('goodCount').textContent = dto.goodMatches;
-            document.getElementById('partialCount').textContent = dto.partialMatches;
-            document.getElementById('lowCount').textContent = dto.lowMatches;
-
-            // Update bar widths
-            if (total > 0) {
-                document.querySelectorAll('.bar-fill').forEach(function(bar, i) {
-                    var percentages = [0.9, 0.75, 0.6, 0.4, 0];
-                    var pct = (dist[i] || 0) / total;
-                    bar.style.width = Math.round(pct * 100) + '%';
-                });
-            }
-
-            // Match categories
-            document.getElementById('excellentNum').textContent = dto.excellentMatches;
-            document.getElementById('strongNum').textContent = dto.strongMatches;
-            document.getElementById('goodNum').textContent = dto.goodMatches;
-            document.getElementById('partialNum').textContent = dto.partialMatches;
-            document.getElementById('lowNum').textContent = dto.lowMatches;
-        })
-        .catch(function(err) {
-            console.error('Error fetching matching insights:', err);
-        });
-}
-
-/* Fetch job performance data */
-function fetchJobPerformance() {
-    if (!currentEmployerId) return;
-
-    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
-
-    fetch('/api/employers/analytics/jobs?employerId=' + currentEmployerId + '&dateRange=' + dateRange)
-        .then(function(response) {
-            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
-            return response.json();
-        })
-        .then(function(dtos) {
-            var tbody = document.getElementById('jobPerformanceTable');
-            if (!dtos || dtos.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="13" class="text-center">No job posts found.</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = dtos.map(function(dto) {
-                return '<tr>' +
-                    '<td>' + (dto.jobTitle || '—') + '</td>' +
-                    '<td>' + (dto.municipality || '—') + '</td>' +
-                    '<td>' + (dto.employmentType || '—') + '</td>' +
-                    '<td>' + (dto.datePosted ? new Date(dto.datePosted).toLocaleDateString() : '—') + '</td>' +
-                    '<td>' + (dto.status || '—') + '</td>' +
-                    '<td>' + (dto.totalApplicants || 0) + '</td>' +
-                    '<td>' + (dto.newApplicants || 0) + '</td>' +
-                    '<td>' + (dto.shortlisted || 0) + '</td>' +
-                    '<td>' + (dto.interviewed || 0) + '</td>' +
-                    '<td>' + (dto.accepted || 0) + '</td>' +
-                    '<td>' + (dto.rejected || 0) + '</td>' +
-                    '<td>' + (dto.averageMatchScore !== undefined ? Math.round(dto.averageMatchScore) + '%' : '—') + '</td>' +
-                    '<td>' + (dto.actions || '—') + '</td>' +
-                '</tr>';
-            }).join('');
-        })
-        .catch(function(err) {
-            console.error('Error fetching job performance:', err);
-        });
-}
-
-/* Fetch geographic insights */
-function fetchGeographicInsights() {
-    if (!currentEmployerId) return;
-
-    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
-
-    fetch('/api/employers/analytics/geography?employerId=' + currentEmployerId + '&dateRange=' + dateRange)
-        .then(function(response) {
-            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
-            return response.json();
-        })
-        .then(function(dto) {
-            document.getElementById('geoTotalApplicants').textContent = dto.totalApplicants || 0;
-            document.getElementById('geoBasud').textContent = dto.applicantsByMunicipality?.Basud || 0;
-            document.getElementById('geoDaet').textContent = dto.applicantsByMunicipality?.Daet || 0;
-            document.getElementById('geoVinzons').textContent = dto.applicantsByMunicipality?.Vinzons || 0;
-            document.getElementById('geoLabo').textContent = dto.applicantsByMunicipality?.Labo || 0;
-
-            // Applicants by municipality
-            var muniHtml = '';
-            var muni = dto.applicantsByMunicipality || {};
-            if (Object.keys(muni).length > 0) {
-                muniHtml = '<ul>';
-                Object.entries(muni).forEach(function(_ref) {
-                    var _ref2 = _slicedToArray(_ref, 2),
-                        municipality = _ref2[0],
-                        count = _ref2[1];
-                    muniHtml += '<li>' + municipality + ': ' + count + '</li>';
-                });
-                muniHtml += '</ul>';
-            } else {
-                muniHtml = '<p class="no-data">No municipal data available.</p>';
-            }
-            document.getElementById('geoByMunicipality').innerHTML = muniHtml;
-
-            // Applicants by barangay
-            document.getElementById('geoByBarangay').textContent = (dto.applicantsByBarangay || 0) + ' applicants';
-        })
-        .catch(function(err) {
-            console.error('Error fetching geographic insights:', err);
-        });
-}
-
-/* Fetch recruitment insights */
-function fetchRecruitmentInsights() {
-    if (!currentEmployerId) return;
-
-    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
-
-    fetch('/api/employers/analytics/insights?employerId=' + currentEmployerId + '&dateRange=' + dateRange)
-        .then(function(response) {
-            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
-            return response.json();
-        })
-        .then(function(insights) {
-            var insightsContainer = document.getElementById('recruitmentInsights');
-            if (!insights || insights.length === 0) {
-                insightsContainer.innerHTML = '<p>No insights available at this time.</p>';
-                return;
-            }
-
-            insightsContainer.innerHTML = insights.map(function(insight) {
-                var priorityClass = insight.priority === 'warning' ? 'insight-warning' : 'insight-info';
-                return '<div class="insight-item ' + priorityClass + '">' +
-                    '<strong>' + insight.title + '</strong>' +
-                    '<span>' + insight.description + '</span>' +
-                '</div>';
-            }).join('');
-        })
-        .catch(function(err) {
-            console.error('Error fetching recruitment insights:', err);
-        });
-}
-
-/* Load skills analysis for a specific job */
-function loadSkillsAnalysis(jobId) {
-    if (!currentEmployerId || !jobId) return;
-
-    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
-
-    fetch('/api/employers/analytics/skills?employerId=' + currentEmployerId + '&jobId=' + jobId + '&dateRange=' + dateRange)
-        .then(function(response) {
-            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
-            return response.json();
-        })
-        .then(function(dto) {
-            var content = document.getElementById('skillsAnalysisContent');
-            if (!dto || !dto.jobTitle) {
-                content.innerHTML = '<p>No skills data available for this job.</p>';
-                return;
-            }
-
-            // Most common applicant skills
-            var applicantSkills = dto.mostCommonApplicantSkills || [];
-            var skillsHtml = '<h4>Most common applicant skills:</ul>';
-            applicantSkills.slice(0, 10).forEach(function(_ref3) {
-                var _ref4 = _slicedToArray(_ref3, 2),
-                    skill = _ref4[0],
-                    count = _ref4[1];
-                skillsHtml += '<li>' + skill + ' (' + count + ' applicants)</li>';
-            });
-            skillsHtml += '</ul>';
-
-            // Skills coverage (required vs applicant possession)
-            var coverage = dto.skillsCoverage || [];
-            skillsHtml += '<h4>Skills coverage:</ul>';
-            coverage.slice(0, 8).forEach(function(_ref5) {
-                var _ref6 = _slicedToArray(_ref5, 4),
-                    skill = _ref6[0],
-                    applicantsWithSkill = _ref6[1],
-                    totalApplicants = _ref6[2],
-                    pct = _ref6[3];
-                skillsHtml += '<li>' + skill + ': ' + applicantsWithSkill + '/' + totalApplicants + ' (' + Math.round(pct) + '%)</li>';
-            });
-            skillsHtml += '</ul>';
-
-            // Missing required skills
-            var missing = dto.missingRequiredSkills || [];
-            if (missing.length > 0) {
-                skillsHtml += '<h4>Missing required skills:</ul>';
-                missing.forEach(function(_ref7) {
-                    var _ref8 = _slicedToArray(_ref7, 2),
-                        missingSkill = _ref8[0],
-                        pct = _ref8[1];
-                skillsHtml += '<li>' + missingSkill + ' missing (' + Math.round(pct) + '%)</li>';
-                });
-                skillsHtml += '</ul>';
-            }
-
-            content.innerHTML = skillsHtml;
-        })
-        .catch(function(err) {
-            console.error('Error fetching skills analysis:', err);
-            document.getElementById('skillsAnalysisContent').innerHTML = '<p class="error">Failed to load skills analysis.</p>';
-        });
-}
-
-/* Date filtering */
-document.querySelectorAll('.filter-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-        document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
-        this.classList.add('active');
-
-        var filter = this.getAttribute('data-filter');
-        applyDateFilter(filter);
-    });
-});
-
-function applyDateFilter(filter) {
-    // Update the filtered metrics display
-    document.getElementById('filteredMetrics').innerHTML = '<p>Reporting period: ' + filter + '</p>';
-
-    // Refresh all analytics sections with the new date filter
-    fetchAnalytics();
-}
-
-/* Fetch all analytics data */
-function fetchAnalytics() {
-    if (!currentEmployerId) return;
-
-    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
-
-    // Fetch overview metrics
-    fetchOverview();
-
-    // Fetch funnel data
-    fetchFunnel();
-
-    // Fetch response metrics
-    fetchResponseMetrics();
-
-    // Fetch matching insights
-    fetchMatchingInsights();
-
-    // Fetch job performance data
-    fetchJobPerformance();
-
-    // Fetch geographic insights
-    fetchGeographicInsights();
-
-    // Fetch recruitment insights
-    fetchRecruitmentInsights();
-
-    // Load jobs for selector and performance table
-    fetchJobsForSelector();
-
-    // Display the active reporting period
-    var periodLabels = {
+/*
+ * Employer analytics console.
+ *
+ * Every request goes through ApiClient, so it carries the signed-in employer's
+ * token and the backend decides which employer's data to return. The page never
+ * sends an employer id: an id in a query string is exactly what an attacker
+ * would edit, and the API does not accept one.
+ */
+(function () {
+    'use strict';
+
+    var PERIOD_LABELS = {
         'all-time': 'All time',
         '90d': 'Last 90 days',
         '30d': 'Last 30 days',
@@ -915,46 +431,431 @@ function fetchAnalytics() {
         'this-month': 'This month',
         'prev-month': 'Previous month'
     };
-    var periodLabel = periodLabels[filter] || filter;
-    document.getElementById('filteredMetrics').previousElementSibling?.previousElementSibling?.textContent || document.querySelector('.panel-head h3')?.textContent;
-    // Update page head subtitle to show active period
-    var pageSubtitle = document.querySelector('.page-head p');
-    if (pageSubtitle) {
-        pageSubtitle.textContent = 'Data-driven hiring insights from your job posts (' + periodLabel + ')';
+
+    var state = { dateRange: 'all-time', jobs: [], exporting: false };
+
+    function text(id, value) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = value;
     }
-}
 
-function exportAsCSV() {
-    if (!currentEmployerId) return;
+    function esc(value) {
+        return String(value == null ? '' : value)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
 
-    var dateRange = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all-time';
+    function n(value) {
+        var parsed = Number(value);
+        return isFinite(parsed) ? parsed : 0;
+    }
 
-    fetch('/api/employers/analytics/export?employerId=' + currentEmployerId + '&dateRange=' + dateRange)
-        .then(function(response) {
-            if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
-            return response.blob();
-        })
-        .then(function(blob) {
-            var url = window.URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = 'employer-analytics-report-' + new Date().toISOString().split('T')[0] + '.csv';
-            document.body.append(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.remove(a);
-            document.getElementById('exportStatus').innerHTML = '<p style="color: green;">Report exported successfully!</p>';
-            document.getElementById('exportStatus').hidden = false;
-        })
-        .catch(function(err) {
-            console.error('Error exporting CSV:', err);
-            document.getElementById('exportStatus').innerHTML = '<p style="color: red;">Error exporting report. See console for details.</p>';
-            document.getElementById('exportStatus').hidden = false;
-        })
-}
+    function showError(message) {
+        var box = document.getElementById('pageError');
+        var body = document.getElementById('pageErrorText');
+        if (!box || !body) return;
+        body.textContent = message;
+        box.hidden = false;
+    }
 
-document.getElementById('exportBtn').addEventListener('click', exportAsCSV);
+    function clearError() {
+        var box = document.getElementById('pageError');
+        if (box) box.hidden = true;
+    }
 
+    function activeRange() {
+        var button = document.querySelector('.filter-btn.active');
+        var value = button ? button.getAttribute('data-filter') : 'all';
+        return !value || value === 'all' ? 'all-time' : value;
+    }
+
+    function query(extra) {
+        return '?dateRange=' + encodeURIComponent(state.dateRange) + (extra || '');
+    }
+
+    /* ---------- sections ------------------------------------------------- */
+
+    function renderOverview(dto) {
+        text('metricTotal', n(dto.totalJobPosts));
+        text('metricActive', n(dto.activeJobPosts));
+        text('metricApplicants', n(dto.totalApplicants));
+        text('metricNew', n(dto.newApplicants));
+        text('metricReviewing', n(dto.applicantsUnderReview));
+        text('metricInterviews', n(dto.interviewedApplicants));
+        text('metricAccepted', n(dto.acceptedApplicants));
+        text('metricRejected', n(dto.rejectedApplicants));
+    }
+
+    function renderFunnel(dto) {
+        text('funnel-received', n(dto.applicationsReceived));
+        text('funnel-reviewing', n(dto.reviewing));
+        text('funnel-shortlisted', n(dto.shortlisted));
+        text('funnel-interviewed', n(dto.interviewed));
+        text('funnel-accepted', n(dto.accepted));
+        text('funnel-rejected', n(dto.rejected));
+
+        var rates = Array.isArray(dto.conversionRates) ? dto.conversionRates : [];
+        text('conv-received-to-reviewing', n(rates[0]).toFixed(1) + '%');
+        text('conv-reviewing-to-shortlisted', n(rates[1]).toFixed(1) + '%');
+        text('conv-shortlisted-to-interview', n(rates[2]).toFixed(1) + '%');
+        text('conv-interview-to-offer', n(rates[3]).toFixed(1) + '%');
+
+        var drops = Array.isArray(dto.dropOff) ? dto.dropOff : [];
+        text('drop-received', n(drops[0]));
+        text('drop-reviewing', n(drops[1]));
+        text('drop-shortlisted', n(drops[2]));
+        text('drop-interview', n(drops[3]));
+    }
+
+    function days(value) {
+        if (!isFinite(value) || value <= 0) return 'No data yet';
+        if (value < 1) return 'under a day';
+        var whole = Math.floor(value);
+        var hours = Math.round((value - whole) * 24);
+        return whole + ' day' + (whole === 1 ? '' : 's') + (hours > 0 ? ' ' + hours + 'h' : '');
+    }
+
+    function renderResponseMetrics(dto) {
+        text('timeToReviewAvg', dto.timeToReviewAvailable ? days(dto.timeToReviewAvg) : 'No data yet');
+        text('timeToReviewMedian', dto.timeToReviewAvailable ? days(dto.timeToReviewMedian) : 'No data yet');
+        text('timeToShortlistAvg', dto.timeToShortlistAvailable ? days(dto.timeToShortlistAvg) : 'No data yet');
+        text('timeToShortlistMedian', dto.timeToShortlistAvailable ? days(dto.timeToShortlistMedian) : 'No data yet');
+        text('timeToInterviewAvg', dto.timeToInterviewAvailable ? days(dto.timeToInterviewAvg) : 'No data yet');
+        text('timeToInterviewMedian', dto.timeToInterviewAvailable ? days(dto.timeToInterviewMedian) : 'No data yet');
+        text('timeToDecisionAvg', dto.timeToDecisionAvailable ? days(dto.timeToDecisionAvg) : 'No data yet');
+        text('timeToDecisionMedian', dto.timeToDecisionAvailable ? days(dto.timeToDecisionMedian) : 'No data yet');
+    }
+
+    function renderMatching(dto) {
+        var scored = n(dto.excellentMatches) + n(dto.strongMatches) + n(dto.goodMatches)
+            + n(dto.partialMatches) + n(dto.lowMatches);
+        text('avgMatchScore', scored ? Math.round(n(dto.averageMatchScore)) + '%' : 'No data yet');
+        text('highestMatch', scored ? Math.round(n(dto.highestMatch)) + '%' : 'No data yet');
+        text('excellentCount', n(dto.excellentMatches));
+        text('strongCount', n(dto.strongMatches));
+        text('goodCount', n(dto.goodMatches));
+        text('partialCount', n(dto.partialMatches));
+        text('lowCount', n(dto.lowMatches));
+        text('excellentNum', n(dto.excellentMatches));
+        text('strongNum', n(dto.strongMatches));
+        text('goodNum', n(dto.goodMatches));
+        text('partialNum', n(dto.partialMatches));
+        text('lowNum', n(dto.lowMatches));
+
+        var counts = [n(dto.excellentMatches), n(dto.strongMatches), n(dto.goodMatches),
+            n(dto.partialMatches), n(dto.lowMatches)];
+        var total = counts.reduce(function (sum, value) { return sum + value; }, 0);
+        var bars = document.querySelectorAll('.bar-fill');
+        counts.forEach(function (count, index) {
+            if (bars[index]) {
+                bars[index].style.width = total ? Math.round((count / total) * 100) + '%' : '0%';
+            }
+        });
+    }
+
+    function renderJobPerformance(page) {
+        var body = document.getElementById('jobPerformanceTable');
+        if (!body) return;
+        var rows = page && Array.isArray(page.content) ? page.content : [];
+        if (!rows.length) {
+            body.innerHTML = '<tr><td colspan="13" class="text-center">No job posts for this period.</td></tr>';
+            return;
+        }
+        body.innerHTML = rows.map(function (job) {
+            return '<tr>'
+                + '<td>' + esc(job.jobTitle || '—') + '</td>'
+                + '<td>' + esc(job.municipality || '—') + '</td>'
+                + '<td>' + esc(String(job.employmentType || '—').replace(/_/g, ' ').toLowerCase()) + '</td>'
+                + '<td>' + esc(job.datePosted ? new Date(job.datePosted).toLocaleDateString() : '—') + '</td>'
+                + '<td>' + esc(String(job.status || '—').replace(/_/g, ' ').toLowerCase()) + '</td>'
+                + '<td>' + n(job.totalApplicants) + '</td>'
+                + '<td>' + n(job.newApplicants) + '</td>'
+                + '<td>' + n(job.shortlisted) + '</td>'
+                + '<td>' + n(job.interviewed) + '</td>'
+                + '<td>' + n(job.accepted) + '</td>'
+                + '<td>' + n(job.rejected) + '</td>'
+                + '<td>' + (n(job.totalApplicants) ? Math.round(n(job.averageMatchScore)) + '%' : '—') + '</td>'
+                + '<td>' + esc(job.actions || '—') + '</td>'
+                + '</tr>';
+        }).join('');
+    }
+
+    function municipalityCount(map, wanted) {
+        if (!map) return 0;
+        var key = Object.keys(map).filter(function (name) {
+            return name.toUpperCase() === wanted.toUpperCase();
+        })[0];
+        return key ? n(map[key]) : 0;
+    }
+
+    function renderGeographic(dto) {
+        var byMunicipality = dto.applicantsByMunicipality || {};
+        var total = Object.keys(byMunicipality).reduce(function (sum, key) {
+            return sum + n(byMunicipality[key]);
+        }, 0);
+
+        text('geoTotalApplicants', total);
+        text('geoBasud', municipalityCount(byMunicipality, 'BASUD'));
+        text('geoDaet', municipalityCount(byMunicipality, 'DAET'));
+        text('geoVinzons', municipalityCount(byMunicipality, 'VINZONS'));
+        text('geoLabo', municipalityCount(byMunicipality, 'LABO'));
+
+        var box = document.getElementById('geoByMunicipality');
+        if (box) {
+            var names = Object.keys(byMunicipality);
+            box.innerHTML = names.length
+                ? '<ul>' + names.map(function (name) {
+                    return '<li>' + esc(name) + ': ' + n(byMunicipality[name]) + '</li>';
+                }).join('') + '</ul>'
+                : '<p class="no-data">No applicant location data for this period.</p>';
+        }
+
+        var barangayCount = Object.keys(dto.applicantsByBarangay || {}).length;
+        text('geoByBarangay', barangayCount + ' barangay' + (barangayCount === 1 ? '' : 's') + ' with applicants');
+    }
+
+    function renderInsights(list) {
+        var box = document.getElementById('recruitmentInsights');
+        if (!box) return;
+        if (!Array.isArray(list) || !list.length) {
+            box.innerHTML = '<p>No insights for this period yet.</p>';
+            return;
+        }
+        box.innerHTML = list.map(function (insight) {
+            var priority = String(insight.priority || 'info').toLowerCase();
+            var cls = priority === 'warning' || priority === 'error' ? 'insight-warning' : 'insight-info';
+            return '<div class="insight-item ' + cls + '">'
+                + '<strong>' + esc(insight.title || '') + '</strong>'
+                + '<span>' + esc(insight.description || '') + '</span>'
+                + '</div>';
+        }).join('');
+    }
+
+    function coverageRow(item) {
+        var withSkill = n(item.applicantsWithApplicantsWithSkill != null
+            ? item.applicantsWithApplicantsWithSkill
+            : item.applicantsWithSkill);
+        return '<li>' + esc(item.skill || '—') + ': ' + withSkill + '/'
+            + n(item.totalApplicants) + ' (' + Math.round(n(item.coveragePercentage)) + '%)</li>';
+    }
+
+    function renderSkills(dto) {
+        var box = document.getElementById('skillsAnalysisContent');
+        if (!box) return;
+        if (!dto || !dto.jobTitle) {
+            box.innerHTML = '<p>No skills data for this job yet.</p>';
+            return;
+        }
+
+        var html = '<h4>' + esc(dto.jobTitle) + '</h4>';
+        var common = Array.isArray(dto.mostCommonApplicantSkills) ? dto.mostCommonApplicantSkills : [];
+        html += '<p class="muted">' + n(dto.applicantCount) + ' applicant'
+            + (n(dto.applicantCount) === 1 ? '' : 's') + ' scored against this post.</p>';
+        html += '<h5>Most common applicant skills</h5>';
+        html += common.length
+            ? '<ul>' + common.slice(0, 10).map(function (pair) {
+                return '<li>' + esc(pair[0]) + ' (' + n(pair[1]) + ' applicants)</li>';
+            }).join('') + '</ul>'
+            : '<p class="muted">No applicant skills recorded yet.</p>';
+
+        var coverage = Array.isArray(dto.skillsCoverage) ? dto.skillsCoverage : [];
+        if (coverage.length) {
+            html += '<h5>Required-skill coverage</h5><ul>' + coverage.slice(0, 8).map(coverageRow).join('') + '</ul>';
+        }
+
+        var missing = Array.isArray(dto.missingRequiredSkills) ? dto.missingRequiredSkills : [];
+        if (missing.length) {
+            html += '<h5>Skills applicants are missing</h5><ul>' + missing.slice(0, 8).map(coverageRow).join('') + '</ul>';
+        }
+
+        box.innerHTML = html;
+    }
+
+    /* ---------- loaders -------------------------------------------------- */
+
+    function loadJobs() {
+        return ApiClient.request('/employers/my-jobs').then(function (jobs) {
+            state.jobs = Array.isArray(jobs) ? jobs : [];
+            var select = document.getElementById('jobSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">— Select a job —</option>'
+                + state.jobs.map(function (job) {
+                    return '<option value="' + esc(job.id) + '">' + esc(job.jobTitle || 'Untitled')
+                        + (job.barangay ? ' — ' + esc(job.barangay) : '') + '</option>';
+                }).join('');
+        });
+    }
+
+    function safe(promise, render) {
+        return promise.then(render).catch(function (error) {
+            showError(error && error.message ? error.message : 'Analytics could not be loaded.');
+        });
+    }
+
+    function refresh() {
+        clearError();
+        state.dateRange = activeRange();
+        var label = PERIOD_LABELS[state.dateRange] || 'All time';
+        var filtered = document.getElementById('filteredMetrics');
+        if (filtered) filtered.innerHTML = '<p>Reporting period: ' + esc(label) + '</p>';
+
+        safe(ApiClient.request('/employers/analytics/overview' + query()), renderOverview);
+        safe(ApiClient.request('/employers/analytics/funnel' + query()), renderFunnel);
+        safe(ApiClient.request('/employers/analytics/response-metrics' + query()), renderResponseMetrics);
+        safe(ApiClient.request('/employers/analytics/matching' + query()), renderMatching);
+        safe(ApiClient.request('/employers/analytics/job-performance' + query('&page=0&size=100')), renderJobPerformance);
+        safe(ApiClient.request('/employers/analytics/geographic' + query()), renderGeographic);
+        safe(ApiClient.request('/employers/analytics/insights' + query()), renderInsights);
+        safe(loadJobs(), function () {});
+
+        var selected = document.getElementById('jobSelect');
+        if (selected && selected.value) {
+            loadSkillsAnalysis(selected.value);
+        }
+    }
+
+    /* ---------- CSV export ----------------------------------------------- */
+
+    function csvCell(value) {
+        var raw = value == null ? '' : String(value);
+        // A leading =, +, - or @ makes a spreadsheet treat the cell as a formula.
+        if (/^[=+\-@\t\r]/.test(raw)) raw = "'" + raw;
+        return '"' + raw.replace(/"/g, '""') + '"';
+    }
+
+    function csvRows(data) {
+        var rows = [];
+        var overview = data.overview || {};
+        var funnel = data.funnel || {};
+        var matching = data.matching || {};
+
+        rows.push(['Section', 'Metric', 'Value']);
+        rows.push(['Overview', 'Total job posts', n(overview.totalJobPosts)]);
+        rows.push(['Overview', 'Active job posts', n(overview.activeJobPosts)]);
+        rows.push(['Overview', 'Total applicants', n(overview.totalApplicants)]);
+        rows.push(['Overview', 'New applicants', n(overview.newApplicants)]);
+        rows.push(['Overview', 'Under review', n(overview.applicantsUnderReview)]);
+        rows.push(['Overview', 'Interviewed', n(overview.interviewedApplicants)]);
+        rows.push(['Overview', 'Accepted', n(overview.acceptedApplicants)]);
+        rows.push(['Overview', 'Rejected', n(overview.rejectedApplicants)]);
+
+        rows.push(['Funnel', 'Applications received', n(funnel.applicationsReceived)]);
+        rows.push(['Funnel', 'Reviewing', n(funnel.reviewing)]);
+        rows.push(['Funnel', 'Shortlisted', n(funnel.shortlisted)]);
+        rows.push(['Funnel', 'Interviewed', n(funnel.interviewed)]);
+        rows.push(['Funnel', 'Accepted', n(funnel.accepted)]);
+        rows.push(['Funnel', 'Rejected', n(funnel.rejected)]);
+
+        rows.push(['Matching', 'Average match score', Math.round(n(matching.averageMatchScore))]);
+        rows.push(['Matching', 'Highest match score', Math.round(n(matching.highestMatch))]);
+        rows.push(['Matching', 'Excellent matches', n(matching.excellentMatches)]);
+        rows.push(['Matching', 'Strong matches', n(matching.strongMatches)]);
+        rows.push(['Matching', 'Good matches', n(matching.goodMatches)]);
+        rows.push(['Matching', 'Partial matches', n(matching.partialMatches)]);
+        rows.push(['Matching', 'Low matches', n(matching.lowMatches)]);
+
+        rows.push([]);
+        rows.push(['Job', 'Municipality', 'Barangay', 'Employment type', 'Posted', 'Status',
+            'Applicants', 'New', 'Shortlisted', 'Interviewed', 'Accepted', 'Rejected', 'Average match']);
+        (Array.isArray(data.jobPerformances) ? data.jobPerformances : []).forEach(function (job) {
+            rows.push([
+                job.jobTitle || '',
+                job.municipality || '',
+                job.barangay || '',
+                job.employmentType || '',
+                job.datePosted || '',
+                job.status || '',
+                n(job.totalApplicants), n(job.newApplicants), n(job.shortlisted),
+                n(job.interviewed), n(job.accepted), n(job.rejected),
+                Math.round(n(job.averageMatchScore))
+            ]);
+        });
+
+        var geographic = data.geographic || {};
+        var byMunicipality = geographic.applicantsByMunicipality || {};
+        if (Object.keys(byMunicipality).length) {
+            rows.push([]);
+            rows.push(['Municipality', 'Applicants']);
+            Object.keys(byMunicipality).forEach(function (name) {
+                rows.push([name, n(byMunicipality[name])]);
+            });
+        }
+
+        if (Array.isArray(data.insights) && data.insights.length) {
+            rows.push([]);
+            rows.push(['Insight', 'Priority', 'Description']);
+            data.insights.forEach(function (insight) {
+                rows.push([insight.title || '', insight.priority || '', insight.description || '']);
+            });
+        }
+
+        return rows.map(function (row) { return row.map(csvCell).join(','); }).join('\r\n');
+    }
+
+    function exportCsv() {
+        if (state.exporting) return;
+        state.exporting = true;
+        var status = document.getElementById('exportStatus');
+        if (status) {
+            status.hidden = false;
+            status.innerHTML = '<p>Preparing your report…</p>';
+        }
+        ApiClient.request('/employers/analytics/export' + query())
+            .then(function (data) {
+                var blob = new Blob(['\ufeff' + csvRows(data)], { type: 'text/csv;charset=utf-8;' });
+                var url = window.URL.createObjectURL(blob);
+                var link = document.createElement('a');
+                link.href = url;
+                link.download = 'employer-analytics-' + new Date().toISOString().slice(0, 10) + '.csv';
+                document.body.appendChild(link);
+                link.click();
+                window.URL.revokeObjectURL(url);
+                link.remove();
+                if (status) status.innerHTML = '<p style="color: green;">Report exported.</p>';
+            })
+            .catch(function (error) {
+                if (status) status.innerHTML = '<p style="color: red;">' + esc(error.message || 'Export failed.') + '</p>';
+            })
+            .then(function () { state.exporting = false; });
+    }
+
+    /* ---------- wiring --------------------------------------------------- */
+
+    function loadSkillsAnalysis(jobId) {
+        if (!jobId) {
+            var box = document.getElementById('skillsAnalysisContent');
+            if (box) box.innerHTML = '<p>Select a job to see its skills coverage.</p>';
+            return;
+        }
+        safe(ApiClient.request('/employers/analytics/skills/' + encodeURIComponent(jobId) + query()), renderSkills);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!ApiClient.loadAuth()
+            || String(localStorage.getItem('jsm_user_type') || '').toUpperCase() !== 'EMPLOYER') {
+            window.location.href = '../login.html';
+            return;
+        }
+
+        document.querySelectorAll('.filter-btn').forEach(function (button) {
+            button.addEventListener('click', function () {
+                document.querySelectorAll('.filter-btn').forEach(function (other) {
+                    other.classList.remove('active');
+                });
+                button.classList.add('active');
+                refresh();
+            });
+        });
+
+        var exportButton = document.getElementById('exportBtn');
+        if (exportButton) exportButton.addEventListener('click', exportCsv);
+
+        refresh();
+    });
+
+    // Used by the job <select> and reachable from the console for debugging.
+    window.loadSkillsAnalysis = loadSkillsAnalysis;
+})();
 </script>
 </body>
 </html>

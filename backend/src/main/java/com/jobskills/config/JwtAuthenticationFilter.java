@@ -42,7 +42,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             final String userEmail = jwtService.extractUsername(jwt);
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-                if (jwtService.isTokenValid(jwt, userDetails)) {
+                // The account is re-read on every request, so a suspension takes
+                // effect immediately: an already-issued token stops working
+                // instead of lasting until it expires.
+                boolean usableAccount = userDetails.isEnabled()
+                    && userDetails.isAccountNonLocked()
+                    && userDetails.isAccountNonExpired();
+                if (usableAccount && jwtService.isTokenValid(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails, jwt, userDetails.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(authToken);
