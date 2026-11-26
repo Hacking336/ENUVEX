@@ -85,9 +85,19 @@ These suites overlap: the same authentication behaviour is asserted by the Phase
 | `GET /api/jobs/1` | **PASS** — `200`, `moderationStatus: APPROVED` |
 | `GET /employer/analytics.html` | **PASS** — `200`, contains the rewritten script |
 
-### Phase 8 deployment
+### Phase 8 deployment (`dep-dc45f4m7bikc738719ig`, commit `b207ee0`, live 16:03:46Z)
 
-Recorded in `RELEASE_CHECKLIST.md` after the deploy, including the rate-limiting behaviour on the live service.
+| Check | Result |
+| --- | --- |
+| Health | **PASS** — `200 {"status":"UP","database":"UP"}` |
+| Hardening headers (all four) | **PASS** |
+| Anonymous admin route | **PASS** — `401` |
+| Malformed JSON | **PASS** — `400` |
+| Page-size cap | **PASS** — `size` = 100 |
+| Public job visibility after V9 | **PASS** — job 1 still `APPROVED` |
+| Analytics page | **PASS** — `200` |
+| Rate limiter headers on the live service | **PASS** — `X-RateLimit-Limit: 20`, `Remaining` decreases per request |
+| 429 burst on the live service | **NOT REPRODUCED** — the release host's outbound address varies per request, splitting the budget across buckets. The refusal path was verified locally (21st attempt → `429`, `Retry-After: 42`) and in `RateLimiterTest` |
 
 ## 7. Blocked or unverified
 

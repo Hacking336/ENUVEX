@@ -586,7 +586,7 @@ def slide_moderation(prs, n):
 def slide_security(prs, n):
     slide = blank(prs)
     header(slide, "Security and testing", "Phase 7 and 8")
-    stat(slide, Inches(0.75), Inches(1.7), "58", "automated tests, 0 failures")
+    stat(slide, Inches(0.75), Inches(1.7), "59", "automated tests, 0 failures")
     stat(slide, Inches(3.6), Inches(1.7), "50/50", "security and API checks")
     stat(slide, Inches(6.45), Inches(1.7), "128", "moderation checks (2 suites)")
     stat(slide, Inches(9.3), Inches(1.7), "V9", "migrations, all additive")
@@ -608,7 +608,7 @@ def slide_security(prs, n):
         "Phase seven was an audit, and it found a critical issue: administrator sign-in accepted a known name "
         "with an empty password. That is closed: the shortcut now needs a deployment access code. Suspension "
         "now revokes live sessions. Phase eight adds persistent rate limiting in the database, so a restart "
-        "does not reset the counters. Fifty-eight automated tests pass. On the bottom I list what is still "
+        "does not reset the counters. Fifty-nine automated tests pass. On the bottom I list what is still "
         "imperfect, because a defense should be honest about that."))
     return slide
 
@@ -658,7 +658,7 @@ def slide_conclusion(prs, n):
           "• Tracking, interviews and notifications in one flow",
           "• Employer analytics with honest, real numbers",
           "• Moderation with an append-only audit trail",
-          "• 58 automated tests, 178 scripted HTTP assertions",
+          "• 59 automated tests, 178 scripted HTTP assertions",
           "• Documentation for users, operators and defenders"],
          size=13, color=NAVY, spacing=1.6)
     text(slide, Inches(7.0), Inches(1.6), Inches(5.5), Inches(0.35), "RECOMMENDED NEXT",

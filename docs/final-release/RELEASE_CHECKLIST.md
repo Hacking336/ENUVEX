@@ -111,14 +111,26 @@
 | Item | Value |
 | --- | --- |
 | Service | Render `ENUVEX` (`srv-dbk9hf3bc2fs73eqkuf0`), auto-deploy from `main` |
-| Phase 8 deploy id | recorded after deployment |
-| Deployed commit | recorded after deployment |
-| Health after deploy | recorded after deployment |
-| Public page + API smoke checks | recorded after deployment |
+| Phase 8 feature commit | `456ddd6` — documentation, presentation, rate limiting |
+| Phase 8 deployed commit | **`b207ee0`** — rate-limiter client key corrected after the first deploy |
+| Render deploy | **`dep-dc45f4m7bikc738719ig`** — `build_in_progress` 16:00:19Z → **`live` 16:03:46Z** |
+| Earlier deploy of this phase | `dep-dc45ag5g1s2s73dc5ttg` (commit `456ddd6`, live 15:53:44Z) |
+| Health after deploy | **PASS** — `200 {"status":"UP","database":"UP"}` in 0.75 s |
+| Migration during deploy | V9 applied by Flyway on start-up; no data change |
 
-## 10. Production smoke (unauthenticated)
+## 10. Production smoke (unauthenticated, after `dep-dc45f4m7bikc738719ig`)
 
-Filled in after the Phase 8 deployment: health JSON, security headers, `401` on `/api/admin/**`, `400` for malformed JSON, `size` cap, public job visibility, analytics page served, and the rate limiter answering `429` on the live service.
+| Check | Result |
+| --- | --- |
+| `GET /api/health` | **PASS** — `200 {"status":"UP","database":"UP"}`, 0.75 s |
+| Four hardening headers present | **PASS** — `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Permissions-Policy` |
+| `GET /api/admin/dashboard` anonymous | **PASS** — `401` |
+| Malformed JSON to `/api/auth/login` | **PASS** — `400` |
+| `GET /api/jobs?size=500` | **PASS** — `size` reported as 100 |
+| `GET /api/jobs/1` | **PASS** — `Restorant Crew`, `moderationStatus: APPROVED` |
+| `GET /employer/analytics.html` | **PASS** — `200` |
+| Rate limiter active | **PASS (partial)** — `X-RateLimit-Limit: 20` and `X-RateLimit-Remaining` decrement per request on the live service; a `429` burst could **not** be reproduced from the release host because its outbound address changes between requests, so the budget was split across buckets. The `429` + `Retry-After` behaviour was reproduced on a local instance (21st attempt) and in unit tests |
+| Forged `X-Forwarded-For` cannot reset the counter | **PASS** — verified locally after the fix: 21 attempts with a different forged first entry each time still ended in `429` |
 
 ## 11. Manual verification still required by an operator
 
