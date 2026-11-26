@@ -102,6 +102,9 @@
                     <button class="btn-soft" type="button" data-save="${ENUVEX.esc(job.id)}">
                         <i class="${ENUVEX.isSaved(job.id) ? 'fas' : 'far'} fa-bookmark"></i> ${ENUVEX.isSaved(job.id) ? 'Saved' : 'Save Job'}
                     </button>
+                    <a class="btn-ghost" href="reports.html?jobId=${encodeURIComponent(job.id)}">
+                        <i class="fas fa-flag"></i> Report this posting
+                    </a>
                 </div>
             </section>
 

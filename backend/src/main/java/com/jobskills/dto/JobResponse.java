@@ -1,6 +1,7 @@
 package com.jobskills.dto;
 
 import com.jobskills.model.enums.JobCategory;
+import com.jobskills.model.enums.ModerationStatus;
 import com.jobskills.model.enums.Municipality;
 import lombok.Data;
 
@@ -39,4 +40,6 @@ public class JobResponse {
     private List<String> missingSkills = new ArrayList<>();
     private List<MatchCriterionDto> matchCriteria = new ArrayList<>();
     private String requiredSkills;
+    /** Review state; public search only ever returns APPROVED postings. */
+    private ModerationStatus moderationStatus;
 }

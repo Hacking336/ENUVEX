@@ -149,6 +149,29 @@
         });
     }
 
+    var VERIFICATION_META = {
+        VERIFIED: ['badge-ok', 'fa-circle-check', 'Verified employer'],
+        PENDING: ['badge-wait', 'fa-clock', 'Verification under review'],
+        UNVERIFIED: ['badge-neutral', 'fa-circle-question', 'Not verified yet'],
+        NEEDS_INFORMATION: ['badge-wait', 'fa-circle-exclamation', 'More information needed'],
+        REJECTED: ['badge-off', 'fa-circle-xmark', 'Verification rejected']
+    };
+
+    function verificationBadge(profile) {
+        var status = String(profile.verificationStatus || (profile.verified ? 'VERIFIED' : 'UNVERIFIED'));
+        var meta = VERIFICATION_META[status] || VERIFICATION_META.UNVERIFIED;
+        return '<span class="' + meta[0] + '"><i class="fas ' + meta[1] + '"></i> ' + meta[2] + '</span>';
+    }
+
+    function verificationActions(profile) {
+        var status = String(profile.verificationStatus || 'UNVERIFIED');
+        if (status === 'VERIFIED' || status === 'PENDING') return '';
+        return '<div class="panel" style="margin-top: 16px;">'
+            + '<p class="muted" style="margin-bottom: 10px;">Submit your company details for verification. Administrators review the request and may ask for more information.</p>'
+            + '<button class="btn-solid btn-sm" type="button" id="requestVerification"><i class="fas fa-paper-plane"></i> Request verification</button>'
+            + '</div>';
+    }
+
     function render() {
         var name = profile.businessName || 'Your company';
         var avatar = profile.logo
@@ -162,10 +185,7 @@
                     <h3 style="margin: 0; font-family: var(--font-head); font-size: 19px; color: var(--ink);">${ROLE.esc(name)}</h3>
                     <p class="muted" style="margin-top: 4px;">${ROLE.esc(profile.email || 'No account email on file')}</p>
                     <div class="tag-list" style="margin-top: 10px;">
-                        <span class="${profile.verified ? 'badge-ok' : 'badge-wait'}">
-                            <i class="fas ${profile.verified ? 'fa-circle-check' : 'fa-clock'}"></i>
-                            ${profile.verified ? 'Verified employer' : 'Verification pending'}
-                        </span>
+                        ${verificationBadge(profile)}
                         <span class="${profile.active === false ? 'badge-off' : 'badge-neutral'}">
                             ${profile.active === false ? 'Account inactive' : 'Account active'}
                         </span>
@@ -193,6 +213,7 @@
                 <section class="card panel">
                     <div class="panel-head"><h3><i class="fas fa-address-card"></i> Company details</h3></div>
                     ${details}
+                    ${verificationActions(profile)}
                 </section>
                 <section class="card panel">
                     <div class="panel-head"><h3><i class="fas fa-align-left"></i> About the company</h3></div>
@@ -285,6 +306,20 @@
         });
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape' && !field('editModal').hidden) closeModal();
+        });
+
+        field('profileBody').addEventListener('click', async function (event) {
+            var button = event.target.closest('#requestVerification');
+            if (!button) return;
+            button.disabled = true;
+            try {
+                var response = await ApiClient.requestEmployerVerification();
+                ROLE.toast(response && response.message ? response.message : 'Verification requested.', 'success');
+                await load();
+            } catch (error) {
+                ROLE.toast(error.message || 'Could not request verification.', 'error');
+                button.disabled = false;
+            }
         });
 
         await load();

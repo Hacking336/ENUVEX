@@ -3,6 +3,7 @@ package com.jobskills.service;
 import com.jobskills.dto.*;
 import com.jobskills.model.*;
 import com.jobskills.model.enums.ApplicationStatus;
+import com.jobskills.model.enums.ModerationStatus;
 import com.jobskills.model.enums.Municipality;
 import com.jobskills.repository.*;
 import jakarta.persistence.criteria.Predicate;
@@ -33,6 +34,7 @@ public class JobService {
     private final GeoService geoService;
     private final ApplicationStatusHistoryRepository historyRepository;
     private final NotificationService notificationService;
+    private final SuspiciousListingService suspiciousListingService;
 
     /** Most seekers told about one new post; keeps job creation bounded. */
     private static final int MAX_JOB_RECOMMENDATIONS = 50;
@@ -64,14 +66,26 @@ public class JobService {
         job.setAvailablePositions(request.getAvailablePositions() == null || request.getAvailablePositions() < 1
             ? 1 : request.getAvailablePositions());
         // A new post is live unless the employer explicitly saves it paused;
-        // an inactive post never shows up in a seeker's search.
+        // an inactive post never shows up in a seeker's search. It is not
+        // publicly visible until an administrator approves it, so no seeker is
+        // notified at creation time.
         job.setActive(request.getActive() == null || request.getActive());
+        job.setModerationStatus(ModerationStatus.PENDING_REVIEW);
 
         JobPost saved = jobPostRepository.save(job);
-        if (saved.isActive()) {
-            notifyMatchingSeekers(saved);
-        }
+        // Deterministic checks run on every submission; they only flag the post
+        // for review and never reject it.
+        suspiciousListingService.evaluate(saved);
         return saved;
+    }
+
+    /** Tells matching seekers about a posting an administrator just approved. */
+    @Transactional
+    public void announceApprovedJob(JobPost job) {
+        if (job != null && job.isActive()
+            && job.getModerationStatus() == ModerationStatus.APPROVED) {
+            notifyMatchingSeekers(job);
+        }
     }
 
     /**
@@ -144,7 +158,18 @@ public class JobService {
 
         applyWorkplaceLocation(job, request, false);
 
-        return jobPostRepository.save(job);
+        // An edit to a rejected or changes-requested posting is a resubmission:
+        // it goes back into the review queue instead of staying hidden forever.
+        // An approved posting keeps its approval, so ordinary edits never make a
+        // live opportunity disappear.
+        ModerationStatus current = job.getModerationStatus();
+        if (current == ModerationStatus.CHANGES_REQUESTED || current == ModerationStatus.REJECTED) {
+            job.setModerationStatus(ModerationStatus.PENDING_REVIEW);
+        }
+
+        JobPost saved = jobPostRepository.save(job);
+        suspiciousListingService.evaluate(saved);
+        return saved;
     }
 
     @Transactional
@@ -209,6 +234,9 @@ public class JobService {
         JobPost job = getJobById(jobId);
         if (!job.isActive()) {
             throw new IllegalArgumentException("Job is not active");
+        }
+        if (job.getModerationStatus() != ModerationStatus.APPROVED) {
+            throw new IllegalArgumentException("This posting is not available.");
         }
         return matchingEngine.calculateMatch(requireSeeker(seekerUserId), job);
     }
@@ -372,6 +400,10 @@ public class JobService {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("isActive"), true));
+            // Only an approved posting is a public opportunity. Pending,
+            // changes-requested and rejected posts stay out of every seeker
+            // search, map and recommendation.
+            predicates.add(cb.equal(root.get("moderationStatus"), ModerationStatus.APPROVED));
 
             if (search.getMunicipality() != null) {
                 predicates.add(cb.equal(root.get("municipality"), search.getMunicipality()));
@@ -453,6 +485,9 @@ public class JobService {
         if (!job.isActive()) {
             throw new IllegalArgumentException("Job is not active");
         }
+        if (job.getModerationStatus() != ModerationStatus.APPROVED) {
+            throw new IllegalArgumentException("This posting is not available.");
+        }
         return mapToResponse(job, seekerUserId != null ? requireSeeker(seekerUserId) : null);
     }
 
@@ -507,6 +542,9 @@ public class JobService {
 
         if (!job.isActive()) {
             throw new IllegalArgumentException("Job is not active");
+        }
+        if (job.getModerationStatus() != ModerationStatus.APPROVED) {
+            throw new IllegalArgumentException("This posting is not available.");
         }
         if (applicationRepository.existsByJobSeekerIdAndJobPostId(seeker.getId(), jobId)) {
             throw new IllegalArgumentException("Already applied for this job");
@@ -666,6 +704,7 @@ public class JobService {
         response.setActive(job.isActive());
         response.setCreatedAt(job.getCreatedAt());
         response.setRequiredSkills(job.getRequiredSkills());
+        response.setModerationStatus(job.getModerationStatus());
         return response;
     }
 }

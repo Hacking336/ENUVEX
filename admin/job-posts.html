@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Job Management — JSM</title>
+    <title>Job Post Approvals — JSM</title>
     <link rel="icon" type="image/svg+xml" href="../assets/brand/jsm-favicon.svg">
     <link rel="icon" type="image/png" sizes="192x192" href="../assets/brand/jsm-icon-192.png">
     <link rel="apple-touch-icon" href="../assets/brand/jsm-icon-192.png">
@@ -17,8 +17,8 @@
     <script>
         window.ENUVEX_PAGE = {
             active: 'job-posts',
-            title: 'Job Management',
-            subtitle: 'Every listing published on the platform'
+            title: 'Job Post Approvals',
+            subtitle: 'Review postings before they reach job seekers'
         };
     </script>
 </head>
@@ -33,8 +33,8 @@
         <main class="content">
             <div class="page-head">
                 <div>
-                    <h2>Job posts</h2>
-                    <p>Moderate listings from every employer. Removal is permanent.</p>
+                    <h2>Job postings</h2>
+                    <p>Only an approved posting is visible to job seekers. Rejection and correction requests require a reason that is sent to the employer.</p>
                 </div>
                 <div class="page-head-actions">
                     <span class="badge-neutral" id="totalBadge">0 posts</span>
@@ -49,14 +49,32 @@
             <div class="card rv-toolbar">
                 <label class="field" for="jobSearch">
                     <i class="fas fa-magnifying-glass"></i>
-                    <input type="search" id="jobSearch" placeholder="Search title, employer, or barangay">
+                    <input type="search" id="jobSearch" placeholder="Search title, employer or barangay">
                 </label>
                 <div class="form-field">
-                    <label for="statusFilter">Status</label>
+                    <label for="statusFilter">Moderation status</label>
                     <select id="statusFilter">
+                        <option value="PENDING_REVIEW">Awaiting approval</option>
+                        <option value="APPROVED">Approved</option>
+                        <option value="CHANGES_REQUESTED">Changes requested</option>
+                        <option value="REJECTED">Rejected</option>
                         <option value="ALL">All statuses</option>
-                        <option value="ACTIVE">Active</option>
-                        <option value="INACTIVE">Inactive</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="municipalityFilter">Municipality</label>
+                    <select id="municipalityFilter">
+                        <option value="ALL">All municipalities</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="typeFilter">Employment type</label>
+                    <select id="typeFilter">
+                        <option value="ALL">All types</option>
+                        <option value="FULL_TIME">Full time</option>
+                        <option value="PART_TIME">Part time</option>
+                        <option value="CONTRACT">Contract</option>
+                        <option value="TEMPORARY">Temporary</option>
                     </select>
                 </div>
                 <span class="rv-spacer"></span>
@@ -72,6 +90,19 @@
     </div>
 </div>
 
+<div class="modal" id="jobModal" hidden>
+    <div class="modal-card modal-wide" role="dialog" aria-modal="true" aria-labelledby="jobModalTitle">
+        <div class="modal-head">
+            <h3 id="jobModalTitle">Job posting</h3>
+            <button class="modal-close" type="button" id="closeJobModal" aria-label="Close"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="modal-body" id="jobModalBody"></div>
+        <div class="modal-foot">
+            <button class="btn-soft" type="button" id="dismissJobModal">Close</button>
+        </div>
+    </div>
+</div>
+
 <nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
 <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
@@ -81,8 +112,8 @@
 (function () {
     'use strict';
 
-    var PAGE_SIZE = 15;
-    var state = { jobs: [], query: '', status: 'ALL', page: 0 };
+    var PAGE_SIZE = 12;
+    var state = { jobs: [], query: '', status: 'PENDING_REVIEW', municipality: 'ALL', type: 'ALL', page: 0 };
 
     function showError(message) {
         var box = document.getElementById('pageError');
@@ -92,17 +123,52 @@
         box.hidden = false;
     }
 
+    function statusOf(job) {
+        return job.moderationStatus || 'PENDING_REVIEW';
+    }
+
+    function statusBadge(status) {
+        var map = {
+            APPROVED: ['badge-ok', 'Approved'],
+            PENDING_REVIEW: ['badge-wait', 'Pending review'],
+            CHANGES_REQUESTED: ['badge-neutral', 'Changes requested'],
+            REJECTED: ['badge-off', 'Rejected']
+        };
+        var entry = map[status] || ['badge-neutral', status];
+        return '<span class="' + entry[0] + '">' + entry[1] + '</span>';
+    }
+
     function filtered() {
         return state.jobs.filter(function (job) {
-            if (state.status === 'ACTIVE' && !job.active) return false;
-            if (state.status === 'INACTIVE' && job.active) return false;
+            if (state.status !== 'ALL' && statusOf(job) !== state.status) return false;
+            if (state.municipality !== 'ALL' && String(job.municipality) !== state.municipality) return false;
+            if (state.type !== 'ALL' && String(job.employmentType) !== state.type) return false;
             if (!state.query) return true;
-            var haystack = [job.jobTitle, job.employerName, job.barangay, job.category]
+            var haystack = [job.jobTitle, job.employerName, job.barangay, job.category, ROLE.municipalityLabel(job.municipality)]
                 .filter(Boolean).join(' ').toLowerCase();
             return haystack.indexOf(state.query) !== -1;
         }).sort(function (a, b) {
             return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
         });
+    }
+
+    function actionsFor(job) {
+        var id = ROLE.esc(String(job.id));
+        var status = statusOf(job);
+        if (status === 'PENDING_REVIEW') {
+            return '<button class="btn-solid btn-sm" type="button" data-approve="' + id + '">Approve</button>'
+                + '<button class="btn-soft btn-sm" type="button" data-changes="' + id + '">Request changes</button>'
+                + '<button class="btn-danger btn-sm" type="button" data-reject="' + id + '">Reject</button>';
+        }
+        if (status === 'CHANGES_REQUESTED') {
+            return '<button class="btn-solid btn-sm" type="button" data-approve="' + id + '">Approve</button>'
+                + '<button class="btn-danger btn-sm" type="button" data-reject="' + id + '">Reject</button>';
+        }
+        if (status === 'REJECTED') {
+            return '<button class="btn-soft btn-sm" type="button" data-restore="' + id + '">Send back to queue</button>';
+        }
+        return '<button class="btn-soft btn-sm" type="button" data-changes="' + id + '">Request changes</button>'
+            + '<button class="btn-danger btn-sm" type="button" data-reject="' + id + '">Reject</button>';
     }
 
     function render() {
@@ -116,95 +182,210 @@
 
         var container = document.getElementById('jobTable');
         if (!state.jobs.length) {
-            container.innerHTML = `<div class="card panel"><div class="empty">
-                <i class="fas fa-briefcase"></i>
-                <strong>No job posts on the platform yet</strong>
-                <p>Listings created by employers will appear here.</p>
-            </div></div>`;
+            container.innerHTML = '<div class="card panel"><div class="empty">'
+                + '<i class="fas fa-briefcase"></i>'
+                + '<strong>No job posts on the platform yet</strong>'
+                + '<p>Listings created by employers will appear here for review.</p>'
+                + '</div></div>';
             document.getElementById('pager').hidden = true;
             return;
         }
         if (!slice.length) {
-            container.innerHTML = `<div class="card panel"><div class="empty">
-                <i class="fas fa-filter"></i>
-                <strong>No posts match this filter</strong>
-                <p>Try another status or search term.</p>
-            </div></div>`;
+            container.innerHTML = '<div class="card panel"><div class="empty">'
+                + '<i class="fas fa-filter"></i>'
+                + '<strong>No posts match this filter</strong>'
+                + '<p>Try another moderation status, municipality or search term.</p>'
+                + '</div></div>';
             document.getElementById('pager').hidden = true;
             return;
         }
 
-        container.innerHTML = `<div class="table-wrap">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th class="num">#</th>
-                        <th>Position</th>
-                        <th>Employer</th>
-                        <th>Category</th>
-                        <th>Location</th>
-                        <th>Salary</th>
-                        <th>Applicants</th>
-                        <th>Status</th>
-                        <th>Posted</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${slice.map(function (job, index) {
-                        return `<tr>
-                            <td class="num">${state.page * PAGE_SIZE + index + 1}</td>
-                            <td><span class="cell-main">${ROLE.esc(job.jobTitle)}</span>
-                                <span class="cell-sub">${ROLE.esc(ROLE.typeLabel(job.employmentType) || 'Type not set')}</span></td>
-                            <td>${ROLE.esc(job.employerName || 'Unknown employer')}</td>
-                            <td>${ROLE.esc(ROLE.categoryLabel(job.category))}</td>
-                            <td>${ROLE.esc(ROLE.municipalityLabel(job.municipality) || '—')}${job.barangay ? '<span class="cell-sub">' + ROLE.esc(job.barangay) + '</span>' : ''}</td>
-                            <td>${ROLE.esc(ROLE.salaryLabel(job))}</td>
-                            <td>${ROLE.esc(String(job.applicantCount == null ? 0 : job.applicantCount))}</td>
-                            <td>
-                                <span class="${job.active ? 'badge-ok' : 'badge-off'}">
-                                    <i class="fas ${job.active ? 'fa-circle-check' : 'fa-circle-pause'}"></i>
-                                    ${job.active ? 'Active' : 'Inactive'}
-                                </span>
-                            </td>
-                            <td>${ROLE.esc(ROLE.dateLabel(job.createdAt))}</td>
-                            <td>
-                                <div class="row-actions">
-                                    <button class="btn-danger btn-sm" type="button" data-delete="${ROLE.esc(String(job.id))}">Delete</button>
-                                </div>
-                            </td>
-                        </tr>`;
-                    }).join('')}
-                </tbody>
-            </table>
-        </div>`;
+        container.innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr>'
+            + '<th class="num">#</th><th>Position</th><th>Employer</th><th>Category</th>'
+            + '<th>Location</th><th>Salary</th><th>Applicants</th><th>Moderation</th><th>Posted</th><th>Actions</th>'
+            + '</tr></thead><tbody>'
+            + slice.map(function (job, index) {
+                var salaryText = (job.salaryMin != null || job.salaryMax != null) ? ROLE.salaryLabel(job) : 'Not stated';
+                var employerVerified = String(job.employerVerificationStatus) === 'VERIFIED';
+                return '<tr>'
+                    + '<td class="num">' + (state.page * PAGE_SIZE + index + 1) + '</td>'
+                    + '<td><span class="cell-main">' + ROLE.esc(job.jobTitle || 'Untitled') + '</span>'
+                    + '<span class="cell-sub">' + ROLE.esc(ROLE.typeLabel(job.employmentType) || 'Type not set') + '</span></td>'
+                    + '<td><span class="cell-main">' + ROLE.esc(job.employerName || 'Unknown employer') + '</span>'
+                    + '<span class="cell-sub">' + (employerVerified ? 'Verified employer' : 'Not verified') + '</span></td>'
+                    + '<td>' + ROLE.esc(ROLE.categoryLabel(job.category)) + '</td>'
+                    + '<td>' + ROLE.esc(ROLE.municipalityLabel(job.municipality) || '—')
+                    + (job.barangay ? '<span class="cell-sub">' + ROLE.esc(job.barangay) + '</span>' : '') + '</td>'
+                    + '<td>' + ROLE.esc(salaryText) + '</td>'
+                    + '<td>' + ROLE.esc(String(job.applicantCount == null ? 0 : job.applicantCount)) + '</td>'
+                    + '<td>' + statusBadge(statusOf(job))
+                    + (job.active ? '' : '<span class="cell-sub">Saved as paused</span>') + '</td>'
+                    + '<td>' + ROLE.esc(ROLE.dateLabel(job.createdAt)) + '</td>'
+                    + '<td><div class="row-actions">'
+                    + '<button class="btn-ghost btn-sm" type="button" data-details="' + ROLE.esc(String(job.id)) + '">Details</button>'
+                    + '</div><div class="row-actions">' + actionsFor(job) + '</div></td>'
+                    + '</tr>';
+            }).join('')
+            + '</tbody></table></div>';
 
         var pager = document.getElementById('pager');
         if (pages <= 1) {
             pager.hidden = true;
         } else {
             pager.hidden = false;
-            pager.innerHTML = `<button class="btn-soft btn-sm" type="button" data-page="prev" ${state.page === 0 ? 'disabled' : ''}>
-                    <i class="fas fa-chevron-left"></i> Previous</button>
-                <span class="muted">Page ${state.page + 1} of ${pages}</span>
-                <button class="btn-soft btn-sm" type="button" data-page="next" ${state.page >= pages - 1 ? 'disabled' : ''}>
-                    Next <i class="fas fa-chevron-right"></i></button>`;
+            pager.innerHTML = '<button class="btn-soft btn-sm" type="button" data-page="prev" ' + (state.page === 0 ? 'disabled' : '') + '>'
+                + '<i class="fas fa-chevron-left"></i> Previous</button>'
+                + '<span class="muted">Page ' + (state.page + 1) + ' of ' + pages + '</span>'
+                + '<button class="btn-soft btn-sm" type="button" data-page="next" ' + (state.page >= pages - 1 ? 'disabled' : '') + '>'
+                + 'Next <i class="fas fa-chevron-right"></i></button>';
         }
     }
 
+    function fillMunicipalities() {
+        var select = document.getElementById('municipalityFilter');
+        var seen = {};
+        state.jobs.forEach(function (job) {
+            if (!job.municipality || seen[job.municipality]) return;
+            seen[job.municipality] = true;
+            var option = document.createElement('option');
+            option.value = job.municipality;
+            option.textContent = ROLE.municipalityLabel(job.municipality);
+            select.appendChild(option);
+        });
+    }
+
     async function load() {
-        var result = await ROLE.safe(ApiClient.request('/admin/job-posts?page=0&size=200'));
+        var result = await ROLE.safe(ApiClient.getAdminJobPosts());
         if (ROLE.failed(result)) {
             showError(result.__error);
-            document.getElementById('jobTable').innerHTML = `<div class="card panel"><div class="empty">
-                <i class="fas fa-triangle-exclamation"></i>
-                <strong>Job posts unavailable</strong>
-                <p>The moderation list could not be loaded.</p>
-            </div></div>`;
+            document.getElementById('jobTable').innerHTML = '<div class="card panel"><div class="empty">'
+                + '<i class="fas fa-triangle-exclamation"></i>'
+                + '<strong>Job posts unavailable</strong>'
+                + '<p>The job post list could not be loaded.</p>'
+                + '</div></div>';
             return;
         }
-        state.jobs = result && Array.isArray(result.content) ? result.content : [];
+        var page = (result && Array.isArray(result.content)) ? result.content : (Array.isArray(result) ? result : []);
+        state.jobs = page;
+        fillMunicipalities();
         render();
+    }
+
+    function openDetails(id) {
+        var job = state.jobs.filter(function (item) { return String(item.id) === String(id); })[0];
+        if (!job) return;
+        document.getElementById('jobModalTitle').textContent = job.jobTitle || 'Job posting';
+        var employerVerified = String(job.employerVerificationStatus) === 'VERIFIED';
+        document.getElementById('jobModalBody').innerHTML = '<div class="kv-grid">'
+            + '<div class="kv"><span>Employer</span><strong>' + ROLE.esc(job.employerName || '—') + '</strong></div>'
+            + '<div class="kv"><span>Employer verification</span><strong>' + (employerVerified ? 'Verified' : 'Not verified') + '</strong></div>'
+            + '<div class="kv"><span>Moderation</span><strong>' + ROLE.esc(String(statusOf(job)).replace(/_/g, ' ')) + '</strong></div>'
+            + '<div class="kv"><span>Category</span><strong>' + ROLE.esc(ROLE.categoryLabel(job.category)) + '</strong></div>'
+            + '<div class="kv"><span>Employment type</span><strong>' + ROLE.esc(ROLE.typeLabel(job.employmentType) || '—') + '</strong></div>'
+            + '<div class="kv"><span>Location</span><strong>' + ROLE.esc(ROLE.municipalityLabel(job.municipality) || '—')
+            + (job.barangay ? ', ' + ROLE.esc(job.barangay) : '') + '</strong></div>'
+            + '<div class="kv"><span>Salary</span><strong>' + ROLE.esc((job.salaryMin != null || job.salaryMax != null) ? ROLE.salaryLabel(job) : 'Not stated') + '</strong></div>'
+            + '<div class="kv"><span>Positions</span><strong>' + ROLE.esc(String(job.availablePositions == null ? '—' : job.availablePositions)) + '</strong></div>'
+            + '<div class="kv"><span>Posted</span><strong>' + ROLE.esc(ROLE.dateLabel(job.createdAt)) + '</strong></div>'
+            + '<div class="kv"><span>Applicants</span><strong>' + ROLE.esc(String(job.applicantCount == null ? 0 : job.applicantCount)) + '</strong></div>'
+            + '</div>'
+            + '<p class="block-title" style="margin-top: 16px;">Description</p>'
+            + '<p>' + ROLE.esc(job.jobDescription || 'No description provided.') + '</p>'
+            + '<p class="block-title" style="margin-top: 16px;">Responsibilities</p>'
+            + '<p>' + ROLE.esc(job.responsibilities || 'No responsibilities provided.') + '</p>'
+            + '<p class="block-title" style="margin-top: 16px;">Required skills</p>'
+            + '<p>' + ROLE.esc(job.requiredSkills || 'Not specified.') + '</p>'
+            + '<p class="block-title" style="margin-top: 16px;">Moderation history</p>'
+            + '<div id="jobHistory"><div class="loading">Loading history…</div></div>';
+        document.getElementById('jobModal').hidden = false;
+        loadHistory(job.id);
+    }
+
+    async function loadHistory(jobId) {
+        var result = await ROLE.safe(ApiClient.getAuditLogs({ targetType: 'JOB_POST', targetId: jobId }));
+        var box = document.getElementById('jobHistory');
+        if (!box) return;
+        if (ROLE.failed(result) || !Array.isArray(result) || !result.length) {
+            box.innerHTML = '<p class="muted">No moderation action recorded for this posting.</p>';
+            return;
+        }
+        box.innerHTML = '<div class="stack">' + result.map(function (entry) {
+            return '<div class="list-row"><div class="list-body">'
+                + '<h4>' + ROLE.esc(String(entry.actionType || 'Action').replace(/_/g, ' ')) + '</h4>'
+                + '<div class="list-meta">'
+                + '<span><i class="fas fa-user-shield"></i>' + ROLE.esc(entry.adminUserEmail || 'Unknown administrator') + '</span>'
+                + '<span><i class="fas fa-calendar"></i>' + ROLE.esc(ROLE.dateLabel(entry.createdAt)) + '</span>'
+                + '</div>'
+                + (entry.previousState || entry.newState
+                    ? '<p class="muted">' + ROLE.esc(String(entry.previousState || '—')) + ' → ' + ROLE.esc(String(entry.newState || '—')) + '</p>'
+                    : '')
+                + (entry.reason ? '<p class="muted">' + ROLE.esc(entry.reason) + '</p>' : '')
+                + '</div></div>';
+        }).join('') + '</div>';
+    }
+
+    async function approve(id, button) {
+        if (!confirm('Approve this posting? It becomes visible to job seekers immediately.')) return;
+        if (button) button.disabled = true;
+        try {
+            await ApiClient.approveAdminJobPost(id);
+            ROLE.toast('Posting approved and published.', 'success');
+            await load();
+        } catch (error) {
+            ROLE.toast(error.message || 'Could not approve this posting.', 'error');
+            if (button) button.disabled = false;
+        }
+    }
+
+    async function reject(id, button) {
+        var reason = prompt('Reason for rejecting this posting (required, sent to the employer):');
+        if (reason === null || reason.trim() === '') return;
+        if (button) button.disabled = true;
+        try {
+            await ApiClient.rejectAdminJobPost(id, reason);
+            ROLE.toast('Posting rejected.', 'success');
+            await load();
+        } catch (error) {
+            ROLE.toast(error.message || 'Could not reject this posting.', 'error');
+            if (button) button.disabled = false;
+        }
+    }
+
+    async function requestChanges(id, button) {
+        var reason = prompt('What does the employer need to correct? (required, sent to the employer):');
+        if (reason === null || reason.trim() === '') return;
+        if (button) button.disabled = true;
+        try {
+            await ApiClient.changesRequestedAdminJobPost(id, reason);
+            ROLE.toast('Corrections requested.', 'success');
+            await load();
+        } catch (error) {
+            ROLE.toast(error.message || 'Could not request changes.', 'error');
+            if (button) button.disabled = false;
+        }
+    }
+
+    async function restore(id, button) {
+        if (!confirm('Send this posting back into the approval queue?')) return;
+        if (button) button.disabled = true;
+        try {
+            await ApiClient.restoreAdminJobPost(id);
+            ROLE.toast('Posting returned to the queue.', 'success');
+            await load();
+        } catch (error) {
+            ROLE.toast(error.message || 'Could not restore this posting.', 'error');
+            if (button) button.disabled = false;
+        }
+    }
+
+    /** Dashboard cards link here with ?status=..., so honour the preset. */
+    function applyPreset() {
+        var preset = (new URLSearchParams(window.location.search).get('status') || '').toUpperCase();
+        var allowed = ['PENDING_REVIEW', 'APPROVED', 'CHANGES_REQUESTED', 'REJECTED', 'ALL'];
+        if (allowed.indexOf(preset) === -1) return;
+        state.status = preset;
+        var select = document.getElementById('statusFilter');
+        if (select) select.value = preset;
     }
 
     document.addEventListener('enuvex:ready', async function () {
@@ -218,6 +399,17 @@
             state.page = 0;
             render();
         });
+        document.getElementById('municipalityFilter').addEventListener('change', function () {
+            state.municipality = this.value;
+            state.page = 0;
+            render();
+        });
+        document.getElementById('typeFilter').addEventListener('change', function () {
+            state.type = this.value;
+            state.page = 0;
+            render();
+        });
+
         document.getElementById('pager').addEventListener('click', function (event) {
             var button = event.target.closest('[data-page]');
             if (!button) return;
@@ -225,22 +417,34 @@
             render();
         });
 
-        document.getElementById('jobTable').addEventListener('click', async function (event) {
-            var button = event.target.closest('[data-delete]');
-            if (!button) return;
-            var id = button.getAttribute('data-delete');
-            if (!window.confirm('Delete this job post permanently? This cannot be undone.')) return;
-            button.disabled = true;
-            try {
-                await ApiClient.deleteAdminJobPost(id);
-                ROLE.toast('Job post deleted.', 'success');
-                await load();
-            } catch (error) {
-                ROLE.toast(error.message || 'Could not delete this job post.', 'error');
-                button.disabled = false;
-            }
+        document.getElementById('jobTable').addEventListener('click', function (event) {
+            var details = event.target.closest('[data-details]');
+            if (details) { openDetails(details.getAttribute('data-details')); return; }
+
+            var approveButton = event.target.closest('[data-approve]');
+            if (approveButton) { approve(approveButton.getAttribute('data-approve'), approveButton); return; }
+
+            var rejectButton = event.target.closest('[data-reject]');
+            if (rejectButton) { reject(rejectButton.getAttribute('data-reject'), rejectButton); return; }
+
+            var changesButton = event.target.closest('[data-changes]');
+            if (changesButton) { requestChanges(changesButton.getAttribute('data-changes'), changesButton); return; }
+
+            var restoreButton = event.target.closest('[data-restore]');
+            if (restoreButton) { restore(restoreButton.getAttribute('data-restore'), restoreButton); }
         });
 
+        document.getElementById('closeJobModal').addEventListener('click', function () {
+            document.getElementById('jobModal').hidden = true;
+        });
+        document.getElementById('dismissJobModal').addEventListener('click', function () {
+            document.getElementById('jobModal').hidden = true;
+        });
+        document.getElementById('jobModal').addEventListener('click', function (event) {
+            if (event.target === this) this.hidden = true;
+        });
+
+        applyPreset();
         await load();
     }, { once: true });
 })();

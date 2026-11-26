@@ -3,6 +3,7 @@ package com.jobskills.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jobskills.model.enums.BusinessType;
 import com.jobskills.model.enums.Municipality;
+import com.jobskills.model.enums.VerificationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -36,6 +37,16 @@ public class EmployerProfile {
     private Municipality municipality;
 
     private String barangay;
+
+    /**
+     * Set by administrators only. {@code @Builder.Default} matters: the profile
+     * is created through the Lombok builder, which would otherwise insert NULL
+     * into this NOT NULL column and break registration.
+     */
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private VerificationStatus verificationStatus = VerificationStatus.UNVERIFIED;
 
     @Column(columnDefinition = "TEXT")
     private String businessAddress;

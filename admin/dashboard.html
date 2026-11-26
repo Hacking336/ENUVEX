@@ -18,7 +18,7 @@
         window.ENUVEX_PAGE = {
             active: 'dashboard',
             title: 'Admin Dashboard',
-            subtitle: 'Platform activity across Camarines Norte'
+            subtitle: 'Moderation workload across Camarines Norte'
         };
     </script>
 </head>
@@ -34,11 +34,11 @@
             <div class="page-head">
                 <div>
                     <h2>Platform overview</h2>
-                    <p>Counts come straight from the user, job and application tables.</p>
+                    <p>Every count below is read from the user, employer, job and report tables.</p>
                 </div>
                 <div class="page-head-actions">
                     <a class="btn-ghost" href="employers.html"><i class="fas fa-building-circle-check"></i> Verification queue</a>
-                    <a class="btn-solid" href="reports.html"><i class="fas fa-chart-column"></i> Open reports</a>
+                    <a class="btn-solid" href="moderation-reports.html"><i class="fas fa-flag"></i> Open reports</a>
                 </div>
             </div>
 
@@ -47,47 +47,47 @@
                 <span id="pageErrorText">Could not load platform statistics.</span>
             </div>
 
-            <section class="metrics cols-3" aria-label="Platform metrics">
-                <article class="metric">
+            <section class="metrics cols-3" aria-label="Accounts">
+                <a class="metric" href="users.html">
                     <div class="metric-icon"><i class="fas fa-users"></i></div>
                     <div>
-                        <div class="metric-value" id="metricSeekers">—</div>
-                        <div class="metric-label">Total Job Seekers</div>
-                        <div class="metric-desc">Registered seeker accounts</div>
+                        <div class="metric-value" id="metricUsers">—</div>
+                        <div class="metric-label">Total Users</div>
+                        <div class="metric-desc">Every registered account</div>
                     </div>
-                </article>
-                <article class="metric">
+                </a>
+                <a class="metric" href="employers.html?status=ALL">
                     <div class="metric-icon"><i class="fas fa-building"></i></div>
                     <div>
                         <div class="metric-value" id="metricEmployers">—</div>
                         <div class="metric-label">Total Employers</div>
-                        <div class="metric-desc">Registered employer accounts</div>
+                        <div class="metric-desc">Company accounts</div>
                     </div>
-                </article>
-                <article class="metric">
-                    <div class="metric-icon"><i class="fas fa-briefcase"></i></div>
+                </a>
+                <a class="metric" href="employers.html?status=VERIFIED">
+                    <div class="metric-icon"><i class="fas fa-circle-check"></i></div>
                     <div>
-                        <div class="metric-value" id="metricJobs">—</div>
-                        <div class="metric-label">Total Job Posts</div>
-                        <div class="metric-desc">Every post ever created</div>
+                        <div class="metric-value" id="metricVerified">—</div>
+                        <div class="metric-label">Verified Employers</div>
+                        <div class="metric-desc">Approved company profiles</div>
                     </div>
-                </article>
-                <article class="metric">
-                    <div class="metric-icon"><i class="fas fa-circle-play"></i></div>
+                </a>
+                <a class="metric" href="employers.html?status=PENDING">
+                    <div class="metric-icon"><i class="fas fa-hourglass-half"></i></div>
                     <div>
-                        <div class="metric-value" id="metricActiveJobs">—</div>
-                        <div class="metric-label">Active Job Posts</div>
-                        <div class="metric-desc">Currently visible to seekers</div>
-                    </div>
-                </article>
-                <article class="metric">
-                    <div class="metric-icon"><i class="fas fa-clock"></i></div>
-                    <div>
-                        <div class="metric-value" id="metricPending">—</div>
+                        <div class="metric-value" id="metricPendingVerify">—</div>
                         <div class="metric-label">Pending Verifications</div>
-                        <div class="metric-desc">Employers awaiting approval</div>
+                        <div class="metric-desc">Employers waiting for review</div>
                     </div>
-                </article>
+                </a>
+                <a class="metric" href="users.html?status=INACTIVE">
+                    <div class="metric-icon"><i class="fas fa-user-slash"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricSuspended">—</div>
+                        <div class="metric-label">Suspended Accounts</div>
+                        <div class="metric-desc">Accounts blocked from signing in</div>
+                    </div>
+                </a>
                 <article class="metric">
                     <div class="metric-icon"><i class="fas fa-file-lines"></i></div>
                     <div>
@@ -98,17 +98,105 @@
                 </article>
             </section>
 
-            <div class="split" style="margin-top: 20px;">
-                <section class="card panel" aria-labelledby="municipalityTitle">
-                    <div class="panel-head">
-                        <h3 id="municipalityTitle"><i class="fas fa-map-location-dot"></i> Job posts by municipality</h3>
-                        <a class="link-all" href="reports.html">Full report</a>
+            <h3 class="block-title" style="margin-top: 26px;">Job posting moderation</h3>
+            <section class="metrics cols-3" aria-label="Job moderation">
+                                    <a class="metric" href="job-posts.html?status=ALL">
+                        <div class="metric-icon"><i class="fas fa-briefcase"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricTotalJobs">—</div>
+                        <div class="metric-label">Total Job Posts</div>
+                        <div class="metric-desc">Every posting ever created</div>
                     </div>
-                    <div class="bar-list" id="municipalityBars">
-                        <div class="loading">Loading distribution…</div>
+                </a>
+                <a class="metric" href="job-posts.html?status=APPROVED">
+                    <div class="metric-icon"><i class="fas fa-check-circle"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricApprovedJobs">—</div>
+                        <div class="metric-label">Approved</div>
+                        <div class="metric-desc">Visible to job seekers</div>
                     </div>
-                </section>
+                </a>
+                <a class="metric" href="job-posts.html?status=PENDING_REVIEW">
+                    <div class="metric-icon"><i class="fas fa-clock"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricPendingJobs">—</div>
+                        <div class="metric-label">Awaiting Approval</div>
+                        <div class="metric-desc">Not visible until approved</div>
+                    </div>
+                </a>
+                <a class="metric" href="job-posts.html?status=CHANGES_REQUESTED">
+                    <div class="metric-icon"><i class="fas fa-pen-to-square"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricChangesJobs">—</div>
+                        <div class="metric-label">Changes Requested</div>
+                        <div class="metric-desc">Employer must correct and resubmit</div>
+                    </div>
+                </a>
+                <a class="metric" href="job-posts.html?status=REJECTED">
+                    <div class="metric-icon"><i class="fas fa-times-circle"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricRejectedJobs">—</div>
+                        <div class="metric-label">Rejected</div>
+                        <div class="metric-desc">Not approved for the platform</div>
+                    </div>
+                </a>
+                <a class="metric" href="suspicious-listings.html">
+                    <div class="metric-icon"><i class="fas fa-triangle-exclamation"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricSuspicious">—</div>
+                        <div class="metric-label">Suspicious Listings</div>
+                        <div class="metric-desc">Flags awaiting review</div>
+                    </div>
+                </a>
+            </section>
 
+            <h3 class="block-title" style="margin-top: 26px;">Reports</h3>
+            <section class="metrics cols-3" aria-label="Reports">
+                <a class="metric" href="moderation-reports.html?status=OPEN">
+                    <div class="metric-icon"><i class="fas fa-flag"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricOpenReports">—</div>
+                        <div class="metric-label">Open Reports</div>
+                        <div class="metric-desc">Awaiting investigation</div>
+                    </div>
+                </a>
+                <a class="metric" href="moderation-reports.html?status=UNDER_REVIEW">
+                    <div class="metric-icon"><i class="fas fa-magnifying-glass"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricUnderReviewReports">—</div>
+                        <div class="metric-label">Under Investigation</div>
+                        <div class="metric-desc">Being reviewed now</div>
+                    </div>
+                </a>
+                <a class="metric" href="moderation-reports.html?status=RESOLVED">
+                    <div class="metric-icon"><i class="fas fa-circle-check"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricResolvedReports">—</div>
+                        <div class="metric-label">Resolved</div>
+                        <div class="metric-desc">Closed with an outcome</div>
+                    </div>
+                </a>
+                <a class="metric" href="moderation-reports.html?status=DISMISSED">
+                    <div class="metric-icon"><i class="fas fa-circle-xmark"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricDismissedReports">—</div>
+                        <div class="metric-label">Dismissed</div>
+                        <div class="metric-desc">Closed as not actionable</div>
+                    </div>
+                </a>
+            </section>
+
+            <section class="card panel" style="margin-top: 24px;" aria-labelledby="recentActivityTitle">
+                <div class="panel-head">
+                    <h3 id="recentActivityTitle"><i class="fas fa-clock-rotate-left"></i> Recent moderation activity</h3>
+                    <a class="link-all" href="audit-logs.html">Full audit log</a>
+                </div>
+                <div id="recentActivity">
+                    <div class="loading">Loading recent activity…</div>
+                </div>
+            </section>
+
+            <div class="split" style="margin-top: 20px;">
                 <section class="card panel" aria-labelledby="pendingTitle">
                     <div class="panel-head">
                         <h3 id="pendingTitle"><i class="fas fa-building-circle-exclamation"></i> Awaiting verification</h3>
@@ -118,119 +206,17 @@
                         <div class="loading">Loading employers…</div>
                     </div>
                 </section>
-            </div>
 
-            <section class="card panel" aria-labelledby="activityTitle" style="margin-top: 20px;">
-                <div class="panel-head">
-                    <h3 id="activityTitle"><i class="fas fa-file-lines"></i> Application activity</h3>
-                    <a class="link-all" href="reports.html">Full report</a>
-                </div>
-                <div class="tag-list" id="applicationActivity">
-                    <div class="loading">Loading application activity…</div>
-                </div>
-            </section>
-
-            <section class="card panel" aria-labelledby="matchTitle" style="margin-top: 20px;">
-                <div class="panel-head">
-                    <h3 id="matchTitle"><i class="fas fa-bullseye"></i> Matching analytics</h3>
-                    <span class="muted" id="matchScope">Counting matches…</span>
-                </div>
-
-                <form class="rv-toolbar" id="matchFilters" role="search">
-                    <div class="form-field">
-                        <label for="matchMunicipality">Municipality</label>
-                        <select id="matchMunicipality">
-                            <option value="">All municipalities</option>
-                            <option value="BASUD">Basud</option>
-                            <option value="DAET">Daet</option>
-                            <option value="VINZONS">Vinzons</option>
-                            <option value="LABO">Labo</option>
-                        </select>
+                <section class="card panel" aria-labelledby="municipalityTitle">
+                    <div class="panel-head">
+                        <h3 id="municipalityTitle"><i class="fas fa-map-location-dot"></i> Job posts by municipality</h3>
+                        <a class="link-all" href="reports.html">Full report</a>
                     </div>
-                    <div class="form-field">
-                        <label for="matchType">Employment type</label>
-                        <select id="matchType">
-                            <option value="">All types</option>
-                            <option value="FULL_TIME">Full-time</option>
-                            <option value="PART_TIME">Part-time</option>
-                            <option value="CONTRACT">Contract</option>
-                            <option value="TEMPORARY">Temporary</option>
-                        </select>
+                    <div class="bar-list" id="municipalityBars">
+                        <div class="loading">Loading distribution…</div>
                     </div>
-                    <div class="form-field">
-                        <label for="matchFrom">Posted from</label>
-                        <input type="date" id="matchFrom">
-                    </div>
-                    <div class="form-field">
-                        <label for="matchTo">Posted to</label>
-                        <input type="date" id="matchTo">
-                    </div>
-                    <button class="btn-solid btn-sm" type="submit"><i class="fas fa-filter"></i> Apply</button>
-                </form>
-
-                <section class="metrics cols-3" aria-label="Matching metrics">
-                    <article class="metric">
-                        <div class="metric-icon"><i class="fas fa-briefcase"></i></div>
-                        <div>
-                            <div class="metric-value" id="matchActiveJobs">—</div>
-                            <div class="metric-label">Active Jobs Scored</div>
-                            <div class="metric-desc">Posts matching the filters above</div>
-                        </div>
-                    </article>
-                    <article class="metric">
-                        <div class="metric-icon"><i class="fas fa-star"></i></div>
-                        <div>
-                            <div class="metric-value" id="matchJobsWithSkills">—</div>
-                            <div class="metric-label">Jobs With Required Skills</div>
-                            <div class="metric-desc">Posts whose skills can be compared</div>
-                        </div>
-                    </article>
-                    <article class="metric">
-                        <div class="metric-icon"><i class="fas fa-percent"></i></div>
-                        <div>
-                            <div class="metric-value" id="matchAverage">—</div>
-                            <div class="metric-label">Average Match Score</div>
-                            <div class="metric-desc">Across every job × seeker pair</div>
-                        </div>
-                    </article>
-                    <article class="metric">
-                        <div class="metric-icon"><i class="fas fa-user-check"></i></div>
-                        <div>
-                            <div class="metric-value" id="matchProfiles">—</div>
-                            <div class="metric-label">Complete Profiles</div>
-                            <div class="metric-desc">Seekers at 80%+ matching data</div>
-                        </div>
-                    </article>
-                    <article class="metric">
-                        <div class="metric-icon"><i class="fas fa-calculator"></i></div>
-                        <div>
-                            <div class="metric-value" id="matchPairs">—</div>
-                            <div class="metric-label">Pairs Evaluated</div>
-                            <div class="metric-desc">Sample size behind the averages</div>
-                        </div>
-                    </article>
                 </section>
-
-                <div class="split" style="margin-top: 18px;">
-                    <div>
-                        <h4 class="match-subhead">Match score distribution</h4>
-                        <div class="bar-list" id="matchDistribution">
-                            <div class="loading">Loading distribution…</div>
-                        </div>
-                    </div>
-                    <div>
-                        <h4 class="match-subhead">Most common skills</h4>
-                        <div id="matchSkills">
-                            <div class="loading">Loading skills…</div>
-                        </div>
-                    </div>
-                </div>
-
-                <h4 class="match-subhead" style="margin-top: 18px;">Jobs receiving the most relevant matches</h4>
-                <div class="list-rows" id="matchTopJobs">
-                    <div class="loading">Loading job matches…</div>
-                </div>
-            </section>
+            </div>
         </main>
     </div>
 </div>
@@ -239,7 +225,6 @@
 <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
 <script src="../assets/js/api.js"></script>
-<script src="../assets/js/jsm-match.js"></script>
 <script src="../assets/js/role-app.js"></script>
 <script>
 (function () {
@@ -253,194 +238,139 @@
         box.hidden = false;
     }
 
+    function setText(id, value) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = (value == null ? 0 : value);
+    }
+
     function renderBars(map) {
         var container = document.getElementById('municipalityBars');
         var entries = Object.keys(map || {}).map(function (key) {
             return { label: ROLE.municipalityLabel(key), value: Number(map[key]) || 0 };
-        }).sort(function (a, b) { return b.value - a.value; });
+        }).filter(function (entry) { return entry.value > 0; })
+            .sort(function (a, b) { return b.value - a.value; });
 
-        var max = entries.reduce(function (top, entry) { return Math.max(top, entry.value); }, 0);
         if (!entries.length) {
-            container.innerHTML = '<p class="panel-empty">No municipality data returned.</p>';
+            container.innerHTML = '<p class="panel-empty">No job postings recorded per municipality yet.</p>';
             return;
         }
 
+        var max = entries.reduce(function (top, entry) { return Math.max(top, entry.value); }, 0);
         container.innerHTML = entries.map(function (entry) {
             var width = max ? Math.round((entry.value / max) * 100) : 0;
-            return `<div class="bar-row">
-                <span class="bar-name">${ROLE.esc(entry.label)}</span>
-                <span class="bar-track"><span class="bar-fill" style="width: ${width}%"></span></span>
-                <span class="bar-value">${entry.value}</span>
-            </div>`;
+            return '<div class="bar-row">'
+                + '<span class="bar-name">' + ROLE.esc(entry.label) + '</span>'
+                + '<span class="bar-track"><span class="bar-fill" style="width: ' + width + '%"></span></span>'
+                + '<span class="bar-value">' + entry.value + '</span>'
+                + '</div>';
         }).join('');
     }
 
     function renderPending(employers) {
         var container = document.getElementById('pendingList');
-        var pending = employers.filter(function (employer) { return !employer.verified; }).slice(0, 5);
+        var pending = employers.filter(function (employer) {
+            return String(employer.verificationStatus) === 'PENDING';
+        }).slice(0, 5);
 
         if (!pending.length) {
-            container.innerHTML = `<p class="panel-empty">Every registered employer has been verified.</p>`;
+            container.innerHTML = '<p class="panel-empty">No employer is waiting for verification.</p>';
             return;
         }
 
         container.innerHTML = pending.map(function (employer) {
-            return `<div class="verify-card">
-                <div>
-                    <h4>${ROLE.esc(employer.businessName || 'Unnamed business')}</h4>
-                    <p>${ROLE.esc(employer.employerName || 'No contact person')} · ${ROLE.esc(ROLE.municipalityLabel(employer.municipality) || 'No municipality')}</p>
-                    <p>Registered ${ROLE.esc(ROLE.dateLabel(employer.createdAt))}</p>
-                </div>
-                <a class="btn-soft btn-sm" href="employers.html">Review</a>
-            </div>`;
-        }).join('');
-    }
-
-    /* ---------- matching analytics -------------------------------------- */
-
-    function matchQuery() {
-        var params = new URLSearchParams();
-        var municipality = document.getElementById('matchMunicipality').value;
-        var type = document.getElementById('matchType').value;
-        var from = document.getElementById('matchFrom').value;
-        var to = document.getElementById('matchTo').value;
-        if (municipality) params.set('municipality', municipality);
-        if (type) params.set('employmentType', type);
-        if (from) params.set('from', from);
-        if (to) params.set('to', to);
-        return params.toString();
-    }
-
-    function renderDistribution(buckets) {
-        var container = document.getElementById('matchDistribution');
-        var rows = Array.isArray(buckets) ? buckets : [];
-        if (!rows.length) {
-            container.innerHTML = '<p class="panel-empty">No matches to count for these filters.</p>';
-            return;
-        }
-        var max = rows.reduce(function (top, row) { return Math.max(top, Number(row.count) || 0); }, 0);
-        container.innerHTML = rows.map(function (row) {
-            var width = max ? Math.round((Number(row.count) / max) * 100) : 0;
-            return '<div class="bar-row">'
-                + '<span class="bar-name">' + ROLE.esc(row.label) + '</span>'
-                + '<span class="bar-track"><span class="bar-fill" style="width: ' + width + '%"></span></span>'
-                + '<span class="bar-value">' + (Number(row.count) || 0) + '</span>'
+            return '<div class="verify-card">'
+                + '<div>'
+                + '<h4>' + ROLE.esc(employer.businessName || 'Unnamed business') + '</h4>'
+                + '<p>' + ROLE.esc(employer.employerName || 'No contact person') + ' · '
+                + ROLE.esc(ROLE.municipalityLabel(employer.municipality) || 'No municipality') + '</p>'
+                + '<p>Registered ' + ROLE.esc(ROLE.dateLabel(employer.createdAt)) + '</p>'
+                + '</div>'
+                + '<a class="btn-soft btn-sm" href="employers.html">Review</a>'
                 + '</div>';
         }).join('');
     }
 
-    function renderSkills(matched, missing) {
-        var container = document.getElementById('matchSkills');
-        function group(title, icon, items, cls) {
-            if (!items || !items.length) {
-                return '<p class="panel-empty" style="padding: 8px 0;">No ' + ROLE.esc(title.toLowerCase()) + ' recorded.</p>';
-            }
-            return '<p class="match-skill-head"><i class="fas ' + icon + '"></i>' + ROLE.esc(title) + '</p>'
-                + '<div class="match-skill-list">' + items.map(function (item) {
-                    return '<span class="chip ' + cls + '">' + ROLE.esc(item.skill)
-                        + ' <b>' + (Number(item.count) || 0) + '</b></span>';
-                }).join('') + '</div>';
-        }
-        container.innerHTML = group('Most matched skills', 'fa-circle-check', matched, 'chip-match')
-            + group('Most missing skills', 'fa-circle-plus', missing, 'chip-missing');
+    function actionLabel(actionType) {
+        return String(actionType || 'ACTION').toLowerCase().replace(/_/g, ' ')
+            .replace(/^./, function (c) { return c.toUpperCase(); });
     }
 
-    function renderTopJobs(jobs) {
-        var container = document.getElementById('matchTopJobs');
-        var rows = Array.isArray(jobs) ? jobs : [];
+    function renderActivity(logs) {
+        var container = document.getElementById('recentActivity');
+        var rows = Array.isArray(logs) ? logs.slice(0, 8) : [];
         if (!rows.length) {
-            container.innerHTML = '<p class="panel-empty">No active job has been scored for these filters.</p>';
+            container.innerHTML = '<p class="panel-empty">No moderation action has been recorded yet.</p>';
             return;
         }
-        container.innerHTML = rows.map(function (job) {
-            var meta = [job.companyName, ROLE.municipalityLabel(job.municipality),
-                (Number(job.strongMatches) || 0) + ' seeker' + (Number(job.strongMatches) === 1 ? '' : 's') + ' at 60%+']
-                .filter(Boolean).join(' · ');
-            return '<div class="list-row">'
-                + '<div class="list-body">'
-                + '<h4>' + ROLE.esc(job.jobTitle || 'Job') + '</h4>'
-                + '<div class="list-meta"><span><i class="fas fa-circle-info"></i>' + ROLE.esc(meta) + '</span></div>'
-                + '</div>'
-                + '<div class="list-side">'
-                + (window.JSMMatch ? JSMMatch.pill(job.averageScore) : '')
-                + '<a class="btn-soft btn-sm" href="job-posts.html">Review</a>'
-                + '</div></div>';
-        }).join('');
-    }
-
-    async function loadMatching() {
-        var scope = document.getElementById('matchScope');
-        var query = matchQuery();
-        var result = await ROLE.safe(ApiClient.request('/admin/matching/stats' + (query ? '?' + query : '')));
-        if (ROLE.failed(result)) {
-            scope.textContent = 'Matching analytics could not be loaded.';
-            return;
-        }
-
-        var stats = result || {};
-        var pairs = Number(stats.pairsEvaluated) || 0;
-        var seekers = Number(stats.jobSeekers) || 0;
-        var jobs = Number(stats.activeJobs) || 0;
-
-        document.getElementById('matchActiveJobs').textContent = jobs;
-        document.getElementById('matchJobsWithSkills').textContent = Number(stats.jobsWithRequiredSkills) || 0;
-        document.getElementById('matchAverage').textContent = stats.averageMatchScore == null
-            ? '—' : stats.averageMatchScore + '%';
-        document.getElementById('matchProfiles').textContent = (Number(stats.jobSeekersWithCompleteProfiles) || 0)
-            + ' / ' + seekers;
-        document.getElementById('matchPairs').textContent = pairs;
-
-        scope.textContent = pairs
-            ? 'Counting ' + pairs + ' job × seeker combinations from ' + jobs + ' active job'
-                + (jobs === 1 ? '' : 's') + ' and ' + seekers + ' seeker profile' + (seekers === 1 ? '' : 's') + '.'
-            : 'No job and seeker rows to combine for these filters.';
-
-        renderDistribution(stats.distribution);
-        renderSkills(stats.mostMatchedSkills, stats.mostMissingSkills);
-        renderTopJobs(stats.topJobs);
+        container.innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr>'
+            + '<th>Action</th><th>Administrator</th><th>Target</th><th>Result</th><th>When</th>'
+            + '</tr></thead><tbody>'
+            + rows.map(function (log) {
+                var result = log.newState
+                    ? String(log.newState).toLowerCase().replace(/_/g, ' ')
+                    : 'recorded';
+                return '<tr>'
+                    + '<td><span class="cell-main">' + ROLE.esc(actionLabel(log.actionType)) + '</span>'
+                    + (log.reason ? '<span class="cell-sub">' + ROLE.esc(log.reason) + '</span>' : '') + '</td>'
+                    + '<td>' + ROLE.esc(log.adminUserEmail || '—') + '</td>'
+                    + '<td>' + ROLE.esc((log.targetType || '—') + (log.targetId ? ' #' + log.targetId : '')) + '</td>'
+                    + '<td>' + ROLE.esc(result) + '</td>'
+                    + '<td>' + ROLE.esc(ROLE.dateLabel(log.createdAt)) + '</td>'
+                    + '</tr>';
+            }).join('')
+            + '</tbody></table></div>';
     }
 
     async function boot() {
         var results = await Promise.all([
+            ROLE.safe(ApiClient.getModerationOverview()),
             ROLE.safe(ApiClient.getAdminDashboard()),
-            ROLE.safe(ApiClient.getAdminJobPosts()),
             ROLE.safe(ApiClient.getAdminEmployers()),
+            ROLE.safe(ApiClient.getRecentAuditLogs()),
             ROLE.safe(ApiClient.getAdminReports())
         ]);
 
-        var stats = ROLE.failed(results[0]) ? {} : (results[0] || {});
-        if (ROLE.failed(results[0])) showError(results[0].__error);
+        var moderation = ROLE.failed(results[0]) ? null : results[0];
+        var platform = ROLE.failed(results[1]) ? null : results[1];
 
-        document.getElementById('metricSeekers').textContent = stats.totalJobSeekers != null ? stats.totalJobSeekers : 0;
-        document.getElementById('metricEmployers').textContent = stats.totalEmployers != null ? stats.totalEmployers : 0;
-        document.getElementById('metricActiveJobs').textContent = stats.activeJobPosts != null ? stats.activeJobPosts : 0;
-        document.getElementById('metricApplications').textContent = stats.totalApplications != null ? stats.totalApplications : 0;
+        if (!moderation && !platform) {
+            showError((results[0] && results[0].__error) || 'Platform statistics could not be loaded.');
+        }
 
-        var activity = document.getElementById('applicationActivity');
-        var byStatus = stats.applicationsByStatus || {};
-        var order = ['SUBMITTED', 'REVIEWING', 'SHORTLISTED', 'INTERVIEW', 'ACCEPTED', 'REJECTED', 'WITHDRAWN'];
-        activity.innerHTML = order.map(function (status) {
-            var meta = ROLE.statusMeta(status);
-            return '<span class="status ' + meta.cls + '" style="margin: 0 6px 6px 0;">' + ROLE.esc(meta.label) + ': ' + (byStatus[status] || 0) + '</span>';
-        }).join('');
+        if (platform) {
+            setText('metricEmployers', platform.totalEmployers);
+            setText('metricApplications', platform.totalApplications);
+        }
+        if (moderation) {
+            setText('metricUsers', moderation.totalUsers);
+        }
+        if (moderation) {
+            setText('metricVerified', moderation.verifiedEmployers);
+            setText('metricPendingVerify', moderation.pendingVerifications);
+            setText('metricSuspended', moderation.suspendedAccounts);
+            setText('metricTotalJobs', moderation.totalJobPosts);
+            setText('metricApprovedJobs', moderation.approvedJobs);
+            setText('metricPendingJobs', moderation.pendingReviewJobs);
+            setText('metricChangesJobs', moderation.changesRequestedJobs);
+            setText('metricRejectedJobs', moderation.rejectedJobs);
+            setText('metricSuspicious', moderation.suspiciousListings);
+            setText('metricOpenReports', moderation.openReports);
+            setText('metricUnderReviewReports', moderation.underReviewReports);
+            setText('metricResolvedReports', moderation.resolvedReports);
+            setText('metricDismissedReports', moderation.dismissedReports);
+        }
+        if (!moderation) {
+            setText('metricSuspended', '—');
+        }
 
-        var jobsPage = ROLE.failed(results[1]) ? null : results[1];
-        document.getElementById('metricJobs').textContent = jobsPage && jobsPage.totalElements != null ? jobsPage.totalElements : 0;
+        renderActivity(ROLE.failed(results[3]) ? [] : results[3]);
 
-        var employers = !ROLE.failed(results[2]) && Array.isArray(results[2]) ? results[2] : [];
-        document.getElementById('metricPending').textContent = employers.filter(function (employer) {
-            return !employer.verified;
-        }).length;
+        var employers = (!ROLE.failed(results[2]) && Array.isArray(results[2])) ? results[2] : [];
         renderPending(employers);
 
-        var reports = ROLE.failed(results[3]) ? null : results[3];
-        renderBars(reports && reports.jobPostsByMunicipality ? reports.jobPostsByMunicipality : {});
-
-        document.getElementById('matchFilters').addEventListener('submit', function (event) {
-            event.preventDefault();
-            loadMatching();
-        });
-        await loadMatching();
+        // Same analytics endpoint the Phase 5 report page uses, so the
+        // municipality totals match that page exactly.
+        renderBars(ROLE.failed(results[4]) ? {} : (results[4] && results[4].jobPostsByMunicipality));
     }
 
     document.addEventListener('enuvex:ready', boot, { once: true });

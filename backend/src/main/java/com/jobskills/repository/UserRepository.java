@@ -15,4 +15,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByUserType(UserType userType);
     long countByUserType(UserType userType);
     Optional<User> findFirstByUserType(UserType userType);
+    long countByUserTypeAndIsVerified(UserType userType, boolean isVerified);
+    long countByUserTypeAndIsActiveTrue(UserType userType);
+    long countByIsActiveFalse();
 }

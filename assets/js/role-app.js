@@ -25,7 +25,10 @@
             { id: 'dashboard', href: 'dashboard.html', icon: 'fa-gauge-high', label: 'Dashboard', short: 'Dashboard' },
             { id: 'users', href: 'users.html', icon: 'fa-users', label: 'User Management', short: 'Users' },
             { id: 'employers', href: 'employers.html', icon: 'fa-building-circle-check', label: 'Employer Verification', short: 'Verify' },
-            { id: 'job-posts', href: 'job-posts.html', icon: 'fa-briefcase', label: 'Job Management', short: 'Jobs' },
+            { id: 'job-posts', href: 'job-posts.html', icon: 'fa-briefcase', label: 'Job Approvals', short: 'Jobs' },
+            { id: 'moderation-reports', href: 'moderation-reports.html', icon: 'fa-flag', label: 'Reported Listings', short: 'Reports' },
+            { id: 'suspicious-listings', href: 'suspicious-listings.html', icon: 'fa-triangle-exclamation', label: 'Suspicious Listings', short: 'Flags' },
+            { id: 'audit-logs', href: 'audit-logs.html', icon: 'fa-clock-rotate-left', label: 'Audit Logs', short: 'Audit' },
             { id: 'geography', href: 'geography.html', icon: 'fa-map-location-dot', label: 'Geographic Map', short: 'Map' },
             { id: 'skills', href: 'skills.html', icon: 'fa-chart-line', label: 'Skills Analytics', short: 'Skills' },
             { id: 'reports', href: 'reports.html', icon: 'fa-chart-column', label: 'Reports & Analytics', short: 'Reports' }
@@ -284,7 +287,10 @@
                <a href="post-job.html"><i class="fas fa-circle-plus"></i> Post a Job</a>`
             : `<a href="users.html"><i class="fas fa-users"></i> User Management</a>
                <a href="employers.html"><i class="fas fa-building-circle-check"></i> Employer Verification</a>
-               <a href="job-posts.html"><i class="fas fa-briefcase"></i> Job Management</a>
+               <a href="job-posts.html"><i class="fas fa-briefcase"></i> Job Approvals</a>
+               <a href="moderation-reports.html"><i class="fas fa-flag"></i> Reported Listings</a>
+               <a href="suspicious-listings.html"><i class="fas fa-triangle-exclamation"></i> Suspicious Listings</a>
+               <a href="audit-logs.html"><i class="fas fa-clock-rotate-left"></i> Audit Logs</a>
                <a href="geography.html"><i class="fas fa-map-location-dot"></i> Geographic Map</a>
                <a href="skills.html"><i class="fas fa-chart-line"></i> Skills Analytics</a>
                <a href="reports.html"><i class="fas fa-chart-column"></i> Reports &amp; Analytics</a>`;

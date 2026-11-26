@@ -35,6 +35,16 @@ public class NotificationService {
     public static final String INTERVIEW_CANCELLED = "INTERVIEW_CANCELLED";
     public static final String JOB_RECOMMENDATION = "JOB_RECOMMENDATION";
     public static final String EMPLOYER_VERIFICATION = "EMPLOYER_VERIFICATION";
+    public static final String JOB_POST_APPROVED = "JOB_POST_APPROVED";
+    public static final String JOB_POST_REJECTED = "JOB_POST_REJECTED";
+    public static final String JOB_POST_CHANGES_REQUESTED = "JOB_POST_CHANGES_REQUESTED";
+    public static final String EMPLOYER_VERIFIED = "EMPLOYER_VERIFIED";
+    public static final String EMPLOYER_REJECTED = "EMPLOYER_REJECTED";
+    public static final String VERIFICATION_INFO_REQUESTED = "VERIFICATION_INFO_REQUESTED";
+    public static final String REPORT_RESOLVED = "REPORT_RESOLVED";
+    public static final String ACCOUNT_SUSPENDED = "ACCOUNT_SUSPENDED";
+    public static final String ACCOUNT_RESTORED = "ACCOUNT_RESTORED";
+    public static final String SUSPICIOUS_LISTING_FLAGGED = "SUSPICIOUS_LISTING_FLAGGED";
 
     private final NotificationRepository notificationRepository;
 

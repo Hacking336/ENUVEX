@@ -18,7 +18,7 @@
         window.ENUVEX_PAGE = {
             active: 'employers',
             title: 'Employer Verification',
-            subtitle: 'Review company registrations before they hire'
+            subtitle: 'Review company profiles before they can publish jobs'
         };
     </script>
 </head>
@@ -33,8 +33,11 @@
         <main class="content">
             <div class="page-head">
                 <div>
-                    <h2>Employer accounts</h2>
-                    <p>Approve a company after reviewing the details it submitted.</p>
+                    <h2>Employer verification</h2>
+                    <p>Only an administrator can change a company's verification status. Every decision records a reason in the audit log.</p>
+                </div>
+                <div class="page-head-actions">
+                    <span class="badge-neutral" id="totalBadge">0 employers</span>
                 </div>
             </div>
 
@@ -43,44 +46,20 @@
                 <span id="pageErrorText">Could not load employers.</span>
             </div>
 
-            <section class="metrics cols-3" aria-label="Verification metrics">
-                <article class="metric">
-                    <div class="metric-icon"><i class="fas fa-building"></i></div>
-                    <div>
-                        <div class="metric-value" id="metricTotal">—</div>
-                        <div class="metric-label">Employer Profiles</div>
-                        <div class="metric-desc">Companies on the platform</div>
-                    </div>
-                </article>
-                <article class="metric">
-                    <div class="metric-icon"><i class="fas fa-circle-check"></i></div>
-                    <div>
-                        <div class="metric-value" id="metricVerified">—</div>
-                        <div class="metric-label">Verified</div>
-                        <div class="metric-desc">Approved employer accounts</div>
-                    </div>
-                </article>
-                <article class="metric">
-                    <div class="metric-icon"><i class="fas fa-clock"></i></div>
-                    <div>
-                        <div class="metric-value" id="metricPending">—</div>
-                        <div class="metric-label">Pending</div>
-                        <div class="metric-desc">Waiting for your review</div>
-                    </div>
-                </article>
-            </section>
-
-            <div class="card rv-toolbar" style="margin-top: 20px;">
+            <div class="card rv-toolbar">
                 <label class="field" for="employerSearch">
                     <i class="fas fa-magnifying-glass"></i>
-                    <input type="search" id="employerSearch" placeholder="Search company, contact, or email">
+                    <input type="search" id="employerSearch" placeholder="Search company, contact or email">
                 </label>
                 <div class="form-field">
-                    <label for="verifyFilter">Verification</label>
+                    <label for="verifyFilter">Verification status</label>
                     <select id="verifyFilter">
-                        <option value="ALL">All employers</option>
-                        <option value="PENDING">Pending only</option>
-                        <option value="VERIFIED">Verified only</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="ALL">All statuses</option>
+                        <option value="VERIFIED">Verified</option>
+                        <option value="UNVERIFIED">Unverified</option>
+                        <option value="NEEDS_INFORMATION">Needs information</option>
+                        <option value="REJECTED">Rejected</option>
                     </select>
                 </div>
                 <span class="rv-spacer"></span>
@@ -90,20 +69,20 @@
             <div id="employerTable">
                 <div class="loading">Loading employers…</div>
             </div>
+
+            <div class="pagination" id="pager" hidden></div>
         </main>
     </div>
 </div>
 
 <div class="modal" id="employerModal" hidden>
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="employerModalTitle">
+    <div class="modal-card modal-wide" role="dialog" aria-modal="true" aria-labelledby="employerModalTitle">
         <div class="modal-head">
             <h3 id="employerModalTitle">Employer details</h3>
             <button class="modal-close" type="button" id="closeEmployerModal" aria-label="Close"><i class="fas fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="employerModalBody"></div>
-        <div class="modal-foot" id="employerModalFoot">
-            <button class="btn-soft" type="button" id="dismissEmployerModal">Close</button>
-        </div>
+        <div class="modal-foot" id="employerModalFoot"></div>
     </div>
 </div>
 
@@ -116,7 +95,8 @@
 (function () {
     'use strict';
 
-    var state = { employers: [], query: '', filter: 'ALL', openId: null };
+    var PAGE_SIZE = 12;
+    var state = { employers: [], query: '', filter: 'PENDING', page: 0 };
 
     function showError(message) {
         var box = document.getElementById('pageError');
@@ -126,144 +106,194 @@
         box.hidden = false;
     }
 
+    function verificationOf(employer) {
+        return String(employer.verificationStatus || (employer.verified ? 'VERIFIED' : 'UNVERIFIED'));
+    }
+
+    var STATUS_META = {
+        VERIFIED: ['badge-ok', 'Verified'],
+        PENDING: ['badge-wait', 'Pending'],
+        UNVERIFIED: ['badge-neutral', 'Unverified'],
+        NEEDS_INFORMATION: ['badge-wait', 'Needs info'],
+        REJECTED: ['badge-off', 'Rejected']
+    };
+
+    function statusBadge(status) {
+        var meta = STATUS_META[status] || ['badge-neutral', status];
+        return '<span class="' + meta[0] + '">' + meta[1] + '</span>';
+    }
+
     function filtered() {
         return state.employers.filter(function (employer) {
-            if (state.filter === 'PENDING' && employer.verified) return false;
-            if (state.filter === 'VERIFIED' && !employer.verified) return false;
+            if (state.filter !== 'ALL' && verificationOf(employer) !== state.filter) return false;
             if (!state.query) return true;
-            var haystack = [employer.businessName, employer.employerName, employer.email, employer.barangay]
+            var haystack = [employer.businessName, employer.employerName, employer.email, employer.barangay,
+                ROLE.municipalityLabel(employer.municipality)]
                 .filter(Boolean).join(' ').toLowerCase();
             return haystack.indexOf(state.query) !== -1;
         }).sort(function (a, b) {
-            if (!!a.verified !== !!b.verified) return a.verified ? 1 : -1;
             return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
         });
     }
 
-    function render() {
-        var list = filtered();
-        var total = state.employers.length;
-        var verified = state.employers.filter(function (employer) { return employer.verified; }).length;
-
-        document.getElementById('metricTotal').textContent = total;
-        document.getElementById('metricVerified').textContent = verified;
-        document.getElementById('metricPending').textContent = total - verified;
-        document.getElementById('resultCount').textContent = list.length + ' of ' + total + ' employer' + (total === 1 ? '' : 's');
-
-        var container = document.getElementById('employerTable');
-        if (!total) {
-            container.innerHTML = `<div class="card panel"><div class="empty">
-                <i class="fas fa-building"></i>
-                <strong>No employer profiles yet</strong>
-                <p>Registered companies will appear here for verification.</p>
-            </div></div>`;
-            return;
+    function rowActions(employer) {
+        var id = ROLE.esc(String(employer.userId || employer.profileId || ''));
+        var status = verificationOf(employer);
+        var buttons = '<button class="btn-ghost btn-sm" type="button" data-view="' + id + '">Review</button>';
+        if (status !== 'VERIFIED') {
+            buttons += '<button class="btn-solid btn-sm" type="button" data-verify="' + id + '">Approve</button>';
         }
-        if (!list.length) {
-            container.innerHTML = `<div class="card panel"><div class="empty">
-                <i class="fas fa-filter"></i>
-                <strong>No employers match this filter</strong>
-                <p>Try another verification state or search term.</p>
-            </div></div>`;
-            return;
-        }
-
-        container.innerHTML = `<div class="table-wrap">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th class="num">#</th>
-                        <th>Company</th>
-                        <th>Contact</th>
-                        <th>Location</th>
-                        <th>Business type</th>
-                        <th>Verification</th>
-                        <th>Registered</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${list.map(function (employer, index) {
-                        return `<tr>
-                            <td class="num">${index + 1}</td>
-                            <td>
-                                <span class="cell-main">${ROLE.esc(employer.businessName || 'Unnamed business')}</span>
-                                <span class="cell-sub">${ROLE.esc(employer.email || 'No account email')}</span>
-                            </td>
-                            <td>
-                                <span class="cell-main">${ROLE.esc(employer.employerName || '—')}</span>
-                                <span class="cell-sub">${ROLE.esc(employer.contactNumber || 'No contact number')}</span>
-                            </td>
-                            <td>${ROLE.esc(ROLE.municipalityLabel(employer.municipality) || '—')}${employer.barangay ? '<span class="cell-sub">' + ROLE.esc(employer.barangay) + '</span>' : ''}</td>
-                            <td>${ROLE.esc(ROLE.businessTypeLabel(employer.businessType))}</td>
-                            <td>
-                                <span class="${employer.verified ? 'badge-ok' : 'badge-wait'}">
-                                    <i class="fas ${employer.verified ? 'fa-circle-check' : 'fa-clock'}"></i>
-                                    ${employer.verified ? 'Verified' : 'Pending'}
-                                </span>
-                            </td>
-                            <td>${ROLE.esc(ROLE.dateLabel(employer.createdAt))}</td>
-                            <td>
-                                <div class="row-actions">
-                                    <button class="btn-soft btn-sm" type="button" data-view="${ROLE.esc(String(employer.userId || ''))}">View</button>
-                                    ${employer.verified ? '' : `<button class="btn-solid btn-sm" type="button" data-verify="${ROLE.esc(String(employer.userId || ''))}">Verify</button>`}
-                                </div>
-                            </td>
-                        </tr>`;
-                    }).join('')}
-                </tbody>
-            </table>
-        </div>`;
+        return buttons;
     }
 
-    function openEmployer(userId) {
-        var employer = state.employers.filter(function (item) { return String(item.userId) === String(userId); })[0];
+    function render() {
+        var list = filtered();
+        var pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+        if (state.page >= pages) state.page = pages - 1;
+        var slice = list.slice(state.page * PAGE_SIZE, (state.page + 1) * PAGE_SIZE);
+
+        document.getElementById('totalBadge').textContent = state.employers.length + ' employers';
+        document.getElementById('resultCount').textContent = list.length + ' matching employer' + (list.length === 1 ? '' : 's');
+
+        var container = document.getElementById('employerTable');
+        if (!state.employers.length) {
+            container.innerHTML = '<div class="card panel"><div class="empty">'
+                + '<i class="fas fa-building"></i>'
+                + '<strong>No employer profiles yet</strong>'
+                + '<p>Companies that register will appear here for verification.</p>'
+                + '</div></div>';
+            document.getElementById('pager').hidden = true;
+            return;
+        }
+        if (!slice.length) {
+            container.innerHTML = '<div class="card panel"><div class="empty">'
+                + '<i class="fas fa-filter"></i>'
+                + '<strong>No employer matches this filter</strong>'
+                + '<p>Try another verification status or search term.</p>'
+                + '</div></div>';
+            document.getElementById('pager').hidden = true;
+            return;
+        }
+
+        container.innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr>'
+            + '<th class="num">#</th><th>Company</th><th>Contact</th><th>Location</th>'
+            + '<th>Business type</th><th>Jobs</th><th>Verification</th><th>Registered</th><th>Actions</th>'
+            + '</tr></thead><tbody>'
+            + slice.map(function (employer, index) {
+                return '<tr>'
+                    + '<td class="num">' + (state.page * PAGE_SIZE + index + 1) + '</td>'
+                    + '<td><span class="cell-main">' + ROLE.esc(employer.businessName || 'Unnamed business') + '</span>'
+                    + '<span class="cell-sub">' + ROLE.esc(employer.email || 'No account email') + '</span></td>'
+                    + '<td><span class="cell-main">' + ROLE.esc(employer.employerName || '—') + '</span>'
+                    + '<span class="cell-sub">' + ROLE.esc(employer.contactNumber || 'No contact number') + '</span></td>'
+                    + '<td>' + ROLE.esc(ROLE.municipalityLabel(employer.municipality) || '—')
+                    + (employer.barangay ? '<span class="cell-sub">' + ROLE.esc(employer.barangay) + '</span>' : '') + '</td>'
+                    + '<td>' + ROLE.esc(ROLE.businessTypeLabel(employer.businessType)) + '</td>'
+                    + '<td>' + ROLE.esc(String(employer.jobPostCount == null ? 0 : employer.jobPostCount)) + '</td>'
+                    + '<td>' + statusBadge(verificationOf(employer))
+                    + (employer.active === false ? '<span class="cell-sub">Suspended account</span>' : '') + '</td>'
+                    + '<td>' + ROLE.esc(ROLE.dateLabel(employer.createdAt)) + '</td>'
+                    + '<td><div class="row-actions">' + rowActions(employer) + '</div></td>'
+                    + '</tr>';
+            }).join('')
+            + '</tbody></table></div>';
+
+        var pager = document.getElementById('pager');
+        if (pages <= 1) {
+            pager.hidden = true;
+        } else {
+            pager.hidden = false;
+            pager.innerHTML = '<button class="btn-soft btn-sm" type="button" data-page="prev" ' + (state.page === 0 ? 'disabled' : '') + '>'
+                + '<i class="fas fa-chevron-left"></i> Previous</button>'
+                + '<span class="muted">Page ' + (state.page + 1) + ' of ' + pages + '</span>'
+                + '<button class="btn-soft btn-sm" type="button" data-page="next" ' + (state.page >= pages - 1 ? 'disabled' : '') + '>'
+                + 'Next <i class="fas fa-chevron-right"></i></button>';
+        }
+    }
+
+    function findEmployer(id) {
+        return state.employers.filter(function (item) {
+            return String(item.userId) === String(id) || String(item.profileId) === String(id);
+        })[0];
+    }
+
+    async function openEmployer(id) {
+        var employer = findEmployer(id);
         if (!employer) return;
-        state.openId = userId;
+        var target = employer.userId || employer.profileId;
+        var status = verificationOf(employer);
 
         document.getElementById('employerModalTitle').textContent = employer.businessName || 'Employer details';
-        document.getElementById('employerModalBody').innerHTML = `<div class="kv-grid">
-            <div class="kv"><span>Account email</span><strong>${ROLE.esc(employer.email || '—')}</strong></div>
-            <div class="kv"><span>Contact person</span><strong>${ROLE.esc(employer.employerName || '—')}</strong></div>
-            <div class="kv"><span>Contact number</span><strong>${ROLE.esc(employer.contactNumber || '—')}</strong></div>
-            <div class="kv"><span>Business type</span><strong>${ROLE.esc(ROLE.businessTypeLabel(employer.businessType))}</strong></div>
-            <div class="kv"><span>Municipality</span><strong>${ROLE.esc(ROLE.municipalityLabel(employer.municipality) || '—')}</strong></div>
-            <div class="kv"><span>Barangay</span><strong>${ROLE.esc(employer.barangay || '—')}</strong></div>
-            <div class="kv"><span>Address</span><strong>${ROLE.esc(employer.businessAddress || '—')}</strong></div>
-            <div class="kv"><span>Registered</span><strong>${ROLE.esc(ROLE.dateLabel(employer.createdAt))}</strong></div>
-        </div>
-        <div style="margin-top: 16px;">
-            <p class="block-title">Company description</p>
-            ${employer.businessDescription
-                ? '<p class="prose">' + ROLE.esc(employer.businessDescription) + '</p>'
-                : '<p class="muted">No description submitted.</p>'}
-        </div>`;
+        document.getElementById('employerModalBody').innerHTML = '<div class="kv-grid">'
+            + '<div class="kv"><span>Account email</span><strong>' + ROLE.esc(employer.email || '—') + '</strong></div>'
+            + '<div class="kv"><span>Contact person</span><strong>' + ROLE.esc(employer.employerName || '—') + '</strong></div>'
+            + '<div class="kv"><span>Contact number</span><strong>' + ROLE.esc(employer.contactNumber || '—') + '</strong></div>'
+            + '<div class="kv"><span>Business type</span><strong>' + ROLE.esc(ROLE.businessTypeLabel(employer.businessType)) + '</strong></div>'
+            + '<div class="kv"><span>Municipality</span><strong>' + ROLE.esc(ROLE.municipalityLabel(employer.municipality) || '—') + '</strong></div>'
+            + '<div class="kv"><span>Barangay</span><strong>' + ROLE.esc(employer.barangay || '—') + '</strong></div>'
+            + '<div class="kv"><span>Address</span><strong>' + ROLE.esc(employer.businessAddress || '—') + '</strong></div>'
+            + '<div class="kv"><span>Verification</span><strong>' + ROLE.esc(STATUS_META[status] ? STATUS_META[status][1] : status) + '</strong></div>'
+            + '<div class="kv"><span>Submitted</span><strong>' + ROLE.esc(ROLE.dateLabel(employer.createdAt)) + '</strong></div>'
+            + '<div class="kv"><span>Job postings</span><strong>' + ROLE.esc(String(employer.jobPostCount == null ? 0 : employer.jobPostCount)) + '</strong></div>'
+            + '</div>'
+            + '<p class="block-title" style="margin-top: 16px;">Company description</p>'
+            + (employer.businessDescription
+                ? '<p>' + ROLE.esc(employer.businessDescription) + '</p>'
+                : '<p class="muted">No description submitted.</p>')
+            + '<p class="block-title" style="margin-top: 16px;">Verification history</p>'
+            + '<div id="employerHistory"><div class="loading">Loading history…</div></div>';
 
         document.getElementById('employerModalFoot').innerHTML =
-            '<button class="btn-soft" type="button" id="dismissEmployerModal">Close</button>' +
-            (employer.verified ? '' : `<button class="btn-solid" type="button" id="modalVerify"><i class="fas fa-circle-check"></i> Approve employer</button>`);
+            '<button class="btn-soft" type="button" id="dismissEmployerModal">Close</button>'
+            + (status !== 'VERIFIED'
+                ? '<button class="btn-solid" type="button" id="modalApprove"><i class="fas fa-circle-check"></i> Approve</button>'
+                : '')
+            + (status !== 'REJECTED' && status !== 'NEEDS_INFORMATION'
+                ? '<button class="btn-soft" type="button" id="modalRequestInfo"><i class="fas fa-circle-info"></i> Request information</button>'
+                : '')
+            + (status !== 'REJECTED'
+                ? '<button class="btn-danger" type="button" id="modalReject"><i class="fas fa-times"></i> Reject</button>'
+                : '');
 
         document.getElementById('employerModal').hidden = false;
 
-        var dismiss = document.getElementById('dismissEmployerModal');
-        if (dismiss) dismiss.addEventListener('click', closeModal);
-        var verify = document.getElementById('modalVerify');
-        if (verify) verify.addEventListener('click', function () { verifyEmployer(employer.userId, verify); });
+        document.getElementById('dismissEmployerModal').addEventListener('click', closeModal);
+        var approveButton = document.getElementById('modalApprove');
+        if (approveButton) approveButton.addEventListener('click', function () { approve(target, approveButton); });
+        var infoButton = document.getElementById('modalRequestInfo');
+        if (infoButton) infoButton.addEventListener('click', function () { requestInformation(target, infoButton); });
+        var rejectButton = document.getElementById('modalReject');
+        if (rejectButton) rejectButton.addEventListener('click', function () { reject(target, rejectButton); });
+
+        var history = await ROLE.safe(ApiClient.getAuditLogs({ targetType: 'EMPLOYER_PROFILE', targetId: employer.profileId }));
+        var box = document.getElementById('employerHistory');
+        if (!box) return;
+        if (ROLE.failed(history) || !Array.isArray(history) || !history.length) {
+            box.innerHTML = '<p class="muted">No verification decision recorded for this company yet.</p>';
+            return;
+        }
+        box.innerHTML = '<div class="stack">' + history.map(function (entry) {
+            return '<div class="list-row"><div class="list-body">'
+                + '<h4>' + ROLE.esc(String(entry.actionType || 'Action').replace(/_/g, ' ')) + '</h4>'
+                + '<div class="list-meta">'
+                + '<span><i class="fas fa-user-shield"></i>' + ROLE.esc(entry.adminUserEmail || 'Unknown administrator') + '</span>'
+                + '<span><i class="fas fa-calendar"></i>' + ROLE.esc(ROLE.dateLabel(entry.createdAt)) + '</span>'
+                + '</div>'
+                + (entry.reason ? '<p class="muted">' + ROLE.esc(entry.reason) + '</p>' : '')
+                + '</div></div>';
+        }).join('') + '</div>';
     }
 
     function closeModal() {
         document.getElementById('employerModal').hidden = true;
-        state.openId = null;
     }
 
-    async function verifyEmployer(userId, button) {
-        if (!userId) {
-            ROLE.toast('This employer account has no user id to verify.', 'error');
-            return;
-        }
+    async function approve(id, button) {
+        if (!id) { ROLE.toast('This employer has no account to verify.', 'error'); return; }
+        if (!confirm('Approve this company verification? The employer will be notified.')) return;
         if (button) button.disabled = true;
         try {
-            await ApiClient.verifyEmployer(userId);
+            await ApiClient.verifyEmployer(id);
             ROLE.toast('Employer verified.', 'success');
             closeModal();
             await load();
@@ -273,39 +303,86 @@
         }
     }
 
+    async function requestInformation(id, button) {
+        if (!id) { ROLE.toast('This employer has no account to contact.', 'error'); return; }
+        var details = prompt('What information does this employer need to provide? (required, sent to the employer)');
+        if (details === null || details.trim() === '') return;
+        if (button) button.disabled = true;
+        try {
+            await ApiClient.requestEmployerInformation(id, details);
+            ROLE.toast('Information request sent.', 'success');
+            closeModal();
+            await load();
+        } catch (error) {
+            ROLE.toast(error.message || 'Could not send the information request.', 'error');
+            if (button) button.disabled = false;
+        }
+    }
+
+    async function reject(id, button) {
+        if (!id) { ROLE.toast('This employer has no account to reject.', 'error'); return; }
+        var reason = prompt('Reason for rejecting this verification (required, sent to the employer):');
+        if (reason === null || reason.trim() === '') return;
+        if (button) button.disabled = true;
+        try {
+            await ApiClient.rejectEmployerVerification(id, reason);
+            ROLE.toast('Verification rejected.', 'success');
+            closeModal();
+            await load();
+        } catch (error) {
+            ROLE.toast(error.message || 'Could not reject this verification.', 'error');
+            if (button) button.disabled = false;
+        }
+    }
+
     async function load() {
         var result = await ROLE.safe(ApiClient.getAdminEmployers());
         if (ROLE.failed(result)) {
             showError(result.__error);
-            document.getElementById('employerTable').innerHTML = `<div class="card panel"><div class="empty">
-                <i class="fas fa-triangle-exclamation"></i>
-                <strong>Employers unavailable</strong>
-                <p>The employer list could not be loaded.</p>
-            </div></div>`;
+            document.getElementById('employerTable').innerHTML = '<div class="card panel"><div class="empty">'
+                + '<i class="fas fa-triangle-exclamation"></i>'
+                + '<strong>Employers unavailable</strong>'
+                + '<p>The employer list could not be loaded.</p>'
+                + '</div></div>';
             return;
         }
         state.employers = Array.isArray(result) ? result : [];
         render();
     }
 
+    /** Dashboard cards link here with ?status=..., so honour the preset. */
+    function applyPreset() {
+        var preset = (new URLSearchParams(window.location.search).get('status') || '').toUpperCase();
+        if (!preset || !STATUS_META[preset] && preset !== 'ALL') return;
+        state.filter = preset;
+        var select = document.getElementById('verifyFilter');
+        if (select) select.value = preset;
+    }
+
     document.addEventListener('enuvex:ready', async function () {
         document.getElementById('employerSearch').addEventListener('input', function () {
             state.query = this.value.trim().toLowerCase();
+            state.page = 0;
             render();
         });
         document.getElementById('verifyFilter').addEventListener('change', function () {
             state.filter = this.value;
+            state.page = 0;
             render();
         });
 
         document.getElementById('employerTable').addEventListener('click', function (event) {
             var view = event.target.closest('[data-view]');
-            if (view) {
-                openEmployer(view.getAttribute('data-view'));
-                return;
-            }
+            if (view) { openEmployer(view.getAttribute('data-view')); return; }
             var verify = event.target.closest('[data-verify]');
-            if (verify) verifyEmployer(verify.getAttribute('data-verify'), verify);
+            if (verify) { approve(verify.getAttribute('data-verify'), verify); }
+        });
+
+        document.getElementById('pager').addEventListener('click', function (event) {
+            var button = event.target.closest('[data-page]');
+            if (!button) return;
+            state.page += button.getAttribute('data-page') === 'next' ? 1 : -1;
+            render();
         });
 
         document.getElementById('closeEmployerModal').addEventListener('click', closeModal);
@@ -313,6 +390,7 @@
             if (event.target === this) closeModal();
         });
 
+        applyPreset();
         await load();
     }, { once: true });
 })();

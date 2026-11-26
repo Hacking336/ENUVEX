@@ -2,6 +2,7 @@ package com.jobskills.dto;
 
 import com.jobskills.model.enums.BusinessType;
 import com.jobskills.model.enums.Municipality;
+import com.jobskills.model.enums.VerificationStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -27,5 +28,6 @@ public class EmployerProfileDto {
     private String businessAddress;
     private String businessDescription;
     private String logo;
+    private VerificationStatus verificationStatus;
     private LocalDateTime createdAt;
 }

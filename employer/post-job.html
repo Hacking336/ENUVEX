@@ -687,10 +687,10 @@
             try {
                 if (editingId) {
                     await ApiClient.updateJob(editingId, data);
-                    ROLE.toast('Job post updated.', 'success');
+                    ROLE.toast('Saved. A rejected or corrected post goes back to the review queue.', 'success');
                 } else {
                     await ApiClient.postJob(data);
-                    ROLE.toast('Job post published.', 'success');
+                    ROLE.toast('Submitted. An administrator reviews it before it appears to job seekers.', 'success');
                 }
                 window.location.href = 'jobs.html';
             } catch (error) {

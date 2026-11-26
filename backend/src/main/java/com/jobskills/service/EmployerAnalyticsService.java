@@ -9,7 +9,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -204,9 +203,22 @@ public class EmployerAnalyticsService {
                 .collect(Collectors.toList());
         }
 
-        // Sort
-        Sort sort = Sort.by(sortDir.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC,
-            sortBy != null && !sortBy.isEmpty() ? sortBy : "createdAt");
+        // Sort. sortDir and sortBy are optional query parameters, so neither may be
+        // dereferenced directly; unknown sort keys fall back to the creation date.
+        boolean ascending = "asc".equalsIgnoreCase(sortDir);
+        Comparator<JobPost> order = switch (sortBy == null ? "" : sortBy) {
+            case "jobTitle" -> Comparator.comparing(JobPost::getJobTitle,
+                Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            case "municipality" -> Comparator.comparing(JobPost::getMunicipality,
+                Comparator.nullsLast(Comparator.naturalOrder()));
+            case "employmentType" -> Comparator.comparing(JobPost::getEmploymentType,
+                Comparator.nullsLast(Comparator.naturalOrder()));
+            default -> Comparator.comparing(JobPost::getCreatedAt,
+                Comparator.nullsLast(Comparator.naturalOrder()));
+        };
+        allJobs = allJobs.stream()
+            .sorted(ascending ? order : order.reversed())
+            .collect(Collectors.toList());
         int start = page * size;
         int end = Math.min(start + size, allJobs.size());
         if (start > allJobs.size()) start = allJobs.size();
@@ -269,7 +281,7 @@ public class EmployerAnalyticsService {
         }).collect(Collectors.toList());
 
         // Return a simple page (since we already paginated manually)
-        return new PageImpl<>(dtos, PageRequest.of(page, size, sort), allJobs.size());
+        return new PageImpl<>(dtos, PageRequest.of(page, size), allJobs.size());
     }
 
     // ============================================================================

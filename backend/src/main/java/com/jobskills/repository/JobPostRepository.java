@@ -2,9 +2,12 @@ package com.jobskills.repository;
 
 import com.jobskills.model.JobPost;
 import com.jobskills.model.enums.JobCategory;
+import com.jobskills.model.enums.ModerationStatus;
 import com.jobskills.model.enums.Municipality;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,4 +23,9 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long>, JpaSpec
     long countByIsActiveTrue();
     long countByMunicipality(Municipality municipality);
     long countByJobCategory(JobCategory category);
+    long countByModerationStatus(ModerationStatus moderationStatus);
+    Page<JobPost> findByModerationStatus(ModerationStatus moderationStatus, Pageable pageable);
+    List<JobPost> findByModerationStatus(ModerationStatus moderationStatus);
+    List<JobPost> findByEmployerIdAndModerationStatus(Long employerId, ModerationStatus moderationStatus);
+    long countByEmployerId(Long employerId);
 }

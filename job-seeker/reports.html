@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>My Reports — JSM</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/brand/jsm-favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/brand/jsm-icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/brand/jsm-icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="enuvex-app.css">
+    <script>
+        window.ENUVEX_PAGE = {
+            active: 'reports',
+            title: 'My Reports',
+            subtitle: 'Report a suspicious posting and follow what happened to it'
+        };
+    </script>
+</head>
+<body>
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="page-head">
+                <div>
+                    <h2>Report a posting</h2>
+                    <p>Your identity is only visible to platform administrators. The employer is never told who reported them.</p>
+                </div>
+            </div>
+
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load your reports.</span>
+            </div>
+
+            <div class="card panel">
+                <div class="panel-head"><h3><i class="fas fa-flag"></i> New report</h3></div>
+                <form id="reportForm" novalidate>
+                    <div class="form-field">
+                        <label for="targetId">Job post ID</label>
+                        <input type="number" id="targetId" name="targetId" min="1" step="1" required
+                               placeholder="Open the posting and copy its ID from the address bar">
+                    </div>
+                    <div class="form-field">
+                        <label for="category">Reason</label>
+                        <select id="category" name="category" required>
+                            <option value="">Choose a reason</option>
+                            <option value="FRAUD_OR_SCAM">Fraud or scam</option>
+                            <option value="MISLEADING_INFORMATION">Misleading information</option>
+                            <option value="FAKE_EMPLOYER">Fake employer</option>
+                            <option value="DUPLICATE_LISTING">Duplicate listing</option>
+                            <option value="WRONG_LOCATION">Wrong location</option>
+                            <option value="INAPPROPRIATE_CONTENT">Inappropriate content</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="description">What is wrong with this posting?</label>
+                        <textarea id="description" name="description" rows="4" required
+                                  placeholder="Describe what you noticed, for example a request for payment or a false address."></textarea>
+                    </div>
+                    <button class="btn-solid" type="submit" id="submitReport">
+                        <i class="fas fa-paper-plane"></i> Submit report
+                    </button>
+                </form>
+            </div>
+
+            <section class="card panel" style="margin-top: 18px;" aria-labelledby="myReportsTitle">
+                <div class="panel-head">
+                    <h3 id="myReportsTitle"><i class="fas fa-clock-rotate-left"></i> My reports</h3>
+                    <span class="badge-neutral" id="reportCount">0</span>
+                </div>
+                <div class="stack" id="myReports">
+                    <div class="loading">Loading your reports…</div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../assets/js/api.js"></script>
+<script src="enuvex-app.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var CATEGORY_LABELS = {
+        FRAUD_OR_SCAM: 'Fraud or scam',
+        MISLEADING_INFORMATION: 'Misleading information',
+        FAKE_EMPLOYER: 'Fake employer',
+        DUPLICATE_LISTING: 'Duplicate listing',
+        WRONG_LOCATION: 'Wrong location',
+        INAPPROPRIATE_CONTENT: 'Inappropriate content',
+        OTHER: 'Other'
+    };
+
+    var STATUS_LABELS = {
+        OPEN: 'Open',
+        UNDER_REVIEW: 'Under review',
+        RESOLVED: 'Resolved',
+        DISMISSED: 'Closed, no action'
+    };
+
+    function categoryLabel(value) {
+        return CATEGORY_LABELS[value] || String(value || '—').replace(/_/g, ' ');
+    }
+
+    function render(list) {
+        var container = document.getElementById('myReports');
+        document.getElementById('reportCount').textContent = list.length;
+        if (!list.length) {
+            container.innerHTML = '<p class="panel-empty">You have not reported anything yet.</p>';
+            return;
+        }
+        container.innerHTML = list.map(function (report) {
+            return '<div class="list-row">'
+                + '<div class="list-body">'
+                + '<h4>' + ENUVEX.esc(categoryLabel(report.category)) + ' · job #' + ENUVEX.esc(String(report.reportedTargetId)) + '</h4>'
+                + '<div class="list-meta">'
+                + '<span><i class="fas fa-circle-info"></i>' + ENUVEX.esc(STATUS_LABELS[report.status] || report.status) + '</span>'
+                + '<span><i class="fas fa-calendar"></i>' + ENUVEX.esc(ENUVEX.dateLabel(report.createdAt)) + '</span>'
+                + '</div>'
+                + '<p class="muted">' + ENUVEX.esc(report.description) + '</p>'
+                + '</div></div>';
+        }).join('');
+    }
+
+    async function load() {
+        var result = await ENUVEX.safe(ApiClient.getMyReports());
+        if (ENUVEX.failed(result)) {
+            document.getElementById('pageErrorText').textContent = result.__error;
+            document.getElementById('pageError').hidden = false;
+            document.getElementById('myReports').innerHTML = '<p class="panel-empty">Your reports could not be loaded.</p>';
+            return;
+        }
+        render(Array.isArray(result) ? result : []);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get('jobId')) {
+            document.getElementById('targetId').value = params.get('jobId');
+        }
+
+        document.getElementById('reportForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            var targetId = Number(document.getElementById('targetId').value);
+            var category = document.getElementById('category').value;
+            var description = document.getElementById('description').value.trim();
+
+            if (!targetId || targetId < 1) {
+                ENUVEX.toast('Enter the job post ID you want to report.', 'error');
+                return;
+            }
+            if (!category) {
+                ENUVEX.toast('Choose a reason for the report.', 'error');
+                return;
+            }
+            if (description.length < 10) {
+                ENUVEX.toast('Describe the problem in at least 10 characters.', 'error');
+                return;
+            }
+
+            var button = document.getElementById('submitReport');
+            button.disabled = true;
+            try {
+                await ApiClient.submitReport({
+                    targetType: 'JOB_POST',
+                    targetId: targetId,
+                    category: category,
+                    description: description
+                });
+                ENUVEX.toast('Report submitted. An administrator will review it.', 'success');
+                document.getElementById('reportForm').reset();
+                if (params.get('jobId')) {
+                    document.getElementById('targetId').value = params.get('jobId');
+                }
+                await load();
+            } catch (error) {
+                ENUVEX.toast(error.message || 'Could not submit this report.', 'error');
+            } finally {
+                button.disabled = false;
+            }
+        });
+
+        load();
+    });
+})();
+</script>
+</body>
+</html>

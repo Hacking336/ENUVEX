@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Suspicious Listings — JSM</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/brand/jsm-favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/brand/jsm-icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/brand/jsm-icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://enuvex.onrender.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../job-seeker/enuvex-app.css">
+    <link rel="stylesheet" href="../assets/css/enuvex-role.css">
+    <script>
+        window.ENUVEX_PAGE = {
+            active: 'suspicious-listings',
+            title: 'Suspicious Listings',
+            subtitle: 'Rule-based flags that need a human decision'
+        };
+    </script>
+</head>
+<body data-role="admin">
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="page-head">
+                <div>
+                    <h2>Listings flagged for review</h2>
+                    <p>A flag means a rule matched. It is not proof of fraud, and it never suspends an employer or rejects a posting on its own.</p>
+                </div>
+                <div class="page-head-actions">
+                    <button class="btn-soft" type="button" id="runDetection"><i class="fas fa-play"></i> Run detection now</button>
+                    <span class="badge-neutral" id="totalBadge">0 flags</span>
+                </div>
+            </div>
+
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load flagged listings.</span>
+            </div>
+
+            <div class="alert" style="background: var(--navy-soft); color: #2C4D74; border-color: #D6E2EF;" role="note">
+                <i class="fas fa-circle-info"></i>
+                <span>Checks are deterministic and explainable: duplicate title or description, repeated title in the same barangay, incomplete required information, repeat of a rejected posting, and wording that asks an applicant for money.</span>
+            </div>
+
+            <div class="card rv-toolbar">
+                <label class="field" for="flagSearch">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <input type="search" id="flagSearch" placeholder="Search listing, employer or explanation">
+                </label>
+                <div class="form-field">
+                    <label for="stateFilter">Review state</label>
+                    <select id="stateFilter">
+                        <option value="open">Needs review</option>
+                        <option value="ALL">All flags</option>
+                        <option value="dismissed">Dismissed</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="ruleFilter">Triggered rule</label>
+                    <select id="ruleFilter">
+                        <option value="ALL">All rules</option>
+                        <option value="DUPLICATE_TITLE">Duplicate title</option>
+                        <option value="DUPLICATE_DESCRIPTION">Duplicate description</option>
+                        <option value="SAME_TITLE_AND_LOCATION">Same title and location</option>
+                        <option value="MISSING_REQUIRED_INFORMATION">Missing information</option>
+                        <option value="REPEATED_REJECTED_LISTING">Repeated rejected listing</option>
+                        <option value="SUSPICIOUS_PAYMENT_REQUEST">Payment requested</option>
+                    </select>
+                </div>
+                <span class="rv-spacer"></span>
+                <span class="muted" id="resultCount"></span>
+            </div>
+
+            <div id="flagTable">
+                <div class="loading">Loading flags…</div>
+            </div>
+
+            <div class="pagination" id="pager" hidden></div>
+        </main>
+    </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/role-app.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var PAGE_SIZE = 12;
+    var state = { flags: [], query: '', stateFilter: 'open', rule: 'ALL', page: 0 };
+
+    var RULE_LABELS = {
+        DUPLICATE_TITLE: 'Duplicate title',
+        DUPLICATE_DESCRIPTION: 'Duplicate description',
+        SAME_TITLE_AND_LOCATION: 'Same title and location',
+        MISSING_REQUIRED_INFORMATION: 'Missing information',
+        REPEATED_REJECTED_LISTING: 'Repeated rejected listing',
+        SUSPICIOUS_PAYMENT_REQUEST: 'Payment requested'
+    };
+
+    function showError(message) {
+        var box = document.getElementById('pageError');
+        var text = document.getElementById('pageErrorText');
+        if (!box || !text) return;
+        text.textContent = message;
+        box.hidden = false;
+    }
+
+    function ruleLabel(rule) {
+        return RULE_LABELS[rule] || String(rule || '—').replace(/_/g, ' ');
+    }
+
+    function filtered() {
+        return state.flags.filter(function (flag) {
+            if (state.stateFilter === 'open' && flag.dismissed) return false;
+            if (state.stateFilter === 'dismissed' && !flag.dismissed) return false;
+            if (state.rule !== 'ALL' && String(flag.triggeredRule) !== state.rule) return false;
+            if (!state.query) return true;
+            var haystack = [flag.jobTitle, flag.employerName, flag.flaggedReason, ruleLabel(flag.triggeredRule)]
+                .filter(Boolean).join(' ').toLowerCase();
+            return haystack.indexOf(state.query) !== -1;
+        }).sort(function (a, b) {
+            return new Date(b.flaggedAt || 0) - new Date(a.flaggedAt || 0);
+        });
+    }
+
+    function render() {
+        var list = filtered();
+        var pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+        if (state.page >= pages) state.page = pages - 1;
+        var slice = list.slice(state.page * PAGE_SIZE, (state.page + 1) * PAGE_SIZE);
+
+        document.getElementById('totalBadge').textContent = state.flags.length + ' flags';
+        document.getElementById('resultCount').textContent = list.length + ' flag' + (list.length === 1 ? '' : 's');
+
+        var container = document.getElementById('flagTable');
+        if (!state.flags.length) {
+            container.innerHTML = '<div class="card panel"><div class="empty">'
+                + '<i class="fas fa-shield-halved"></i>'
+                + '<strong>No listing has been flagged</strong>'
+                + '<p>Run the checks, or wait for the next posting to be submitted or edited.</p>'
+                + '</div></div>';
+            document.getElementById('pager').hidden = true;
+            return;
+        }
+        if (!slice.length) {
+            container.innerHTML = '<div class="card panel"><div class="empty">'
+                + '<i class="fas fa-filter"></i>'
+                + '<strong>No flag matches this filter</strong>'
+                + '<p>Try another rule, review state or search term.</p>'
+                + '</div></div>';
+            document.getElementById('pager').hidden = true;
+            return;
+        }
+
+        container.innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr>'
+            + '<th class="num">#</th><th>Listing</th><th>Employer</th><th>Rule</th>'
+            + '<th>Why it was flagged</th><th>Detected</th><th>Review</th><th>Actions</th>'
+            + '</tr></thead><tbody>'
+            + slice.map(function (flag, index) {
+                return '<tr>'
+                    + '<td class="num">' + (state.page * PAGE_SIZE + index + 1) + '</td>'
+                    + '<td><span class="cell-main">' + ROLE.esc(flag.jobTitle || 'Untitled posting') + '</span>'
+                    + '<span class="cell-sub">Job #' + ROLE.esc(String(flag.jobPostId)) + '</span></td>'
+                    + '<td>' + ROLE.esc(flag.employerName || 'Unknown employer') + '</td>'
+                    + '<td><span class="badge-neutral">' + ROLE.esc(ruleLabel(flag.triggeredRule)) + '</span></td>'
+                    + '<td>' + ROLE.esc(flag.flaggedReason || '') + '</td>'
+                    + '<td>' + ROLE.esc(ROLE.dateLabel(flag.flaggedAt)) + '</td>'
+                    + '<td>' + (flag.dismissed
+                        ? '<span class="badge-off">Dismissed</span>' + (flag.dismissReason ? '<span class="cell-sub">' + ROLE.esc(flag.dismissReason) + '</span>' : '')
+                        : '<span class="badge-wait">Needs review</span>') + '</td>'
+                    + '<td><div class="row-actions">'
+                    + (flag.dismissed
+                        ? '<a class="btn-ghost btn-sm" href="job-posts.html">Open posting</a>'
+                        : '<button class="btn-ghost btn-sm" type="button" data-dismiss="' + ROLE.esc(String(flag.id)) + '">Dismiss flag</button>'
+                          + '<a class="btn-soft btn-sm" href="job-posts.html">Open posting</a>')
+                    + '</div></td>'
+                    + '</tr>';
+            }).join('')
+            + '</tbody></table></div>';
+
+        var pager = document.getElementById('pager');
+        if (pages <= 1) {
+            pager.hidden = true;
+        } else {
+            pager.hidden = false;
+            pager.innerHTML = '<button class="btn-soft btn-sm" type="button" data-page="prev" ' + (state.page === 0 ? 'disabled' : '') + '>'
+                + '<i class="fas fa-chevron-left"></i> Previous</button>'
+                + '<span class="muted">Page ' + (state.page + 1) + ' of ' + pages + '</span>'
+                + '<button class="btn-soft btn-sm" type="button" data-page="next" ' + (state.page >= pages - 1 ? 'disabled' : '') + '>'
+                + 'Next <i class="fas fa-chevron-right"></i></button>';
+        }
+    }
+
+    async function load() {
+        var result = await ROLE.safe(ApiClient.getSuspiciousListings({ state: 'ALL' }));
+        if (ROLE.failed(result)) {
+            showError(result.__error);
+            document.getElementById('flagTable').innerHTML = '<div class="card panel"><div class="empty">'
+                + '<i class="fas fa-triangle-exclamation"></i>'
+                + '<strong>Flags unavailable</strong>'
+                + '<p>The flagged listing list could not be loaded.</p>'
+                + '</div></div>';
+            return;
+        }
+        state.flags = Array.isArray(result) ? result : [];
+        render();
+    }
+
+    async function dismissFlag(id, button) {
+        var reason = prompt('Why is this a false positive? (required, recorded in the audit log)');
+        if (reason === null || reason.trim() === '') return;
+        if (button) button.disabled = true;
+        try {
+            await ApiClient.dismissSuspiciousListing(id, reason);
+            ROLE.toast('Flag dismissed.', 'success');
+            await load();
+        } catch (error) {
+            ROLE.toast(error.message || 'Could not dismiss this flag.', 'error');
+            if (button) button.disabled = false;
+        }
+    }
+
+    async function runDetection(button) {
+        if (button) button.disabled = true;
+        try {
+            var result = await ApiClient.runSuspiciousDetection();
+            ROLE.toast('Scanned ' + result.postsScanned + ' posting(s); ' + result.flagsCreated + ' new flag(s).', 'success');
+            await load();
+        } catch (error) {
+            ROLE.toast(error.message || 'Could not run detection.', 'error');
+        } finally {
+            if (button) button.disabled = false;
+        }
+    }
+
+    /** Dashboard cards link here with ?state=dismissed or ?rule=..., so honour them. */
+    function applyPreset() {
+        var params = new URLSearchParams(window.location.search);
+        var presetState = (params.get('state') || '').toLowerCase();
+        if (presetState === 'dismissed' || presetState === 'open' || presetState === 'all') {
+            state.stateFilter = presetState;
+            var stateSelect = document.getElementById('stateFilter');
+            if (stateSelect) stateSelect.value = presetState;
+        }
+        var presetRule = (params.get('rule') || '').toUpperCase();
+        if (presetRule) {
+            var ruleSelect = document.getElementById('ruleFilter');
+            var exists = ruleSelect && Array.prototype.some.call(ruleSelect.options, function (option) {
+                return option.value === presetRule;
+            });
+            if (exists) {
+                state.rule = presetRule;
+                ruleSelect.value = presetRule;
+            }
+        }
+    }
+
+    document.addEventListener('enuvex:ready', async function () {
+        document.getElementById('flagSearch').addEventListener('input', function () {
+            state.query = this.value.trim().toLowerCase();
+            state.page = 0;
+            render();
+        });
+        document.getElementById('stateFilter').addEventListener('change', function () {
+            state.stateFilter = this.value;
+            state.page = 0;
+            render();
+        });
+        document.getElementById('ruleFilter').addEventListener('change', function () {
+            state.rule = this.value;
+            state.page = 0;
+            render();
+        });
+
+        document.getElementById('pager').addEventListener('click', function (event) {
+            var button = event.target.closest('[data-page]');
+            if (!button) return;
+            state.page += button.getAttribute('data-page') === 'next' ? 1 : -1;
+            render();
+        });
+
+        document.getElementById('flagTable').addEventListener('click', function (event) {
+            var dismiss = event.target.closest('[data-dismiss]');
+            if (dismiss) dismissFlag(dismiss.getAttribute('data-dismiss'), dismiss);
+        });
+
+        document.getElementById('runDetection').addEventListener('click', function () {
+            runDetection(this);
+        });
+
+        applyPreset();
+        await load();
+    }, { once: true });
+})();
+</script>
+</body>
+</html>

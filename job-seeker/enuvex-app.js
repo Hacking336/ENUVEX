@@ -15,6 +15,7 @@
         { id: 'applications', href: 'applications.html', icon: 'fa-file-lines', label: 'Applications', short: 'Applications', mobileIcon: 'fa-file-lines' },
         { id: 'skills', href: 'skills.html', icon: 'fa-chart-line', label: 'Skills & Career', short: 'Skills', mobileIcon: 'fa-chart-line' },
         { id: 'saved', href: 'saved-jobs.html', icon: 'fa-bookmark', label: 'Saved Jobs', short: 'Saved', mobileIcon: 'fa-bookmark' },
+        { id: 'reports', href: 'reports.html', icon: 'fa-flag', label: 'My Reports', short: 'Reports', mobileIcon: 'fa-flag' },
         { id: 'profile', href: 'profile.html', icon: 'fa-user', label: 'Profile', short: 'Profile', mobileIcon: 'fa-user' }
     ];
 

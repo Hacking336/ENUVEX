@@ -391,3 +391,27 @@
     .list-side { width: 100%; justify-content: flex-start; }
     .rv-toolbar .field, .rv-toolbar .form-field { flex: 1 1 100%; }
 }
+
+/* ---------- Moderation notes (employer job list) ------------------------- */
+
+.list-note {
+    margin: 8px 0 0;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--muted-text);
+    background: #F7FAFC;
+    border-left: 3px solid #D6E2EF;
+    border-radius: 0 8px 8px 0;
+    padding: 8px 12px;
+}
+
+/* Metric cards used as links keep the card look, without link styling. */
+a.metric {
+    text-decoration: none;
+    color: inherit;
+}
+
+a.metric:hover {
+    border-color: #CFE4D5;
+    box-shadow: 0 10px 22px rgba(16, 43, 76, 0.07);
+}

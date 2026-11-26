@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Reported Listings — JSM</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/brand/jsm-favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/brand/jsm-icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/brand/jsm-icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://enuvex.onrender.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../job-seeker/enuvex-app.css">
+    <link rel="stylesheet" href="../assets/css/enuvex-role.css">
+    <script>
+        window.ENUVEX_PAGE = {
+            active: 'moderation-reports',
+            title: 'Reported Listings',
+            subtitle: 'Reports submitted by job seekers and employers'
+        };
+    </script>
+</head>
+<body data-role="admin">
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="page-head">
+                <div>
+                    <h2>Reports</h2>
+                    <p>A report is a claim, not a finding. Closing a report never suspends an account or deletes a listing.</p>
+                </div>
+                <div class="page-head-actions">
+                    <span class="badge-neutral" id="totalBadge">0 reports</span>
+                </div>
+            </div>
+
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load reports.</span>
+            </div>
+
+            <section class="metrics cols-3" aria-label="Report totals">
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-flag"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricOpen">—</div>
+                        <div class="metric-label">Open</div>
+                        <div class="metric-desc">Not yet reviewed</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-magnifying-glass"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricReview">—</div>
+                        <div class="metric-label">Under review</div>
+                        <div class="metric-desc">Being investigated</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-circle-check"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricResolved">—</div>
+                        <div class="metric-label">Resolved</div>
+                        <div class="metric-desc">Closed with an outcome</div>
+                    </div>
+                </article>
+                <article class="metric">
+                    <div class="metric-icon"><i class="fas fa-circle-xmark"></i></div>
+                    <div>
+                        <div class="metric-value" id="metricDismissed">—</div>
+                        <div class="metric-label">Dismissed</div>
+                        <div class="metric-desc">No action needed</div>
+                    </div>
+                </article>
+            </section>
+
+            <div class="card rv-toolbar" style="margin-top: 18px;">
+                <label class="field" for="reportSearch">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <input type="search" id="reportSearch" placeholder="Search description or target ID">
+                </label>
+                <div class="form-field">
+                    <label for="statusFilter">Status</label>
+                    <select id="statusFilter">
+                        <option value="OPEN">Open</option>
+                        <option value="ALL">All statuses</option>
+                        <option value="UNDER_REVIEW">Under review</option>
+                        <option value="RESOLVED">Resolved</option>
+                        <option value="DISMISSED">Dismissed</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="categoryFilter">Category</label>
+                    <select id="categoryFilter">
+                        <option value="ALL">All categories</option>
+                        <option value="FRAUD_OR_SCAM">Fraud or scam</option>
+                        <option value="MISLEADING_INFORMATION">Misleading information</option>
+                        <option value="FAKE_EMPLOYER">Fake employer</option>
+                        <option value="DUPLICATE_LISTING">Duplicate listing</option>
+                        <option value="WRONG_LOCATION">Wrong location</option>
+                        <option value="INAPPROPRIATE_CONTENT">Inappropriate content</option>
+                        <option value="OTHER">Other</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="targetFilter">Target</label>
+                    <select id="targetFilter">
+                        <option value="ALL">All targets</option>
+                        <option value="JOB_POST">Job posting</option>
+                        <option value="EMPLOYER">Employer</option>
+                        <option value="USER">Account</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="dateFilter">Submitted</label>
+                    <select id="dateFilter">
+                        <option value="ALL">Any date</option>
+                        <option value="7">Last 7 days</option>
+                        <option value="30">Last 30 days</option>
+                        <option value="90">Last 90 days</option>
+                    </select>
+                </div>
+                <span class="rv-spacer"></span>
+                <span class="muted" id="resultCount"></span>
+            </div>
+
+            <div id="reportTable">
+                <div class="loading">Loading reports…</div>
+            </div>
+
+            <div class="pagination" id="pager" hidden></div>
+        </main>
+    </div>
+</div>
+
+<div class="modal" id="reportModal" hidden>
+    <div class="modal-card modal-wide" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
+        <div class="modal-head">
+            <h3 id="reportModalTitle">Report details</h3>
+            <button class="modal-close" type="button" id="closeReportModal" aria-label="Close"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="modal-body" id="reportModalBody"></div>
+        <div class="modal-foot" id="reportModalFoot"></div>
+    </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/role-app.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var PAGE_SIZE = 12;
+    var state = { reports: [], query: '', status: 'OPEN', category: 'ALL', target: 'ALL', days: 'ALL', page: 0 };
+
+    var STATUS_META = {
+        OPEN: ['badge-wait', 'Open'],
+        UNDER_REVIEW: ['badge-neutral', 'Under review'],
+        RESOLVED: ['badge-ok', 'Resolved'],
+        DISMISSED: ['badge-off', 'Dismissed']
+    };
+
+    var CATEGORY_LABELS = {
+        FRAUD_OR_SCAM: 'Fraud or scam',
+        MISLEADING_INFORMATION: 'Misleading information',
+        FAKE_EMPLOYER: 'Fake employer',
+        DUPLICATE_LISTING: 'Duplicate listing',
+        WRONG_LOCATION: 'Wrong location',
+        INAPPROPRIATE_CONTENT: 'Inappropriate content',
+        OTHER: 'Other'
+    };
+
+    function showError(message) {
+        var box = document.getElementById('pageError');
+        var text = document.getElementById('pageErrorText');
+        if (!box || !text) return;
+        text.textContent = message;
+        box.hidden = false;
+    }
+
+    function statusBadge(status) {
+        var meta = STATUS_META[status] || ['badge-neutral', status];
+        return '<span class="' + meta[0] + '">' + meta[1] + '</span>';
+    }
+
+    function categoryLabel(value) {
+        return CATEGORY_LABELS[value] || String(value || '—').replace(/_/g, ' ');
+    }
+
+    function targetLabel(value) {
+        return String(value || '').replace(/_/g, ' ').toLowerCase().replace(/^./, function (c) { return c.toUpperCase(); });
+    }
+
+    function filtered() {
+        var cutoff = null;
+        if (state.days !== 'ALL') {
+            cutoff = Date.now() - (Number(state.days) * 24 * 60 * 60 * 1000);
+        }
+        return state.reports.filter(function (report) {
+            if (state.status !== 'ALL' && String(report.status) !== state.status) return false;
+            if (state.category !== 'ALL' && String(report.category) !== state.category) return false;
+            if (state.target !== 'ALL' && String(report.reportedTargetType) !== state.target) return false;
+            if (cutoff && new Date(report.createdAt || 0).getTime() < cutoff) return false;
+            if (!state.query) return true;
+            var haystack = [report.description, report.reporterEmail, String(report.reportedTargetId),
+                categoryLabel(report.category)].filter(Boolean).join(' ').toLowerCase();
+            return haystack.indexOf(state.query) !== -1;
+        }).sort(function (a, b) {
+            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        });
+    }
+
+    function render() {
+        var list = filtered();
+        var pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+        if (state.page >= pages) state.page = pages - 1;
+        var slice = list.slice(state.page * PAGE_SIZE, (state.page + 1) * PAGE_SIZE);
+
+        document.getElementById('totalBadge').textContent = state.reports.length + ' reports';
+        document.getElementById('resultCount').textContent = list.length + ' matching report' + (list.length === 1 ? '' : 's');
+
+        var container = document.getElementById('reportTable');
+        if (!state.reports.length) {
+            container.innerHTML = '<div class="card panel"><div class="empty">'
+                + '<i class="fas fa-flag"></i>'
+                + '<strong>No reports have been submitted</strong>'
+                + '<p>Reports from job seekers and employers will appear here.</p>'
+                + '</div></div>';
+            document.getElementById('pager').hidden = true;
+            return;
+        }
+        if (!slice.length) {
+            container.innerHTML = '<div class="card panel"><div class="empty">'
+                + '<i class="fas fa-filter"></i>'
+                + '<strong>No report matches this filter</strong>'
+                + '<p>Try another status, category or date range.</p>'
+                + '</div></div>';
+            document.getElementById('pager').hidden = true;
+            return;
+        }
+
+        container.innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr>'
+            + '<th class="num">#</th><th>Category</th><th>Target</th><th>Description</th><th>Reporter</th>'
+            + '<th>Status</th><th>Submitted</th><th>Actions</th>'
+            + '</tr></thead><tbody>'
+            + slice.map(function (report, index) {
+                return '<tr>'
+                    + '<td class="num">' + (state.page * PAGE_SIZE + index + 1) + '</td>'
+                    + '<td><span class="cell-main">' + ROLE.esc(categoryLabel(report.category)) + '</span>'
+                    + (report.isDuplicate ? '<span class="cell-sub">Repeated report</span>' : '') + '</td>'
+                    + '<td>' + ROLE.esc(targetLabel(report.reportedTargetType))
+                    + '<span class="cell-sub">#' + ROLE.esc(String(report.reportedTargetId)) + '</span></td>'
+                    + '<td>' + ROLE.esc(String(report.description || '').slice(0, 90))
+                    + (String(report.description || '').length > 90 ? '…' : '') + '</td>'
+                    + '<td>' + ROLE.esc(report.reporterEmail || 'Unknown reporter') + '</td>'
+                    + '<td>' + statusBadge(report.status) + '</td>'
+                    + '<td>' + ROLE.esc(ROLE.dateLabel(report.createdAt)) + '</td>'
+                    + '<td><div class="row-actions">'
+                    + '<button class="btn-ghost btn-sm" type="button" data-details="' + ROLE.esc(String(report.id)) + '">Open</button>'
+                    + '</div></td>'
+                    + '</tr>';
+            }).join('')
+            + '</tbody></table></div>';
+
+        var pager = document.getElementById('pager');
+        if (pages <= 1) {
+            pager.hidden = true;
+        } else {
+            pager.hidden = false;
+            pager.innerHTML = '<button class="btn-soft btn-sm" type="button" data-page="prev" ' + (state.page === 0 ? 'disabled' : '') + '>'
+                + '<i class="fas fa-chevron-left"></i> Previous</button>'
+                + '<span class="muted">Page ' + (state.page + 1) + ' of ' + pages + '</span>'
+                + '<button class="btn-soft btn-sm" type="button" data-page="next" ' + (state.page >= pages - 1 ? 'disabled' : '') + '>'
+                + 'Next <i class="fas fa-chevron-right"></i></button>';
+        }
+    }
+
+    function openReport(id) {
+        var report = state.reports.filter(function (item) { return String(item.id) === String(id); })[0];
+        if (!report) return;
+
+        document.getElementById('reportModalTitle').textContent = categoryLabel(report.category) + ' · report #' + report.id;
+        document.getElementById('reportModalBody').innerHTML = '<div class="kv-grid">'
+            + '<div class="kv"><span>Status</span><strong>' + ROLE.esc(String(report.status || '').replace(/_/g, ' ')) + '</strong></div>'
+            + '<div class="kv"><span>Category</span><strong>' + ROLE.esc(categoryLabel(report.category)) + '</strong></div>'
+            + '<div class="kv"><span>Target</span><strong>' + ROLE.esc(targetLabel(report.reportedTargetType) + ' #' + report.reportedTargetId) + '</strong></div>'
+            + '<div class="kv"><span>Reporter</span><strong>' + ROLE.esc(report.reporterEmail || 'Unknown reporter') + '</strong></div>'
+            + '<div class="kv"><span>Submitted</span><strong>' + ROLE.esc(ROLE.dateLabel(report.createdAt)) + '</strong></div>'
+            + '<div class="kv"><span>Closed</span><strong>' + ROLE.esc(report.resolvedAt ? ROLE.dateLabel(report.resolvedAt) : '—') + '</strong></div>'
+            + '</div>'
+            + '<p class="block-title" style="margin-top: 16px;">What the reporter said</p>'
+            + '<p>' + ROLE.esc(report.description || 'No description provided.') + '</p>'
+            + '<p class="block-title" style="margin-top: 16px;">Administrative note</p>'
+            + '<p>' + ROLE.esc(report.adminNotes || 'No note recorded.') + '</p>'
+            + (report.reportedTargetType === 'JOB_POST'
+                ? '<p class="muted" style="margin-top: 12px;">Open <a href="job-posts.html">Job Approvals</a> to read the full posting before deciding. '
+                  + 'Reporter identity is never shown to the reported employer.</p>'
+                : '');
+
+        var foot = document.getElementById('reportModalFoot');
+        var buttons = '<button class="btn-soft" type="button" id="dismissReportModal">Close</button>';
+        if (report.status === 'OPEN') {
+            buttons += '<button class="btn-soft" type="button" id="reviewReport"><i class="fas fa-magnifying-glass"></i> Mark under review</button>';
+        }
+        if (report.status !== 'RESOLVED') {
+            buttons += '<button class="btn-solid" type="button" id="resolveReport">Resolve</button>';
+        }
+        if (report.status !== 'DISMISSED') {
+            buttons += '<button class="btn-danger" type="button" id="dismissReport">Dismiss</button>';
+        }
+        foot.innerHTML = buttons;
+
+        document.getElementById('reportModal').hidden = false;
+        document.getElementById('dismissReportModal').addEventListener('click', closeModal);
+        var review = document.getElementById('reviewReport');
+        if (review) review.addEventListener('click', function () { markUnderReview(report.id, review); });
+        var resolve = document.getElementById('resolveReport');
+        if (resolve) resolve.addEventListener('click', function () { resolveReport(report.id, resolve); });
+        var dismiss = document.getElementById('dismissReport');
+        if (dismiss) dismiss.addEventListener('click', function () { dismissReport(report.id, dismiss); });
+    }
+
+    function closeModal() {
+        document.getElementById('reportModal').hidden = true;
+    }
+
+    async function markUnderReview(id, button) {
+        if (button) button.disabled = true;
+        try {
+            await ApiClient.markModerationReportUnderReview(id);
+            ROLE.toast('Report marked as under review.', 'success');
+            closeModal();
+            await load();
+        } catch (error) {
+            ROLE.toast(error.message || 'Could not update this report.', 'error');
+            if (button) button.disabled = false;
+        }
+    }
+
+    async function resolveReport(id, button) {
+        var note = prompt('Resolution note (required, sent to the reporter):');
+        if (note === null || note.trim() === '') return;
+        if (button) button.disabled = true;
+        try {
+            await ApiClient.resolveModerationReport(id, note);
+            ROLE.toast('Report resolved.', 'success');
+            closeModal();
+            await load();
+        } catch (error) {
+            ROLE.toast(error.message || 'Could not resolve this report.', 'error');
+            if (button) button.disabled = false;
+        }
+    }
+
+    async function dismissReport(id, button) {
+        var note = prompt('Why is this report being dismissed? (required, sent to the reporter):');
+        if (note === null || note.trim() === '') return;
+        if (button) button.disabled = true;
+        try {
+            await ApiClient.dismissModerationReport(id, note);
+            ROLE.toast('Report dismissed.', 'success');
+            closeModal();
+            await load();
+        } catch (error) {
+            ROLE.toast(error.message || 'Could not dismiss this report.', 'error');
+            if (button) button.disabled = false;
+        }
+    }
+
+    async function loadStats() {
+        var stats = await ROLE.safe(ApiClient.getReportStats());
+        if (ROLE.failed(stats)) return;
+        document.getElementById('metricOpen').textContent = stats.openReports;
+        document.getElementById('metricReview').textContent = stats.underReviewReports;
+        document.getElementById('metricResolved').textContent = stats.resolvedReports;
+        document.getElementById('metricDismissed').textContent = stats.dismissedReports;
+    }
+
+    async function load() {
+        var result = await ROLE.safe(ApiClient.getModerationReports());
+        if (ROLE.failed(result)) {
+            showError(result.__error);
+            document.getElementById('reportTable').innerHTML = '<div class="card panel"><div class="empty">'
+                + '<i class="fas fa-triangle-exclamation"></i>'
+                + '<strong>Reports unavailable</strong>'
+                + '<p>The report list could not be loaded.</p>'
+                + '</div></div>';
+            return;
+        }
+        state.reports = Array.isArray(result) ? result : [];
+        render();
+    }
+
+    document.addEventListener('enuvex:ready', async function () {
+        // The dashboard links here with ?status=… so a card opens its own slice.
+        var preset = new URLSearchParams(window.location.search).get('status');
+        if (preset && ['OPEN', 'UNDER_REVIEW', 'RESOLVED', 'DISMISSED'].indexOf(preset) !== -1) {
+            state.status = preset;
+            document.getElementById('statusFilter').value = preset;
+        }
+
+        document.getElementById('reportSearch').addEventListener('input', function () {
+            state.query = this.value.trim().toLowerCase();
+            state.page = 0;
+            render();
+        });
+        ['statusFilter', 'categoryFilter', 'targetFilter', 'dateFilter'].forEach(function (id) {
+            document.getElementById(id).addEventListener('change', function () {
+                if (id === 'statusFilter') state.status = this.value;
+                if (id === 'categoryFilter') state.category = this.value;
+                if (id === 'targetFilter') state.target = this.value;
+                if (id === 'dateFilter') state.days = this.value;
+                state.page = 0;
+                render();
+            });
+        });
+
+        document.getElementById('reportTable').addEventListener('click', function (event) {
+            var details = event.target.closest('[data-details]');
+            if (details) openReport(details.getAttribute('data-details'));
+        });
+
+        document.getElementById('pager').addEventListener('click', function (event) {
+            var button = event.target.closest('[data-page]');
+            if (!button) return;
+            state.page += button.getAttribute('data-page') === 'next' ? 1 : -1;
+            render();
+        });
+
+        document.getElementById('closeReportModal').addEventListener('click', closeModal);
+        document.getElementById('reportModal').addEventListener('click', function (event) {
+            if (event.target === this) closeModal();
+        });
+
+        await Promise.all([load(), loadStats()]);
+    }, { once: true });
+})();
+</script>
+</body>
+</html>

@@ -251,7 +251,7 @@ const ApiClient = {
     },
 
     async getApplicants(jobId, sortBy = 'match') {
-        return this.request(`/employers/applicants?jobId=${jobId}&sortBy=${sortBy}`);
+        return this.request(`/applications/job/${jobId}/applicants?sortBy=${encodeURIComponent(sortBy)}`);
     },
 
     async updateApplicationStatus(applicationId, status, message) {
@@ -368,6 +368,10 @@ const ApiClient = {
         return this.request(`/employers/jobs/${encodeURIComponent(jobId)}`, { method: 'DELETE' });
     },
 
+    async requestEmployerVerification() {
+        return this.request('/employers/verification-request', { method: 'POST' });
+    },
+
     async getEmployerProfile() {
         return this.request('/employers/profile');
     },
@@ -382,12 +386,100 @@ const ApiClient = {
         return this.request(`/admin/employers/${encodeURIComponent(userId)}/verify`, { method: 'PUT' });
     },
 
-    async setUserActive(userId) {
-        return this.request(`/admin/users/${encodeURIComponent(userId)}/deactivate`, { method: 'PUT' });
+    async rejectEmployerVerification(userId, reason) {
+        return this.request('/admin/employers/' + encodeURIComponent(userId) + '/reject-verification?reason=' + encodeURIComponent(reason), { method: 'PUT' });
+    },
+
+    async requestEmployerInformation(userId, reason) {
+        return this.request('/admin/employers/' + encodeURIComponent(userId) + '/info-request?reason=' + encodeURIComponent(reason), { method: 'PUT' });
+    },
+
+    async getModerationOverview() {
+        return this.request('/admin/moderation-overview');
+    },
+
+    async getRecentAuditLogs() {
+        return this.request('/admin/audit-logs');
+    },
+
+    async getAuditLogs(params = {}) {
+        const query = new URLSearchParams(params).toString();
+        return this.request('/admin/audit-logs' + (query ? '?' + query : ''));
+    },
+
+    async suspendUser(userId, reason) {
+        return this.request('/admin/users/' + encodeURIComponent(userId) + '/suspend?reason=' + encodeURIComponent(reason), { method: 'PUT' });
+    },
+
+    async restoreUser(userId) {
+        return this.request('/admin/users/' + encodeURIComponent(userId) + '/restore', { method: 'PUT' });
+    },
+
+    async getModerationReports(params = {}) {
+        const query = new URLSearchParams(params).toString();
+        return this.request('/admin/moderation-reports' + (query ? '?' + query : ''));
+    },
+
+    async markModerationReportUnderReview(reportId) {
+        return this.request('/admin/moderation-reports/' + encodeURIComponent(reportId) + '/review', { method: 'PUT' });
+    },
+
+    async resolveModerationReport(reportId, reason) {
+        return this.request('/admin/moderation-reports/' + encodeURIComponent(reportId) + '/resolve?reason=' + encodeURIComponent(reason), { method: 'PUT' });
+    },
+
+    async dismissModerationReport(reportId, reason) {
+        return this.request('/admin/moderation-reports/' + encodeURIComponent(reportId) + '/dismiss?reason=' + encodeURIComponent(reason), { method: 'PUT' });
+    },
+
+    async getReportStats() {
+        return this.request('/admin/moderation-reports/stats');
+    },
+
+    async getSuspiciousListings(params = {}) {
+        const query = new URLSearchParams(params).toString();
+        return this.request('/admin/suspicious-listings' + (query ? '?' + query : ''));
+    },
+
+    async dismissSuspiciousListing(listingId, reason) {
+        return this.request('/admin/suspicious-listings/' + encodeURIComponent(listingId) + '/dismiss?reason=' + encodeURIComponent(reason), { method: 'PUT' });
+    },
+
+    async runSuspiciousDetection() {
+        return this.request('/admin/suspicious-listings/detect', { method: 'POST' });
     },
 
     async deleteAdminJobPost(jobId) {
         return this.request(`/admin/job-posts/${encodeURIComponent(jobId)}`, { method: 'DELETE' });
+    },
+
+    async approveAdminJobPost(jobId) {
+        return this.request('/admin/job-posts/' + encodeURIComponent(jobId) + '/approve', { method: 'PUT' });
+    },
+
+    async rejectAdminJobPost(jobId, reason) {
+        return this.request('/admin/job-posts/' + encodeURIComponent(jobId) + '/reject?reason=' + encodeURIComponent(reason), { method: 'PUT' });
+    },
+
+    async changesRequestedAdminJobPost(jobId, reason) {
+        return this.request('/admin/job-posts/' + encodeURIComponent(jobId) + '/changes-requested?reason=' + encodeURIComponent(reason), { method: 'PUT' });
+    },
+
+    async restoreAdminJobPost(jobId) {
+        return this.request('/admin/job-posts/' + encodeURIComponent(jobId) + '/restore', { method: 'PUT' });
+    },
+
+    /* ---------- reporting a posting (seeker / employer) --------------- */
+
+    async submitReport(payload) {
+        return this.request('/moderation/reports', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    },
+
+    async getMyReports() {
+        return this.request('/moderation/reports/mine');
     },
 
     async getAdminGeoStats(params = {}) {

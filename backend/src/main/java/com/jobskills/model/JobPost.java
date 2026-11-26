@@ -2,6 +2,7 @@ package com.jobskills.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jobskills.model.enums.*;
+import com.jobskills.model.enums.ModerationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -80,6 +81,13 @@ public class JobPost {
     private String municipalityCode;
     private String barangayCode;
 
+    /** Official moderation status for the job posting approval workflow. */
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ModerationStatus moderationStatus = ModerationStatus.PENDING_REVIEW;
+
+    /** Human-friendly display status visible to employers and seekers. */
     @Builder.Default
     private boolean isActive = true;
 

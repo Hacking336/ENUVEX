@@ -34,7 +34,7 @@
             <div class="page-head">
                 <div>
                     <h2>Job posts</h2>
-                    <p>Edit a post, open its applicants, pause it, or remove it.</p>
+                    <p>Every new or corrected post is reviewed by an administrator before job seekers can see it.</p>
                 </div>
                 <div class="page-head-actions">
                     <a class="btn-solid" href="post-job.html"><i class="fas fa-circle-plus"></i> Post a Job</a>
@@ -55,8 +55,12 @@
                     <label for="statusFilter">Status</label>
                     <select id="statusFilter">
                         <option value="ALL">All statuses</option>
-                        <option value="ACTIVE">Active</option>
-                        <option value="INACTIVE">Inactive</option>
+                        <option value="PENDING_REVIEW">Awaiting approval</option>
+                        <option value="APPROVED">Approved</option>
+                        <option value="CHANGES_REQUESTED">Changes requested</option>
+                        <option value="REJECTED">Rejected</option>
+                        <option value="ACTIVE">Published and running</option>
+                        <option value="INACTIVE">Paused</option>
                     </select>
                 </div>
                 <span class="rv-spacer"></span>
@@ -95,8 +99,33 @@
         return job.active !== undefined ? !!job.active : !!job.isActive;
     }
 
+    function moderationOf(job) {
+        return String(job.moderationStatus || 'APPROVED');
+    }
+
+    var MODERATION_META = {
+        APPROVED: ['status-accepted', 'Approved'],
+        PENDING_REVIEW: ['status-review', 'Awaiting approval'],
+        CHANGES_REQUESTED: ['status-applied', 'Changes requested'],
+        REJECTED: ['status-rejected', 'Rejected']
+    };
+
+    function moderationBadge(job) {
+        var meta = MODERATION_META[moderationOf(job)] || ['status-review', moderationOf(job)];
+        return '<span class="status ' + meta[0] + '">' + meta[1] + '</span>';
+    }
+
+    function moderationHint(job) {
+        var status = moderationOf(job);
+        if (status === 'PENDING_REVIEW') return 'Submitted. An administrator reviews this post before it appears in search.';
+        if (status === 'CHANGES_REQUESTED') return 'The administrator asked for corrections: edit this post and save it to resubmit for approval.';
+        if (status === 'REJECTED') return 'This post was rejected. Edit it to send a corrected version back to the review queue.';
+        return '';
+    }
+
     function row(job) {
         var applicants = state.counts[job.id] || 0;
+        var hint = moderationHint(job);
         return `<div class="list-row">
             <span class="list-icon"><i class="fas ${ROLE.categoryIcon(job.jobCategory)}"></i></span>
             <div class="list-body">
@@ -109,8 +138,10 @@
                     <span><i class="fas fa-users"></i>${applicants} applicant${applicants === 1 ? '' : 's'}</span>
                     <span><i class="fas fa-calendar"></i>Posted ${ROLE.esc(ROLE.dateLabel(job.createdAt))}</span>
                 </div>
+                ${hint ? '<p class="list-note">' + ROLE.esc(hint) + '</p>' : ''}
             </div>
             <div class="list-side">
+                ${moderationBadge(job)}
                 <span class="status ${isActive(job) ? 'status-accepted' : 'status-rejected'}">${isActive(job) ? 'Active' : 'Inactive'}</span>
                 <a class="btn-soft btn-sm" href="applicants.html?jobId=${encodeURIComponent(job.id)}"><i class="fas fa-users"></i> Applicants</a>
                 <a class="btn-ghost btn-sm" href="post-job.html?id=${encodeURIComponent(job.id)}"><i class="fas fa-pen"></i> Edit</a>
@@ -125,6 +156,8 @@
     function matches(job) {
         if (state.status === 'ACTIVE' && !isActive(job)) return false;
         if (state.status === 'INACTIVE' && isActive(job)) return false;
+        if (['APPROVED', 'PENDING_REVIEW', 'CHANGES_REQUESTED', 'REJECTED'].indexOf(state.status) !== -1
+            && moderationOf(job) !== state.status) return false;
         if (!state.query) return true;
         var haystack = [job.jobTitle, job.jobCategory, job.barangay, job.requiredSkills, job.jobLocation]
             .filter(Boolean).join(' ').toLowerCase();

@@ -6,12 +6,14 @@ import com.jobskills.dto.*;
 import com.jobskills.model.*;
 import com.jobskills.model.enums.ApplicationStatus;
 import com.jobskills.model.enums.EmploymentType;
+import com.jobskills.model.enums.VerificationStatus;
 import com.jobskills.repository.ApplicationStatusHistoryRepository;
 import com.jobskills.repository.EmployerProfileRepository;
 import com.jobskills.repository.JobApplicationRepository;
 import com.jobskills.repository.JobPostRepository;
 import com.jobskills.repository.UserRepository;
 import com.jobskills.service.*;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +39,7 @@ public class EmployerController {
     private final ApplicationStatusHistoryRepository historyRepository;
     private final EmployerProfileRepository employerRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     /** The company profile plus the account email and verification state, which
      * the employer entity itself does not expose.
@@ -57,12 +60,50 @@ public class EmployerController {
         dto.setBusinessDescription(profile.getBusinessDescription());
         dto.setLogo(profile.getLogo());
         dto.setCreatedAt(profile.getCreatedAt());
+        dto.setVerificationStatus(profile.getVerificationStatus());
         userRepository.findById(userId).ifPresent(user -> {
             dto.setEmail(user.getEmail());
             dto.setVerified(user.isVerified());
             dto.setActive(user.isActive());
         });
         return ResponseEntity.ok(dto);
+    }
+
+    /**
+     * The employer asks to be verified. This only moves an unverified, rejected
+     * or information-needed profile into PENDING; it can never set VERIFIED,
+     * which is an administrator decision.
+     */
+    @PostMapping("/verification-request")
+    @Transactional
+    public ResponseEntity<Map<String, String>> requestVerification(Authentication authentication) {
+        Long userId = extractUserId(authentication);
+        EmployerProfile profile = userService.getEmployerProfile(userId);
+
+        if (profile.getVerificationStatus() == VerificationStatus.PENDING) {
+            return ResponseEntity.ok(Map.of("status", "PENDING",
+                "message", "Your verification request is already with the review team."));
+        }
+        if (profile.getVerificationStatus() == VerificationStatus.VERIFIED) {
+            return ResponseEntity.ok(Map.of("status", "VERIFIED",
+                "message", "Your account is already verified."));
+        }
+
+        profile.setVerificationStatus(VerificationStatus.PENDING);
+        employerRepository.save(profile);
+
+        userRepository.findAll().stream()
+            .filter(user -> user.getUserType() == com.jobskills.model.enums.UserType.ADMIN)
+            .filter(User::isActive)
+            .forEach(admin -> notificationService.notify(admin,
+                NotificationService.EMPLOYER_VERIFICATION,
+                "Employer requested verification",
+                profile.getBusinessName() + " asked to be verified. Review the company details in the verification queue.",
+                "/admin/employers.html", "EMPLOYER_PROFILE", profile.getId(),
+                "verification-request-" + profile.getId() + "-admin-" + admin.getId()));
+
+        return ResponseEntity.ok(Map.of("status", "PENDING",
+            "message", "Request submitted. An administrator will review your company details."));
     }
 
     /** Updates only the company fields. The registration bean is reused, but its

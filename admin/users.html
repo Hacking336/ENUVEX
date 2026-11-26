@@ -126,7 +126,9 @@
             if (state.status === 'ACTIVE' && !user.active) return false;
             if (state.status === 'INACTIVE' && user.active) return false;
             if (!state.query) return true;
-            return String(user.email || '').toLowerCase().indexOf(state.query) !== -1;
+            var haystack = [user.email, user.businessName, user.employerName, user.fullName]
+                .filter(Boolean).join(' ').toLowerCase();
+            return haystack.indexOf(state.query) !== -1;
         }).sort(function (a, b) {
             return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
         });
@@ -194,9 +196,9 @@
                             <td>
                                 <div class="row-actions">
                                     <button class="btn-soft btn-sm" type="button" data-view="${ROLE.esc(String(user.id))}">View</button>
-                                    <button class="btn-ghost btn-sm" type="button" data-toggle="${ROLE.esc(String(user.id))}">
-                                        ${user.active ? 'Deactivate' : 'Activate'}
-                                    </button>
+                                    ${user.active
+                                        ? `<button class="btn-danger btn-sm" type="button" data-suspend="${ROLE.esc(String(user.id))}">Suspend</button>`
+                                        : `<button class="btn-solid btn-sm" type="button" data-restore="${ROLE.esc(String(user.id))}">Restore</button>`}
                                 </div>
                             </td>
                         </tr>`;
@@ -218,20 +220,58 @@
         }
     }
 
-    function openUser(id) {
+    function verificationLabel(value) {
+        if (!value) return '—';
+        return String(value).toLowerCase().replace(/_/g, ' ').replace(/^./, function (c) { return c.toUpperCase(); });
+    }
+
+    async function openUser(id) {
         var user = state.users.filter(function (item) { return String(item.id) === String(id); })[0];
         if (!user) return;
-        document.getElementById('userModalTitle').textContent = user.email || 'Account details';
+        document.getElementById('userModalTitle').textContent = user.businessName || user.fullName || user.email || 'Account details';
+
+        var profileRows = '';
+        if (user.userType === 'EMPLOYER') {
+            profileRows =
+                '<div class="kv"><span>Company</span><strong>' + ROLE.esc(user.businessName || '—') + '</strong></div>' +
+                '<div class="kv"><span>Contact person</span><strong>' + ROLE.esc(user.employerName || '—') + '</strong></div>' +
+                '<div class="kv"><span>Verification</span><strong>' + ROLE.esc(verificationLabel(user.verificationStatus)) + '</strong></div>';
+        } else if (user.userType === 'JOB_SEEKER') {
+            profileRows = '<div class="kv"><span>Full name</span><strong>' + ROLE.esc(user.fullName || '—') + '</strong></div>';
+        }
+
         document.getElementById('userModalBody').innerHTML = `<div class="kv-grid">
             <div class="kv"><span>Account ID</span><strong>${ROLE.esc(String(user.id))}</strong></div>
             <div class="kv"><span>Email</span><strong>${ROLE.esc(user.email || '—')}</strong></div>
             <div class="kv"><span>Role</span><strong>${ROLE.esc(String(user.userType || '').replace(/_/g, ' '))}</strong></div>
-            <div class="kv"><span>Status</span><strong>${user.active ? 'Active' : 'Inactive'}</strong></div>
+            <div class="kv"><span>Status</span><strong>${user.active ? 'Active' : 'Suspended'}</strong></div>
             <div class="kv"><span>Verified</span><strong>${user.verified ? 'Yes' : 'No'}</strong></div>
+            <div class="kv"><span>Municipality</span><strong>${ROLE.esc(ROLE.municipalityLabel(user.municipality) || '—')}</strong></div>
+            ${profileRows}
             <div class="kv"><span>Registered</span><strong>${ROLE.esc(ROLE.dateLabel(user.createdAt))}</strong></div>
-            <div class="kv"><span>Last updated</span><strong>${ROLE.esc(ROLE.dateLabel(user.updatedAt))}</strong></div>
+        </div>
+        <div style="margin-top: 16px;">
+            <p class="block-title">Moderation history</p>
+            <div id="userHistory"><div class="loading">Loading history…</div></div>
         </div>`;
         document.getElementById('userModal').hidden = false;
+
+        var historyResult = await ROLE.safe(ApiClient.getAuditLogs({ targetId: user.id }));
+        var historyBox = document.getElementById('userHistory');
+        if (!historyBox) return;
+        if (ROLE.failed(historyResult) || !Array.isArray(historyResult) || !historyResult.length) {
+            historyBox.innerHTML = '<p class="muted">No moderation actions recorded for this account.</p>';
+            return;
+        }
+        historyBox.innerHTML = '<div class="stack">' + historyResult.map(function (entry) {
+            return '<div class="list-row">'
+                + '<div class="list-body">'
+                + '<h4>' + ROLE.esc(entry.actionType || 'Action') + '</h4>'
+                + '<div class="list-meta"><span><i class="fas fa-user-shield"></i>' + ROLE.esc(entry.adminUserEmail || 'Unknown administrator') + '</span>'
+                + '<span><i class="fas fa-calendar"></i>' + ROLE.esc(ROLE.dateLabel(entry.createdAt)) + '</span></div>'
+                + (entry.reason ? '<p class="muted">' + ROLE.esc(entry.reason) + '</p>' : '')
+                + '</div></div>';
+        }).join('') + '</div>';
     }
 
     async function load() {
@@ -247,6 +287,15 @@
         }
         state.users = Array.isArray(result) ? result : [];
         render();
+    }
+
+    /** Dashboard cards link here with ?status=INACTIVE, so honour the preset. */
+    function applyPreset() {
+        var preset = (new URLSearchParams(window.location.search).get('status') || '').toUpperCase();
+        if (preset !== 'ACTIVE' && preset !== 'INACTIVE') return;
+        state.status = preset;
+        var select = document.getElementById('statusFilter');
+        if (select) select.value = preset;
     }
 
     document.addEventListener('enuvex:ready', async function () {
@@ -279,17 +328,35 @@
                 openUser(view.getAttribute('data-view'));
                 return;
             }
-            var toggle = event.target.closest('[data-toggle]');
-            if (!toggle) return;
-            var id = toggle.getAttribute('data-toggle');
-            toggle.disabled = true;
-            try {
-                await ApiClient.setUserActive(id);
-                ROLE.toast('Account status updated.', 'success');
-                await load();
-            } catch (error) {
-                ROLE.toast(error.message || 'Could not update this account.', 'error');
-                toggle.disabled = false;
+            var suspend = event.target.closest('[data-suspend]');
+            if (suspend) {
+                var reason = prompt('Reason for suspending this account (required, sent to the account holder):');
+                if (reason === null || reason.trim() === '') return;
+                if (!confirm('Suspend this account? Their applications, job posts and notifications are kept.')) return;
+                suspend.disabled = true;
+                try {
+                    await ApiClient.suspendUser(suspend.getAttribute('data-suspend'), reason);
+                    ROLE.toast('Account suspended.', 'success');
+                    await load();
+                } catch (error) {
+                    ROLE.toast(error.message || 'Could not suspend this account.', 'error');
+                    suspend.disabled = false;
+                }
+                return;
+            }
+
+            var restore = event.target.closest('[data-restore]');
+            if (restore) {
+                if (!confirm('Restore this account so the holder can sign in again?')) return;
+                restore.disabled = true;
+                try {
+                    await ApiClient.restoreUser(restore.getAttribute('data-restore'));
+                    ROLE.toast('Account restored.', 'success');
+                    await load();
+                } catch (error) {
+                    ROLE.toast(error.message || 'Could not restore this account.', 'error');
+                    restore.disabled = false;
+                }
             }
         });
 
@@ -303,6 +370,7 @@
             if (event.target === this) this.hidden = true;
         });
 
+        applyPreset();
         await load();
     }, { once: true });
 })();

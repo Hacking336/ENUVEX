@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Audit Logs — JSM</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/brand/jsm-favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/brand/jsm-icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/brand/jsm-icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://enuvex.onrender.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../job-seeker/enuvex-app.css">
+    <link rel="stylesheet" href="../assets/css/enuvex-role.css">
+    <script>
+        window.ENUVEX_PAGE = {
+            active: 'audit-logs',
+            title: 'Audit Logs',
+            subtitle: 'Every moderation decision, with the administrator who made it'
+        };
+    </script>
+</head>
+<body data-role="admin">
+<div class="shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="side-overlay" id="sideOverlay"></div>
+
+    <div class="main">
+        <header class="topbar" id="topbar"></header>
+
+        <main class="content">
+            <div class="page-head">
+                <div>
+                    <h2>Administrative audit trail</h2>
+                    <p>Entries are written by the backend when an action succeeds. There is no route to edit or delete one.</p>
+                </div>
+                <div class="page-head-actions">
+                    <span class="badge-neutral" id="totalBadge">0 entries</span>
+                </div>
+            </div>
+
+            <div class="alert" id="pageError" hidden>
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="pageErrorText">Could not load audit logs.</span>
+            </div>
+
+            <div class="card rv-toolbar">
+                <div class="form-field">
+                    <label for="adminFilter">Administrator email</label>
+                    <input type="search" id="adminFilter" placeholder="admin@example.com">
+                </div>
+                <div class="form-field">
+                    <label for="actionFilter">Action</label>
+                    <select id="actionFilter">
+                        <option value="ALL">All actions</option>
+                        <option value="EMPLOYER">Employer verification</option>
+                        <option value="JOB_POST">Job moderation</option>
+                        <option value="REPORT">Reports</option>
+                        <option value="ACCOUNT">Accounts</option>
+                        <option value="SUSPICIOUS">Suspicious detection</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="targetTypeFilter">Target type</label>
+                    <select id="targetTypeFilter">
+                        <option value="ALL">All targets</option>
+                        <option value="EMPLOYER_PROFILE">Employer profile</option>
+                        <option value="JOB_POST">Job post</option>
+                        <option value="REPORT">Report</option>
+                        <option value="USER">User</option>
+                        <option value="SUSPICIOUS_LISTING">Suspicious listing</option>
+                        <option value="SYSTEM">System</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="fromDate">From</label>
+                    <input type="date" id="fromDate">
+                </div>
+                <div class="form-field">
+                    <label for="toDate">To</label>
+                    <input type="date" id="toDate">
+                </div>
+                <span class="rv-spacer"></span>
+                <span class="muted" id="resultCount"></span>
+            </div>
+
+            <div id="logTable">
+                <div class="loading">Loading audit logs…</div>
+            </div>
+
+            <div class="pagination" id="pager" hidden></div>
+        </main>
+    </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Quick navigation"></nav>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/role-app.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var PAGE_SIZE = 20;
+    var state = { logs: [], admin: '', action: 'ALL', targetType: 'ALL', from: '', to: '', page: 0 };
+
+    function showError(message) {
+        var box = document.getElementById('pageError');
+        var text = document.getElementById('pageErrorText');
+        if (!box || !text) return;
+        text.textContent = message;
+        box.hidden = false;
+    }
+
+    function actionLabel(value) {
+        return String(value || 'Action').replace(/_/g, ' ').toLowerCase().replace(/^./, function (c) { return c.toUpperCase(); });
+    }
+
+    function stateLabel(value) {
+        if (!value) return '—';
+        return String(value).replace(/_/g, ' ').toLowerCase();
+    }
+
+    function filtered() {
+        return state.logs.filter(function (log) {
+            if (state.admin && String(log.adminUserEmail || '').toLowerCase().indexOf(state.admin) === -1) return false;
+            if (state.action !== 'ALL' && String(log.actionType || '').indexOf(state.action) === -1) return false;
+            if (state.targetType !== 'ALL' && String(log.targetType) !== state.targetType) return false;
+            if (state.from && new Date(log.createdAt || 0).getTime() < new Date(state.from).getTime()) return false;
+            if (state.to && new Date(log.createdAt || 0).getTime() > new Date(state.to).getTime() + 86399999) return false;
+            return true;
+        }).sort(function (a, b) {
+            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        });
+    }
+
+    function render() {
+        var list = filtered();
+        var pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+        if (state.page >= pages) state.page = pages - 1;
+        var slice = list.slice(state.page * PAGE_SIZE, (state.page + 1) * PAGE_SIZE);
+
+        document.getElementById('totalBadge').textContent = state.logs.length + ' entries';
+        document.getElementById('resultCount').textContent = list.length + ' matching entr' + (list.length === 1 ? 'y' : 'ies');
+
+        var container = document.getElementById('logTable');
+        if (!state.logs.length) {
+            container.innerHTML = '<div class="card panel"><div class="empty">'
+                + '<i class="fas fa-clock-rotate-left"></i>'
+                + '<strong>No moderation action recorded yet</strong>'
+                + '<p>Verifying an employer, approving a posting or suspending an account writes the first entry.</p>'
+                + '</div></div>';
+            document.getElementById('pager').hidden = true;
+            return;
+        }
+        if (!slice.length) {
+            container.innerHTML = '<div class="card panel"><div class="empty">'
+                + '<i class="fas fa-filter"></i>'
+                + '<strong>No entry matches this filter</strong>'
+                + '<p>Try another administrator, action or date range.</p>'
+                + '</div></div>';
+            document.getElementById('pager').hidden = true;
+            return;
+        }
+
+        container.innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr>'
+            + '<th class="num">#</th><th>When</th><th>Administrator</th><th>Action</th><th>Target</th>'
+            + '<th>Previous state</th><th>New state</th><th>Reason</th>'
+            + '</tr></thead><tbody>'
+            + slice.map(function (log, index) {
+                return '<tr>'
+                    + '<td class="num">' + (state.page * PAGE_SIZE + index + 1) + '</td>'
+                    + '<td>' + ROLE.esc(ROLE.dateLabel(log.createdAt)) + '</td>'
+                    + '<td>' + ROLE.esc(log.adminUserEmail || 'Unknown administrator') + '</td>'
+                    + '<td><span class="cell-main">' + ROLE.esc(actionLabel(log.actionType)) + '</span></td>'
+                    + '<td>' + ROLE.esc(String(log.targetType || '—').replace(/_/g, ' '))
+                    + (log.targetId ? '<span class="cell-sub">#' + ROLE.esc(String(log.targetId)) + '</span>' : '') + '</td>'
+                    + '<td>' + ROLE.esc(stateLabel(log.previousState)) + '</td>'
+                    + '<td>' + ROLE.esc(stateLabel(log.newState)) + '</td>'
+                    + '<td>' + ROLE.esc(log.reason || '—') + '</td>'
+                    + '</tr>';
+            }).join('')
+            + '</tbody></table></div>';
+
+        var pager = document.getElementById('pager');
+        if (pages <= 1) {
+            pager.hidden = true;
+        } else {
+            pager.hidden = false;
+            pager.innerHTML = '<button class="btn-soft btn-sm" type="button" data-page="prev" ' + (state.page === 0 ? 'disabled' : '') + '>'
+                + '<i class="fas fa-chevron-left"></i> Previous</button>'
+                + '<span class="muted">Page ' + (state.page + 1) + ' of ' + pages + '</span>'
+                + '<button class="btn-soft btn-sm" type="button" data-page="next" ' + (state.page >= pages - 1 ? 'disabled' : '') + '>'
+                + 'Next <i class="fas fa-chevron-right"></i></button>';
+        }
+    }
+
+    async function load() {
+        var params = {};
+        if (state.from) params.from = state.from;
+        if (state.to) params.to = state.to;
+
+        var result = await ROLE.safe(ApiClient.getAuditLogs(params));
+        if (ROLE.failed(result)) {
+            showError(result.__error);
+            document.getElementById('logTable').innerHTML = '<div class="card panel"><div class="empty">'
+                + '<i class="fas fa-triangle-exclamation"></i>'
+                + '<strong>Audit log unavailable</strong>'
+                + '<p>The audit entries could not be loaded.</p>'
+                + '</div></div>';
+            return;
+        }
+        state.logs = Array.isArray(result) ? result : [];
+        render();
+    }
+
+    document.addEventListener('enuvex:ready', async function () {
+        document.getElementById('adminFilter').addEventListener('input', function () {
+            state.admin = this.value.trim().toLowerCase();
+            state.page = 0;
+            render();
+        });
+        document.getElementById('actionFilter').addEventListener('change', function () {
+            state.action = this.value;
+            state.page = 0;
+            render();
+        });
+        document.getElementById('targetTypeFilter').addEventListener('change', function () {
+            state.targetType = this.value;
+            state.page = 0;
+            render();
+        });
+        document.getElementById('fromDate').addEventListener('change', function () {
+            state.from = this.value;
+            state.page = 0;
+            load();
+        });
+        document.getElementById('toDate').addEventListener('change', function () {
+            state.to = this.value;
+            state.page = 0;
+            load();
+        });
+
+        document.getElementById('pager').addEventListener('click', function (event) {
+            var button = event.target.closest('[data-page]');
+            if (!button) return;
+            state.page += button.getAttribute('data-page') === 'next' ? 1 : -1;
+            render();
+        });
+
+        await load();
+    }, { once: true });
+})();
+</script>
+</body>
+</html>
