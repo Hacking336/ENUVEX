@@ -138,16 +138,38 @@ class RateLimiterTest {
     }
 
     @Test
-    @DisplayName("The client key is the forwarded address, not the proxy")
+    @DisplayName("The client key is the proxy-written address, so a spoofed header cannot pick its own bucket")
     void clientKeyUsesForwardedFor() {
+        // The client sent "1.2.3.4"; the proxy appended the address it really saw.
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/auth/login");
         request.setRemoteAddr("10.0.0.1");
-        request.addHeader("X-Forwarded-For", "203.0.113.55, 10.0.0.1");
+        request.addHeader("X-Forwarded-For", "1.2.3.4, 203.0.113.55");
         assertThat(RateLimitFilter.clientKey(request)).isEqualTo("203.0.113.55");
 
+        // Single proxy, single address.
+        MockHttpServletRequest single = new MockHttpServletRequest("POST", "/api/auth/login");
+        single.addHeader("X-Forwarded-For", "198.51.100.7");
+        assertThat(RateLimitFilter.clientKey(single)).isEqualTo("198.51.100.7");
+
+        // No proxy header at all: the socket address.
         MockHttpServletRequest direct = new MockHttpServletRequest("POST", "/api/auth/login");
         direct.setRemoteAddr("10.0.0.2");
         assertThat(RateLimitFilter.clientKey(direct)).isEqualTo("10.0.0.2");
+    }
+
+    @Test
+    @DisplayName("Rotating a spoofed X-Forwarded-For value does not reset the counter")
+    void spoofedForwardedForCannotEvadeTheLimit() {
+        MemoryStore store = new MemoryStore();
+        RateLimiter limiter = limiter(store, true);
+
+        for (int attempt = 1; attempt <= 3; attempt++) {
+            MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/auth/login");
+            request.addHeader("X-Forwarded-For", "10.9.9." + attempt + ", 203.0.113.9");
+            RateLimiter.Decision decision =
+                limiter.check(RateLimiter.Action.LOGIN, RateLimitFilter.clientKey(request));
+            assertThat(decision.allowed()).as("attempt %s", attempt).isEqualTo(attempt <= 2);
+        }
     }
 
     private RateLimiter.Action actionFor(String method, String uri) {

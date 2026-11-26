@@ -59,7 +59,7 @@ This web-based system connects local job seekers with local employers across var
 
 - Backend: Java 21, Spring Boot 3.4.2, Spring Security with JWT, Spring Data JPA, Flyway (V1–V9)
 - Maps: Leaflet 1.9.4 with OpenStreetMap-compatible tiles, configured server-side
-- Tests: 58 JUnit tests (`mvn test`, real PostgreSQL)
+- Tests: 59 JUnit tests (`mvn test`, real PostgreSQL)
 - Database: PostgreSQL 17 on Supabase (tables live in their own `enuv` schema)
 - Frontend: HTML5, CSS3, JavaScript (Vanilla), served by the embedded Tomcat
 - Font Awesome for icons, Springdoc OpenAPI for the API docs

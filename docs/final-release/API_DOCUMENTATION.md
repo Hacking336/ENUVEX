@@ -24,7 +24,7 @@ curl -X POST https://enuvex.onrender.com/api/auth/login \
 ```
 
 ```json
-{ "token": "eyJhbGciOiJIUzI1NiJ9…", "userId": 2, "userType": "JOB_SEEKER",
+{ "token": "<jwt-token>", "userId": 2, "userType": "JOB_SEEKER",
   "email": "seeker@example.com", "name": "Test Job Seeker" }
 ```
 

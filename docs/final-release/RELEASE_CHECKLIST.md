@@ -20,8 +20,8 @@
 | Check | Command | Status |
 | --- | --- | --- |
 | Compile + package | `mvn -o -q package -DskipTests` | **PASS** |
-| Unit + integration tests | `mvn -o test` with PostgreSQL | **PASS** — 58 tests, 0 failures |
-| Rate limiting unit tests | `RateLimiterTest` | **PASS** — 7 tests |
+| Unit + integration tests | `mvn -o test` with PostgreSQL | **PASS** — 59 tests, 0 failures |
+| Rate limiting unit tests | `RateLimiterTest` | **PASS** — 8 tests, including the spoofed-header case |
 | Security/API suite | `tools/phase7_security_check.py` | **PASS (prior)** — 50/50 |
 | Moderation suites | `tools/phase6_*.py` | **PASS (prior)** — 92/92 and 36/36 |
 

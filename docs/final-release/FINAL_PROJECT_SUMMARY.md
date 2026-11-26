@@ -53,7 +53,7 @@ JSM is a web platform that connects job seekers and employers inside four munici
 | Measure | Result |
 | --- | --- |
 | Planned phases | 8 of 8 implemented |
-| Automated tests | 58 tests, 0 failures (`mvn test`, real PostgreSQL) |
+| Automated tests | 59 tests, 0 failures (`mvn test`, real PostgreSQL) |
 | Scripted API checks | 50/50 security suite, 92/92 and 36/36 moderation suites |
 | Migration validation | Fresh database V1–V8 (241 ms) and V9 applied to the development database; `validate` passes |
 | Browser verification | Eight role pages with real data; five widths with zero horizontal overflow |

@@ -95,16 +95,21 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     /**
      * The caller's address. Behind Render (or any reverse proxy) the socket
-     * address is the proxy, so the first entry of X-Forwarded-For is used; every
-     * hostname in that header reaches the app through the proxy, which appends
-     * the real peer address.
+     * address is the proxy, so X-Forwarded-For is used instead.
+     *
+     * <p>The <strong>last</strong> entry is taken, not the first: a client can
+     * send its own X-Forwarded-For header, and the proxy appends the address it
+     * actually saw to the end of that list. Reading the first entry would let an
+     * attacker choose its own bucket and step around the limit entirely; the
+     * last entry is the one the trusted proxy wrote.
      */
     public static String clientKey(HttpServletRequest request) {
         String forwarded = request.getHeader("X-Forwarded-For");
         if (forwarded != null && !forwarded.isBlank()) {
-            String first = forwarded.split(",")[0].trim();
-            if (!first.isEmpty()) {
-                return first;
+            String[] parts = forwarded.split(",");
+            String last = parts[parts.length - 1].trim();
+            if (!last.isEmpty()) {
+                return last;
             }
         }
         String remote = request.getRemoteAddr();

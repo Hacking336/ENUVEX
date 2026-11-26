@@ -15,7 +15,7 @@
 | Token lifetime | `JWT_EXPIRATION_MS`, default 1 hour | Short-lived access tokens |
 | Credential errors | Identical message for unknown email and wrong password; access-code failures also generic | An attacker cannot enumerate accounts or confirm a guessed code |
 | Administrator shortcut | `admin` / `admin++` accepted **only** when the password field equals `JSM_ADMIN_ACCESS_CODE`, compared with `MessageDigest.isEqual` (constant time) | The name-only takeover found in Phase 7 is closed; an unset variable disables the shortcut |
-| Rate limiting | Persistent counters in `rate_limit_counters` (V9), applied to sign-in, registration, report and application submission | Password spray and form spam are slowed without an in-memory counter that a restart would clear |
+| Rate limiting | Persistent counters in `rate_limit_counters` (V9), applied to sign-in, registration, report and application submission. The client key is the **last** `X-Forwarded-For` entry — the address the proxy wrote — so a client cannot choose its own bucket by sending a forged header | Password spray and form spam are slowed without an in-memory counter that a restart would clear |
 
 ### 1.2 Session handling
 

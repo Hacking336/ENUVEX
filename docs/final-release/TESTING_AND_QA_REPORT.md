@@ -19,7 +19,7 @@
 `cd backend && mvn test` with a real PostgreSQL:
 
 ```
-Tests run: 58, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 59, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 ```
 
@@ -29,10 +29,10 @@ BUILD SUCCESS
 | `SuspiciousListingServiceTest` | 12 | Each detection rule triggers once, dismissal stops re-flagging, reasons are human-readable |
 | `ReportServiceTest` | 7 | Report lifecycle transitions and statistics |
 | `ModerationAuthorizationTest` | 6 | Admin routes are `hasRole('ADMIN')`, audit logs read-only, report submission takes no reporter id, employers cannot self-verify |
-| `RateLimiterTest` | 7 | Allow up to the limit, refuse after, per-address and per-action isolation, window reset, disable switch, fail-open on database error, route coverage |
+| `RateLimiterTest` | 8 | Allow up to the limit, refuse after, per-address and per-action isolation, window reset, disable switch, fail-open on database error, route coverage, and that a spoofed `X-Forwarded-For` cannot reset the counter |
 | `JobSkillsMatchingSystemApplicationTests` | 1 | Full context boot, Flyway to V9, `ddl-auto=validate` passes |
 
-Phase-by-phase history of these tests: matching (Phase 2) 25 tests, moderation service and authorization (Phase 6) 25 tests, rate limiting (Phase 8) 7 tests, context/migration 1. The 58 is the current total of distinct test methods.
+Phase-by-phase history of these tests: matching (Phase 2) 25 tests, moderation service and authorization (Phase 6) 25 tests, rate limiting (Phase 8) 8 tests, context/migration 1. The 59 is the current total of distinct test methods.
 
 **What the unit tests do not cover:** HTTP status codes end-to-end (that is the scripted suites), concurrency, and any browser behaviour.
 
