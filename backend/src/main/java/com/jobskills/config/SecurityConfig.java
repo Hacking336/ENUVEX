@@ -1,5 +1,7 @@
 package com.jobskills.config;
 
+import com.jobskills.ratelimit.RateLimitFilter;
+import com.jobskills.ratelimit.RateLimiter;
 import com.jobskills.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -36,6 +38,7 @@ public class SecurityConfig {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private final RateLimiter rateLimiter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -168,6 +171,10 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             );
 
+        // Rate limiting runs before authentication so a password-spray script is
+        // stopped before any credential is checked.
+        http.addFilterBefore(new RateLimitFilter(rateLimiter),
+            UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(new JwtAuthenticationFilter(jwtService, userDetailsService),
             UsernamePasswordAuthenticationFilter.class);
 

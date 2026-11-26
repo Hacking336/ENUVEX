@@ -71,6 +71,22 @@ jsm:
     center-lng: ${JSM_MAP_CENTER_LNG:122.9200}
     zoom: ${JSM_MAP_ZOOM:10}
 
+  # Persistent rate limiting for the write endpoints an unauthenticated script can
+  # hammer. Counters live in the rate_limit_counters table (migration V9), so they
+  # survive restarts and are shared by every instance. Limits are per client
+  # address and deliberately generous; 0 disables an individual limit, and
+  # jsm.rate-limit.enabled=false disables the limiter entirely.
+  rate-limit:
+    enabled: ${JSM_RATE_LIMIT_ENABLED:true}
+    login-limit: ${JSM_RATE_LIMIT_LOGIN:20}
+    login-window-seconds: ${JSM_RATE_LIMIT_LOGIN_WINDOW:60}
+    registration-limit: ${JSM_RATE_LIMIT_REGISTRATION:10}
+    registration-window-seconds: ${JSM_RATE_LIMIT_REGISTRATION_WINDOW:3600}
+    report-limit: ${JSM_RATE_LIMIT_REPORTS:10}
+    report-window-seconds: ${JSM_RATE_LIMIT_REPORTS_WINDOW:3600}
+    application-limit: ${JSM_RATE_LIMIT_APPLICATIONS:30}
+    application-window-seconds: ${JSM_RATE_LIMIT_APPLICATIONS_WINDOW:3600}
+
 springdoc:
   api-docs:
     path: /api-docs

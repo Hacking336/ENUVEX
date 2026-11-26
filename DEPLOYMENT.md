@@ -36,6 +36,8 @@ Set these in your host's dashboard. Never commit them.
 | `JWT_SECRET` | yes | at least 32 random characters; the app refuses to start without it |
 | `PORT` | no | defaults to `8080`; most platforms set it for you |
 | `JWT_EXPIRATION_MS` | no | defaults to `3600000` (1 hour) |
+| `JSM_ADMIN_ACCESS_CODE` | no | enables the `admin` / `admin++` sign-in shortcut; empty = shortcut disabled. Read it from the host dashboard, never commit it |
+| `JSM_RATE_LIMIT_*` | no | per-address limits for sign-in, registration, reports and applications (see `docs/final-release/API_DOCUMENTATION.md` §15) |
 
 Generate a secret with:
 
@@ -59,7 +61,8 @@ docker run --rm -p 8080:8080 \
   enuvex
 ```
 
-Then open <http://localhost:8080>. `GET /api/health` returns `{"status":"UP"}`.
+Then open <http://localhost:8080>. `GET /api/health` returns `{"status":"UP","database":"UP"}`, and `503`
+with `"database":"DOWN"` when the database cannot be reached.
 
 Without Docker, from the `backend/` directory: `mvn spring-boot:run` (with the
 variables above in the environment or in `backend/.env`).
@@ -92,11 +95,15 @@ site would stop working as soon as someone tried to log in.
 ## 6. After the first deploy
 
 - **Admin password.** The seeded admin `admin@jobskillsmatching.com` was created
-  with a placeholder hash that is public in this repository. It has been replaced
-  with a random password kept in `backend/.env` as `ADMIN_PASSWORD` (git-ignored
-  and never deployed, so move it to a password manager). If it is lost, generate
-  a new hash with `new BCryptPasswordEncoder().encode("...")` and update
-  `enuv.users.password_hash` for that email.
+  with a placeholder hash that is public in this repository. **Rotate it** before
+  real use: generate a new hash with
+  `new BCryptPasswordEncoder().encode("...")` and update
+  `enuv.users.password_hash` for that email. The `admin` / `admin++` shortcut is
+  separate: it only works when `JSM_ADMIN_ACCESS_CODE` is set on the service, and
+  the code is compared in constant time.
+- **Rate limiting.** Counters live in `enuv.rate_limit_counters` (migration V9),
+  so they survive restarts. Limits are configurable and can be disabled with
+  `JSM_RATE_LIMIT_ENABLED=false`.
 - **Uploads.** Profile pictures and employer logos are stored in the
   `enuv.uploaded_files` table (migration `V2`), not on disk, and served from
   `/uploads/{filename}`. They therefore survive redeploys, restarts and the
